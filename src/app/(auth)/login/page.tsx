@@ -38,19 +38,22 @@ export default function LoginPage() {
 	const clearError = useClearError();
 	const router = useRouter();
 
-	// Create a Kratos login flow on mount to get a CSRF token
+	// Create a Kratos login flow on mount
 	const initLoginFlow = useCallback(async () => {
 		try {
 			const api = getIamKratosFrontendApi();
-			const { data: flow } = await api.createBrowserLoginFlow();
+			const { data: flow } = await api.createNativeLoginFlow();
 			setFlowId(flow.id);
 
-			// Extract CSRF token from flow UI nodes
+			// Extract CSRF token from flow UI nodes (may not exist for native flows)
 			const csrfNode = flow.ui.nodes.find(
 				(node) => "attributes" in node && "name" in node.attributes && node.attributes.name === "csrf_token",
 			);
 			if (csrfNode && "attributes" in csrfNode && "value" in csrfNode.attributes) {
 				setCsrfToken(csrfNode.attributes.value as string);
+			} else {
+				// Native flows may not require CSRF tokens
+				setCsrfToken("");
 			}
 		} catch (error) {
 			console.error("Failed to create login flow:", error);
@@ -75,7 +78,7 @@ export default function LoginPage() {
 			return;
 		}
 
-		if (!flowId || !csrfToken) {
+		if (!flowId || csrfToken === null) {
 			setLocalError("Login flow not ready. Please refresh the page.");
 			return;
 		}
