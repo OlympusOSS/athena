@@ -2,8 +2,8 @@
 
 import { Box, CircularProgress } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
-import { useIsAuthenticated, useIsAuthLoading } from "@/features/auth/hooks/useAuth";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useCheckSession, useIsAuthenticated, useIsAuthLoading } from "@/features/auth/hooks/useAuth";
 
 interface AuthProviderProps {
 	children: ReactNode;
@@ -12,9 +12,19 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
 	const isAuthenticated = useIsAuthenticated();
 	const isLoading = useIsAuthLoading();
+	const checkSession = useCheckSession();
 	const router = useRouter();
 	const pathname = usePathname();
 	const [isInitializing, setIsInitializing] = useState(true);
+	const hasCheckedSession = useRef(false);
+
+	// Check Kratos session on mount
+	useEffect(() => {
+		if (!hasCheckedSession.current) {
+			hasCheckedSession.current = true;
+			checkSession();
+		}
+	}, [checkSession]);
 
 	useEffect(() => {
 		// Wait for auth state to be loaded
