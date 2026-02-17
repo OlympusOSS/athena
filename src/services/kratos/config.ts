@@ -11,10 +11,13 @@ let serverConfig: KratosConfig = {
 	basePath: process.env.BASE_PATH || "",
 };
 
-// For client-side API calls through the middleware proxy
+// For client-side API calls through the middleware proxy.
+// When APP_INSTANCE is "IAM", the managed Kratos IS IAM Kratos,
+// so use the IAM Kratos proxy routes instead of the generic ones.
+const isIAMInstance = process.env.NEXT_PUBLIC_APP_INSTANCE === "IAM";
 let clientConfig: KratosConfig = {
-	kratosPublicUrl: "/api/kratos",
-	kratosAdminUrl: "/api/kratos-admin",
+	kratosPublicUrl: isIAMInstance ? "/api/iam-kratos" : "/api/kratos",
+	kratosAdminUrl: isIAMInstance ? "/api/iam-kratos-admin" : "/api/kratos-admin",
 	basePath: "",
 };
 
