@@ -23,9 +23,9 @@ export function Header({ onSidebarToggle }: HeaderProps) {
 		setAnchorElUser(null);
 	};
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
 		handleCloseUserMenu();
-		logout();
+		await logout();
 	};
 
 	return (
