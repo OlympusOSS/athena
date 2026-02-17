@@ -1,57 +1,46 @@
-import { type AuthUser, type UserCredentials, UserRole } from "./types";
-
-// Mock user database
-export const USERS: UserCredentials[] = [
-	{
-		username: "admin",
-		password: "admin123",
-		role: UserRole.ADMIN,
-		displayName: "Administrator",
-		email: "admin@example.com",
-	},
-	{
-		username: "viewer",
-		password: "viewer123",
-		role: UserRole.VIEWER,
-		displayName: "Viewer User",
-		email: "viewer@example.com",
-	},
-];
+import type { Session } from "@ory/kratos-client";
+import { type AuthUser, UserRole } from "./types";
 
 /**
- * Find a user by username and password
- * @param username The username to search for
- * @param password The password to verify
- * @returns The user credentials if found, undefined otherwise
+ * Convert a Kratos session to an AuthUser.
+ * Maps identity traits (email, name, role) from the IAM Kratos schema.
  */
-export const findUserByCredentials = (username: string, password: string): UserCredentials | undefined => {
-	return USERS.find((user) => user.username === username && user.password === password);
-};
+export function sessionToAuthUser(session: Session): AuthUser {
+	const identity = session.identity;
+	if (!identity) {
+		throw new Error("Session has no identity");
+	}
 
-/**
- * Convert user credentials to auth user (without password)
- * @param credentials User credentials
- * @returns Auth user object
- */
-export const toAuthUser = (credentials: UserCredentials): AuthUser => {
-	const { password, ...authUser } = credentials;
-	return authUser;
-};
+	const traits = identity.traits as {
+		email?: string;
+		name?: { first?: string; last?: string };
+		role?: string;
+	};
+
+	const email = traits.email || "";
+	const firstName = traits.name?.first || "";
+	const lastName = traits.name?.last || "";
+	const displayName = [firstName, lastName].filter(Boolean).join(" ") || email;
+	const role = traits.role === "admin" ? UserRole.ADMIN : UserRole.VIEWER;
+
+	return {
+		kratosIdentityId: identity.id,
+		email,
+		role,
+		displayName,
+	};
+}
 
 /**
  * Check if user has admin role
- * @param user Auth user
- * @returns True if user is admin
  */
 export const isAdmin = (user: AuthUser | null): boolean => {
-	return user?.role === "admin";
+	return user?.role === UserRole.ADMIN;
 };
 
 /**
  * Check if user has viewer role or higher
- * @param user Auth user
- * @returns True if user can view content
  */
 export const canView = (user: AuthUser | null): boolean => {
-	return user?.role === "admin" || user?.role === "viewer";
+	return user?.role === UserRole.ADMIN || user?.role === UserRole.VIEWER;
 };

@@ -4,27 +4,14 @@ export enum UserRole {
 	VIEWER = "viewer",
 }
 
-export interface UserCredentials {
-	username: string;
-	password: string;
-	role: UserRole;
-	displayName: string;
-	email: string;
-}
-
 export interface AuthUser {
-	username: string;
+	kratosIdentityId: string;
+	email: string;
 	role: UserRole;
 	displayName: string;
-	email: string;
 }
 
 export interface AuthState {
 	user: AuthUser | null;
 	isAuthenticated: boolean;
-}
-
-export interface LoginCredentials {
-	username: string;
-	password: string;
 }
