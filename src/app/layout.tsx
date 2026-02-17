@@ -10,9 +10,12 @@ const inter = Inter({
 	display: "swap",
 });
 
+const appInstance = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
+const appTitle = appInstance ? `Athena ${appInstance}` : "Athena";
+
 export const metadata: Metadata = {
-	title: "Kratos Admin UI",
-	description: "Admin interface for Ory Kratos identity service",
+	title: appTitle,
+	description: "Admin interface for Ory identity services",
 	icons: {
 		icon: [
 			{ url: "/favicon.svg", type: "image/svg+xml" },

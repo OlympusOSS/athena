@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { AppBar, Avatar, Box, Chip, Divider, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@/components/ui";
 import { UserRole, useLogout, useUser } from "@/features/auth";
+import { APP_TITLE } from "@/lib/constants";
 
 interface HeaderProps {
 	onSidebarToggle: () => void;
@@ -53,7 +54,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
 					<MenuIcon />
 				</IconButton>
 				<Typography variant="heading" size="lg" sx={{ display: { xs: "none", sm: "block" } }}>
-					Ory Admin
+					{APP_TITLE}
 				</Typography>
 				<Box sx={{ flexGrow: 1 }} />
 				<Box sx={{ display: "flex", alignItems: "center" }}>

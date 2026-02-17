@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/navigation/Sidebar";
 import { AppBar, Avatar, Box, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@/components/ui";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
+import { APP_TITLE } from "@/lib/constants";
 import { useTheme } from "@/providers/ThemeProvider";
 import { gradientColors, gradients } from "@/theme";
 
@@ -92,7 +93,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 									color: currentTheme === "dark" ? "#ffffff" : "rgba(255, 255, 255, 0.95)",
 								}}
 							>
-								Ory Admin
+								{APP_TITLE}
 							</Typography>
 						</Box>
 						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -108,7 +109,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 										},
 										transition: "all 0.2s ease",
 									}}
-									onClick={() => window.open("https://github.com/dhia-gharsallaoui/kratos-admin-ui", "_blank")}
+									onClick={() => window.open("https://github.com/bnannier/OlympusOSS", "_blank")}
 								>
 									<GitHub />
 								</IconButton>
