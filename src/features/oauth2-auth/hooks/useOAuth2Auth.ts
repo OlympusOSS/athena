@@ -15,7 +15,7 @@ import {
 	rejectOAuth2LoginRequest,
 	rejectOAuth2LogoutRequest,
 	revokeOAuth2ConsentSessions,
-} from "@/services/ciam-hydra";
+} from "@/services/hydra";
 
 // Query keys
 export const oauth2AuthKeys = {

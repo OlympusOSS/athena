@@ -17,7 +17,7 @@ import {
 	useSetKratosEndpoints,
 } from "@/features/settings/hooks/useSettings";
 import { useTheme } from "@/providers/ThemeProvider";
-import { AppearanceSection, HydraIntegrationSection, ConnectionModeSection, ResetSection, ServiceConfigSection } from "./components";
+import { AppearanceSection, ConnectionModeSection, HydraIntegrationSection, ResetSection, ServiceConfigSection } from "./components";
 import { useServiceSettingsForm } from "./hooks";
 
 export default function SettingsPage() {
@@ -107,8 +107,8 @@ export default function SettingsPage() {
 							serviceName="Kratos"
 							form={kratosForm.form}
 							currentEndpoints={kratosEndpoints}
-							publicUrlPlaceholder="http://localhost:4433"
-							adminUrlPlaceholder="http://localhost:4434"
+							publicUrlPlaceholder="http://localhost:3100"
+							adminUrlPlaceholder="http://localhost:3101"
 							publicUrlHelperText="Used for public API calls"
 							adminUrlHelperText="Used for admin API calls"
 							onSave={kratosForm.handleSave}
@@ -124,8 +124,8 @@ export default function SettingsPage() {
 								serviceName="Hydra"
 								form={hydraForm.form}
 								currentEndpoints={hydraEndpoints}
-								publicUrlPlaceholder="http://localhost:4444"
-								adminUrlPlaceholder="http://localhost:4445"
+								publicUrlPlaceholder="http://localhost:3102"
+								adminUrlPlaceholder="http://localhost:3103"
 								publicUrlHelperText="Used for OAuth2/OIDC public endpoints"
 								adminUrlHelperText="Used for OAuth2 client and flow management"
 								onSave={hydraForm.handleSave}

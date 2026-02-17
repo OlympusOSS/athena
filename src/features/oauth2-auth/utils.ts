@@ -1,4 +1,4 @@
-import type { OAuth2ConsentRequest, OAuth2LoginRequest, OAuth2LogoutRequest } from "@/services/ciam-hydra";
+import type { OAuth2ConsentRequest, OAuth2LoginRequest, OAuth2LogoutRequest } from "@/services/hydra";
 import type {
 	AcceptConsentFormData,
 	AcceptLoginFormData,

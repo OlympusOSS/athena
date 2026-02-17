@@ -9,7 +9,7 @@ import {
 	type RevokeTokenRequest,
 	revokeOAuth2Token,
 	type TokenExchangeRequest,
-} from "@/services/ciam-hydra";
+} from "@/services/hydra";
 
 // Query keys
 export const oauth2TokensKeys = {

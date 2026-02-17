@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: "Athena",
-	description: "Admin interface for Ory Kratos and Hydra",
+	title: "Kratos Admin UI",
+	description: "Admin interface for Ory Kratos identity service",
 	icons: {
 		icon: [
 			{ url: "/favicon.svg", type: "image/svg+xml" },

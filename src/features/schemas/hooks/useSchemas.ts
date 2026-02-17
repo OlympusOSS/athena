@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getIdentitySchema, listIdentitySchemas } from "@/services/ciam-kratos";
+import { getIdentitySchema, listIdentitySchemas } from "@/services/kratos";
 
 // All schemas hook
 export const useSchemas = () => {

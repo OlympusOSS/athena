@@ -159,7 +159,7 @@ export default function ProfilePage() {
 							>
 								<Grid container spacing={2}>
 									<Grid size={{ xs: 12 }}>
-										<FieldDisplay label="Email" value={user.email} />
+										<FieldDisplay label="Username" value={user.username} />
 									</Grid>
 
 									<Grid size={{ xs: 12 }}>

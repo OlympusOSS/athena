@@ -5,8 +5,8 @@ import type React from "react";
 import { useCallback, useState } from "react";
 import { ActionBar } from "@/components/layout";
 import { Alert, Box, FormDialog, Typography } from "@/components/ui";
-import { deleteIdentity, patchIdentity } from "@/services/ciam-kratos/endpoints/identities";
-import { deleteIdentitySessions } from "@/services/ciam-kratos/endpoints/sessions";
+import { deleteIdentity, patchIdentity } from "@/services/kratos/endpoints/identities";
+import { deleteIdentitySessions } from "@/services/kratos/endpoints/sessions";
 
 type BulkOperationType = "delete" | "deleteSessions" | "activate" | "deactivate";
 

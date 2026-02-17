@@ -1,4 +1,4 @@
 // Export all services
 
-export * from "./ciam-hydra";
-export * from "./ciam-kratos";
+export * from "./hydra";
+export * from "./kratos";

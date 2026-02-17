@@ -1,4 +1,4 @@
-// Export all Kratos service endpoints
+// Export all service endpoints
 
 // Export client utilities
 export { getAdminApi, getMetadataApi, getPublicApi } from "./client";

@@ -37,20 +37,20 @@ jobs:
             cd $DEPLOY_PATH
             
             echo "📥 Pulling latest image..."
-            docker compose pull athena
+            docker compose pull kratos-admin-ui
             
             echo "🔄 Restarting service..."
-            docker compose up -d athena
+            docker compose up -d kratos-admin-ui
             
             echo "⏳ Waiting for service to start..."
             sleep 15
             
-            if docker compose ps athena | grep -q "Up"; then
+            if docker compose ps kratos-admin-ui | grep -q "Up"; then
               echo "✅ Deployment successful!"
-              docker compose ps athena
+              docker compose ps kratos-admin-ui
             else
               echo "❌ Deployment failed - service not running"
-              docker compose logs --tail=20 athena
+              docker compose logs --tail=20 kratos-admin-ui
               exit 1
             fi
             

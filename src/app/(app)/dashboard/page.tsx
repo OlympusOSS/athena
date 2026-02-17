@@ -50,9 +50,7 @@ export default function Dashboard() {
 	const verificationRate = useMemo(() => {
 		if (!identity.data) return 0;
 		const { verified, unverified } = identity.data.verificationStatus;
-		const total = verified + unverified;
-		if (total === 0) return 0;
-		return Math.round((verified / total) * 100);
+		return Math.round((verified / (verified + unverified)) * 100);
 	}, [identity.data]);
 
 	if (isLoading) {
@@ -218,40 +216,34 @@ export default function Dashboard() {
 					{/* User Growth Chart */}
 					<Grid size={{ xs: 12, lg: 8 }}>
 						<ChartCard title="New User Registrations (Last 30 Days)">
-							{identityDays.length > 0 && identityValues.length > 0 ? (
-								<LineChart
-									xAxis={[
-										{
-											data: identityDays,
-											scaleType: "point",
-											tickSize: 0,
-										},
-									]}
-									series={[
-										{
-											data: identityValues,
-											color: themeColors.info,
-											area: true,
-											curve: "monotoneX",
-										},
-									]}
-									height={350}
-									margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
-									grid={{ horizontal: true, vertical: false }}
-									sx={{
-										"& .MuiLineElement-root": {
-											strokeWidth: 3,
-										},
-										"& .MuiAreaElement-root": {
-											fillOpacity: 0.1,
-										},
-									}}
-								/>
-							) : (
-								<Box sx={{ height: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
-									<Typography variant="body" color="text.secondary">No data available</Typography>
-								</Box>
-							)}
+							<LineChart
+								xAxis={[
+									{
+										data: identityDays,
+										scaleType: "point",
+										tickSize: 0,
+									},
+								]}
+								series={[
+									{
+										data: identityValues,
+										color: themeColors.info,
+										area: true,
+										curve: "monotoneX",
+									},
+								]}
+								height={350}
+								margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
+								grid={{ horizontal: true, vertical: false }}
+								sx={{
+									"& .MuiLineElement-root": {
+										strokeWidth: 3,
+									},
+									"& .MuiAreaElement-root": {
+										fillOpacity: 0.1,
+									},
+								}}
+							/>
 						</ChartCard>
 					</Grid>
 
@@ -262,13 +254,11 @@ export default function Dashboard() {
 								series={[
 									{
 										data:
-											identity.data?.identitiesBySchema && identity.data.identitiesBySchema.length > 0
-												? identity.data.identitiesBySchema.map((item, index) => ({
-														id: index,
-														label: item.schema.length > 20 ? `${item.schema.slice(0, 20)}...` : item.schema,
-														value: item.count,
-													}))
-												: [{ id: 0, label: "No data", value: 1, color: "rgba(0, 0, 0, 0.1)" }],
+											identity.data?.identitiesBySchema.map((item, index) => ({
+												id: index,
+												label: item.schema.length > 20 ? `${item.schema.slice(0, 20)}...` : item.schema,
+												value: item.count,
+											})) || [],
 										innerRadius: 40,
 										outerRadius: 100,
 										paddingAngle: 3,
@@ -293,41 +283,35 @@ export default function Dashboard() {
 					{/* Session Activity Chart */}
 					<Grid size={{ xs: 12, lg: 8 }}>
 						<ChartCard title="Session Activity (Last 7 Days)">
-							{sessionDays.length > 0 && sessionValues.length > 0 ? (
-								<LineChart
-									xAxis={[
-										{
-											data: sessionDays,
-											scaleType: "point",
-											tickSize: 0,
-										},
-									]}
-									yAxis={[
-										{
-											min: 0,
-										},
-									]}
-									series={[
-										{
-											data: sessionValues,
-											color: themeColors.success,
-											curve: "monotoneX",
-										},
-									]}
-									height={350}
-									margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
-									grid={{ horizontal: true, vertical: false }}
-									sx={{
-										"& .MuiLineElement-root": {
-											strokeWidth: 3,
-										},
-									}}
-								/>
-							) : (
-								<Box sx={{ height: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
-									<Typography variant="body" color="text.secondary">No data available</Typography>
-								</Box>
-							)}
+							<LineChart
+								xAxis={[
+									{
+										data: sessionDays,
+										scaleType: "point",
+										tickSize: 0,
+									},
+								]}
+								yAxis={[
+									{
+										min: 0,
+									},
+								]}
+								series={[
+									{
+										data: sessionValues,
+										color: themeColors.success,
+										curve: "monotoneX",
+									},
+								]}
+								height={350}
+								margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
+								grid={{ horizontal: true, vertical: false }}
+								sx={{
+									"& .MuiLineElement-root": {
+										strokeWidth: 3,
+									},
+								}}
+							/>
 						</ChartCard>
 					</Grid>
 
@@ -434,13 +418,11 @@ export default function Dashboard() {
 										series={[
 											{
 												data:
-													hydra.data?.clientsByGrantType && hydra.data.clientsByGrantType.length > 0
-														? hydra.data.clientsByGrantType.map((item, index) => ({
-																id: index,
-																label: item.grantType.length > 20 ? `${item.grantType.slice(0, 20)}...` : item.grantType,
-																value: item.count,
-															}))
-														: [{ id: 0, label: "No data", value: 1, color: "rgba(0, 0, 0, 0.1)" }],
+													hydra.data?.clientsByGrantType.map((item, index) => ({
+														id: index,
+														label: item.grantType.length > 20 ? `${item.grantType.slice(0, 20)}...` : item.grantType,
+														value: item.count,
+													})) || [],
 												innerRadius: 60,
 												outerRadius: 120,
 												paddingAngle: 2,

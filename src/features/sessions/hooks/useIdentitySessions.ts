@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteIdentitySessions, listIdentitySessions } from "@/services/ciam-kratos/endpoints/sessions";
+import { deleteIdentitySessions, listIdentitySessions } from "@/services/kratos/endpoints/sessions";
 
 // Hook to fetch sessions for a specific identity
 export const useIdentitySessions = (identityId: string, options?: { enabled?: boolean }) => {

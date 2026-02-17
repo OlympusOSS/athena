@@ -20,7 +20,7 @@ import {
 	Typography,
 } from "@/components/ui";
 import { formatDate } from "@/lib/date-utils";
-import type { CourierMessageStatus } from "@/services/ciam-kratos/endpoints/courier";
+import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 import { useMessage } from "../hooks";
 
 interface MessageDetailDialogProps {

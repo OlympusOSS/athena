@@ -13,11 +13,11 @@ export async function GET() {
 	const hydraEnabled = process.env.HYDRA_ENABLED !== "false";
 
 	const config = {
-		kratosPublicUrl: process.env.KRATOS_PUBLIC_URL || "http://localhost:5000",
-		kratosAdminUrl: process.env.KRATOS_ADMIN_URL || "http://localhost:5001",
+		kratosPublicUrl: process.env.KRATOS_PUBLIC_URL || "http://localhost:3100",
+		kratosAdminUrl: process.env.KRATOS_ADMIN_URL || "http://localhost:3101",
 		kratosApiKey: encryptApiKey(kratosApiKey),
-		hydraPublicUrl: process.env.HYDRA_PUBLIC_URL || "http://localhost:5002",
-		hydraAdminUrl: process.env.HYDRA_ADMIN_URL || "http://localhost:5003",
+		hydraPublicUrl: process.env.HYDRA_PUBLIC_URL || "http://localhost:3102",
+		hydraAdminUrl: process.env.HYDRA_ADMIN_URL || "http://localhost:3103",
 		hydraApiKey: encryptApiKey(hydraApiKey),
 		isOryNetwork: process.env.IS_ORY_NETWORK === "true",
 		hydraEnabled,

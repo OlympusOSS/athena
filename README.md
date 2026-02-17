@@ -1,25 +1,32 @@
-# Athena
+# Athena — Admin Panel
 
-A modern admin interface for [Ory Kratos](https://www.ory.sh/kratos/) identity management and [Ory Hydra](https://www.ory.sh/hydra/) OAuth2 server. Built with Next.js 16, TypeScript, and custom UI components.
+A modern administration interface for [Ory Kratos](https://www.ory.sh/kratos/) identity management and [Ory Hydra](https://www.ory.sh/hydra/) OAuth2 server. Part of the [OlympusOSS Identity Platform](https://github.com/bnannier/OlympusOSS).
 
-**Security Notice**: This interface uses mock authentication for development purposes and should not be exposed to the public internet. Deploy behind proper authentication and access controls in production environments.
+Built with Next.js 15, TypeScript, and custom UI components.
 
-**Development Status**: This project is in active development. Features may change and breaking updates can occur.
+## Overview
+
+Athena is deployed as two separate instances within the OlympusOSS platform:
+
+- **CIAM Athena** (port 3003) — Manages customer identities, connected to CIAM Kratos and CIAM Hydra
+- **IAM Athena** (port 4003) — Manages employee identities, connected to IAM Kratos
+
+Both instances run the same codebase. The target Kratos and Hydra services are configured via environment variables.
 
 ## Features
 
 ### Kratos Identity Management
 
-- **Dashboard**: Analytics with user growth, active sessions, verification rates, and system health metrics
-- **Identities**: Create, view, edit, and delete identities with schema-based forms and metadata management
-- **Sessions**: Monitor, extend, and revoke sessions with advanced search and filtering
-- **Messages**: Track email/SMS courier messages with delivery status and error monitoring
-- **Schemas**: View and inspect identity schemas with JSON visualization
+- **Dashboard** — Analytics with user growth, active sessions, verification rates, and system health metrics
+- **Identities** — Create, view, edit, and delete identities with schema-based forms and metadata management
+- **Sessions** — Monitor, extend, and revoke sessions with advanced search and filtering
+- **Messages** — Track email/SMS courier messages with delivery status and error monitoring
+- **Schemas** — View and inspect identity schemas with JSON visualization
 
 ### Hydra OAuth2 Management
 
-- **OAuth2 Clients**: Full CRUD operations for OAuth2 clients with configuration management
-- **OAuth2 Tokens**: Monitor and revoke access/refresh tokens with client-based filtering
+- **OAuth2 Clients** — Full CRUD operations for OAuth2 clients with configuration management
+- **OAuth2 Tokens** — Monitor and revoke access/refresh tokens with client-based filtering
 
 ### User Interface
 
@@ -40,7 +47,8 @@ A modern admin interface for [Ory Kratos](https://www.ory.sh/kratos/) identity m
 
 ## Technology Stack
 
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 15 with App Router
+- **Runtime**: [Bun](https://bun.sh/)
 - **UI**: Custom components with MUI v7, MUI X Charts/DataGrid
 - **Forms**: React JSON Schema Form (RJSF)
 - **State**: Zustand + TanStack Query
@@ -48,119 +56,106 @@ A modern admin interface for [Ory Kratos](https://www.ory.sh/kratos/) identity m
 - **Styling**: Custom theme system, Tailwind CSS, Emotion
 - **APIs**: Ory Kratos Client, Ory Hydra Client
 
-## Prerequisites
-
-- Node.js 22+
-- Ory Kratos instance
-- Ory Hydra instance (optional)
-
-## Quick Start
-
-### Local Development
-
-```bash
-git clone https://github.com/bnannier/Athena.git
-cd Athena
-bun install
-cp .env.example .env.local
-# Edit .env.local with your Kratos and Hydra URLs
-bun run dev
-```
-
-Access at [http://localhost:3003](http://localhost:3003)
-
-Default credentials:
-
-- Admin: `bobby@nannier.com` / `admin123!`
-- Viewer: `marine@nannier.com` / `admin123!`
-
-> To change the admin email/password, edit `dev/iam-seed-dev.sh` (seed script) and `src/features/auth/utils.ts` (demo accounts displayed on login page), then re-run the seed: `docker compose --profile init up athena-seed-dev`
-
-### Docker
-
-```bash
-docker build -t athena .
-
-docker run -p 3003:3000 \
-  -e KRATOS_PUBLIC_URL=http://localhost:5000 \
-  -e KRATOS_ADMIN_URL=http://localhost:5001 \
-  -e HYDRA_ADMIN_URL=http://localhost:5003 \
-  -e HYDRA_PUBLIC_URL=http://localhost:5002 \
-  athena
-```
-
-### Docker Compose (Full Dev Environment)
-
-```bash
-cd dev
-docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up -d --build
-docker compose --profile init up athena-seed-dev   # seed admin users, test identities, OAuth2 clients
-```
-
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Athena UI | [http://localhost:3003](http://localhost:3003) | `bobby@nannier.com` / `admin123!` |
-| pgAdmin | [http://localhost:4000](http://localhost:4000) | `admin@athena.dev` / `admin` |
-| MailSlurper | [http://localhost:4001](http://localhost:4001) | — |
-| Kratos Self-Service UI | [http://localhost:3004](http://localhost:3004) | — |
-| Hydra Consent UI | [http://localhost:3002](http://localhost:3002) | — |
-| Demo App | [http://localhost:2000](http://localhost:2000) | — |
-
-See [`dev/`](./dev) folder for full details.
-
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js App Router pages
-│   ├── (app)/          # Protected routes (dashboard, identities, sessions, etc.)
-│   └── (auth)/         # Authentication pages
-├── components/         # Shared UI components
-├── features/           # Feature modules (analytics, auth, identities, sessions, oauth2)
-├── services/           # API services (Kratos, Hydra)
-├── hooks/              # Custom React hooks
-├── providers/          # React context providers
-└── theme/              # Theme configuration
-```
-
 ## Configuration
+
+All service URLs are configurable via environment variables. This is how the same codebase serves both CIAM and IAM domains.
 
 ### Environment Variables
 
-| Variable                          | Default                 | Description |
-| --------------------------------- | ----------------------- | ----------- |
-| `KRATOS_PUBLIC_URL`               | `http://localhost:5000`  | Managed Kratos public API |
-| `KRATOS_ADMIN_URL`                | `http://localhost:5001`  | Managed Kratos admin API |
-| `KRATOS_API_KEY`                  |                          | API key (required for Ory Network) |
-| `HYDRA_PUBLIC_URL`                | `http://localhost:5002`  | Managed Hydra public API |
-| `HYDRA_ADMIN_URL`                 | `http://localhost:5003`  | Managed Hydra admin API |
-| `HYDRA_API_KEY`                   |                          | API key (required for Ory Network) |
-| `IAM_KRATOS_PUBLIC_URL`           | `http://localhost:7000`  | Internal IAM (Kratos) for Athena auth |
-| `IAM_KRATOS_ADMIN_URL`            | `http://localhost:7001`  | Internal IAM admin API |
-| `IS_ORY_NETWORK`                  |                          | Set to `true` for Ory Network |
+| Variable            | Description                  | CIAM Athena Default        | IAM Athena Default         |
+| ------------------- | ---------------------------- | -------------------------- | -------------------------- |
+| `KRATOS_PUBLIC_URL` | Kratos public API            | `http://ciam-kratos:5000`  | `http://iam-kratos:7000`   |
+| `KRATOS_ADMIN_URL`  | Kratos admin API             | `http://ciam-kratos:5001`  | `http://iam-kratos:7001`   |
+| `KRATOS_API_KEY`    | Kratos API key (if required) | —                          | —                          |
+| `HYDRA_PUBLIC_URL`  | Hydra public API             | `http://ciam-hydra:5002`   | —                          |
+| `HYDRA_ADMIN_URL`   | Hydra admin API              | `http://ciam-hydra:5003`   | —                          |
+| `HYDRA_API_KEY`     | Hydra API key (if required)  | —                          | —                          |
+| `HYDRA_ENABLED`     | Enable Hydra integration     | `true`                     | `false`                    |
+| `IS_ORY_NETWORK`    | Ory Network mode             | —                          | —                          |
 
-API Keys are typically mandatory when accessing an Ory Network project.
+When running outside Docker (local development), the fallback defaults are:
 
-`IS_ORY_NETWORK` must be set to `true` when using Athena on Ory Network.
+| Variable            | Fallback Default             |
+| ------------------- | ---------------------------- |
+| `KRATOS_PUBLIC_URL` | `http://localhost:3100`      |
+| `KRATOS_ADMIN_URL`  | `http://localhost:3101`      |
+| `HYDRA_PUBLIC_URL`  | `http://localhost:3102`      |
+| `HYDRA_ADMIN_URL`   | `http://localhost:3103`      |
 
-Endpoints and API Keys can also be configured via the settings dialog in the application.
+Endpoints and API keys can also be configured at runtime via the Settings page in the UI.
 
 ## Development
+
+### With Docker Compose (recommended)
+
+Athena is part of the full OlympusOSS dev environment. From the `dev/` directory:
+
+```bash
+docker compose up -d
+```
+
+This starts both CIAM Athena (port 3003) and IAM Athena (port 4003) with hot reload via volume mounts.
+
+### Standalone
+
+```bash
+bun install
+bun run dev
+```
+
+Access at [http://localhost:3000](http://localhost:3000). Configure Kratos/Hydra URLs via environment variables or the Settings page.
+
+### Commands
 
 ```bash
 bun run dev          # Start development server
 bun run build        # Build for production
 bun run start        # Start production server
 bun run lint         # Run Biome linter
+bun run lint:fix     # Auto-fix lint issues
 ```
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+│   ├── (app)/           # Protected routes (dashboard, identities, sessions, etc.)
+│   ├── (auth)/          # Authentication pages
+│   └── api/             # API routes (config, encryption)
+├── components/          # Shared UI components
+├── features/            # Feature modules (analytics, auth, identities, sessions, oauth2)
+├── services/            # API clients (Kratos, Hydra)
+│   ├── kratos/          # Kratos API client, config, and endpoint wrappers
+│   └── hydra/           # Hydra API client, config, and endpoint wrappers
+├── hooks/               # Custom React hooks
+├── providers/           # React context providers
+├── proxy.ts             # Middleware proxy for API routing
+└── theme/               # Theme configuration
+```
+
+## Port Allocation (OlympusOSS)
+
+| Port | Service | Domain | Description |
+|------|---------|--------|-------------|
+| 3003 | CIAM Athena | Customer | Admin panel for customer identity management |
+| 4003 | IAM Athena | Employee | Admin panel for employee identity management |
+| 3100 | CIAM Kratos (public) | Customer | Customer identity API |
+| 3101 | CIAM Kratos (admin) | Customer | Customer identity admin API |
+| 3102 | CIAM Hydra (public) | Customer | Customer OAuth2/OIDC endpoints |
+| 3103 | CIAM Hydra (admin) | Customer | Customer OAuth2 admin API |
+| 4100 | IAM Kratos (public) | Employee | Employee identity API |
+| 4101 | IAM Kratos (admin) | Employee | Employee identity admin API |
+| 4102 | IAM Hydra (public) | Employee | Internal OAuth2/OIDC endpoints |
+| 4103 | IAM Hydra (admin) | Employee | Internal OAuth2 admin API |
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- [Ory Kratos](https://www.ory.sh/kratos/) - Identity management system
-- [Ory Hydra](https://www.ory.sh/hydra/) - OAuth2 and OpenID Connect server
-- [dhia-gharsallaoui/kratos-admin-ui](https://github.com/dhia-gharsallaoui/kratos-admin-ui) - Original project
+- Originally forked from [dhia-gharsallaoui/kratos-admin-ui](https://github.com/dhia-gharsallaoui/kratos-admin-ui)
+- [Ory Kratos](https://www.ory.sh/kratos/) — Identity management
+- [Ory Hydra](https://www.ory.sh/hydra/) — OAuth2/OIDC server
 - Built with [Next.js](https://nextjs.org/), [Material-UI](https://mui.com/), and [TanStack Query](https://tanstack.com/query)

@@ -77,8 +77,8 @@ async function fetchServerDefaults(): Promise<{
 					apiKey: config.kratosApiKey || undefined,
 				},
 				hydra: {
-					publicUrl: config.hydraPublicUrl || "http://localhost:5002",
-					adminUrl: config.hydraAdminUrl || "http://localhost:5003",
+					publicUrl: config.hydraPublicUrl || "http://localhost:3102",
+					adminUrl: config.hydraAdminUrl || "http://localhost:3103",
 					apiKey: config.hydraApiKey || undefined,
 				},
 				isOryNetwork: config.isOryNetwork || false,
@@ -92,12 +92,12 @@ async function fetchServerDefaults(): Promise<{
 	// Fallback to localhost
 	return {
 		kratos: {
-			publicUrl: "http://localhost:5000",
-			adminUrl: "http://localhost:5001",
+			publicUrl: "http://localhost:3100",
+			adminUrl: "http://localhost:3101",
 		},
 		hydra: {
-			publicUrl: "http://localhost:5002",
-			adminUrl: "http://localhost:5003",
+			publicUrl: "http://localhost:3102",
+			adminUrl: "http://localhost:3103",
 		},
 		isOryNetwork: false,
 		hydraEnabled: true,
@@ -129,8 +129,8 @@ function readSettingsFromCookies(): {
 			apiKey: getCookie("kratos-api-key") || undefined,
 		},
 		hydra: {
-			publicUrl: hydraPublicUrl || "http://localhost:5002",
-			adminUrl: hydraAdminUrl || "http://localhost:5003",
+			publicUrl: hydraPublicUrl || "http://localhost:3102",
+			adminUrl: hydraAdminUrl || "http://localhost:3103",
 			apiKey: getCookie("hydra-api-key") || undefined,
 		},
 		isOryNetwork: getCookie("is-ory-network") === "true",
@@ -177,33 +177,13 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 		const cookieSettings = readSettingsFromCookies();
 
 		if (cookieSettings) {
-			// Cookies exist - use them for instant UI and mark ready
+			// Cookies exist - use them and mark ready immediately
 			set({
 				kratosEndpoints: cookieSettings.kratos,
 				hydraEndpoints: cookieSettings.hydra,
 				isOryNetwork: cookieSettings.isOryNetwork,
 				hydraEnabled: cookieSettings.hydraEnabled,
 				isReady: true,
-			});
-
-			// Validate cookies against server config in background
-			// This catches stale cookies after port/config changes
-			fetchServerDefaults().then((defaults) => {
-				const urlsChanged =
-					cookieSettings.kratos.publicUrl !== defaults.kratos.publicUrl ||
-					cookieSettings.kratos.adminUrl !== defaults.kratos.adminUrl ||
-					cookieSettings.hydra.publicUrl !== defaults.hydra.publicUrl ||
-					cookieSettings.hydra.adminUrl !== defaults.hydra.adminUrl;
-
-				if (urlsChanged) {
-					writeSettingsToCookies(defaults);
-					set({
-						kratosEndpoints: defaults.kratos,
-						hydraEndpoints: defaults.hydra,
-						isOryNetwork: defaults.isOryNetwork,
-						hydraEnabled: defaults.hydraEnabled,
-					});
-				}
 			});
 			return;
 		}

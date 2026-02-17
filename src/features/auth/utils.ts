@@ -1,56 +1,57 @@
-import type { Session } from "@ory/kratos-client";
-import { type AuthUser, UserRole } from "./types";
+import { type AuthUser, type UserCredentials, UserRole } from "./types";
+
+// Mock user database
+export const USERS: UserCredentials[] = [
+	{
+		username: "admin",
+		password: "admin123",
+		role: UserRole.ADMIN,
+		displayName: "Administrator",
+		email: "admin@example.com",
+	},
+	{
+		username: "viewer",
+		password: "viewer123",
+		role: UserRole.VIEWER,
+		displayName: "Viewer User",
+		email: "viewer@example.com",
+	},
+];
 
 /**
- * Convert a Kratos session to an AuthUser object
- * Maps identity traits from iam-kratos to the AuthUser interface
+ * Find a user by username and password
+ * @param username The username to search for
+ * @param password The password to verify
+ * @returns The user credentials if found, undefined otherwise
  */
-export const sessionToAuthUser = (session: Session): AuthUser => {
-	const traits = session.identity?.traits as
-		| {
-				email?: string;
-				name?: string;
-				role?: string;
-		  }
-		| undefined;
+export const findUserByCredentials = (username: string, password: string): UserCredentials | undefined => {
+	return USERS.find((user) => user.username === username && user.password === password);
+};
 
-	return {
-		id: session.identity?.id || "",
-		email: traits?.email || "",
-		displayName: traits?.name || traits?.email || "Unknown User",
-		role: (traits?.role as UserRole) || UserRole.VIEWER,
-	};
+/**
+ * Convert user credentials to auth user (without password)
+ * @param credentials User credentials
+ * @returns Auth user object
+ */
+export const toAuthUser = (credentials: UserCredentials): AuthUser => {
+	const { password, ...authUser } = credentials;
+	return authUser;
 };
 
 /**
  * Check if user has admin role
+ * @param user Auth user
+ * @returns True if user is admin
  */
 export const isAdmin = (user: AuthUser | null): boolean => {
-	return user?.role === UserRole.ADMIN;
+	return user?.role === "admin";
 };
 
 /**
  * Check if user has viewer role or higher
+ * @param user Auth user
+ * @returns True if user can view content
  */
 export const canView = (user: AuthUser | null): boolean => {
-	return user?.role === UserRole.ADMIN || user?.role === UserRole.VIEWER;
+	return user?.role === "admin" || user?.role === "viewer";
 };
-
-/**
- * Demo accounts for the login page
- * These correspond to the seeded iam-kratos identities
- */
-export const DEMO_ACCOUNTS = [
-	{
-		email: "bobby@nannier.com",
-		password: "admin123!",
-		role: UserRole.ADMIN,
-		displayName: "Bobby Nannier",
-	},
-	{
-		email: "marine@nannier.com",
-		password: "admin123!",
-		role: UserRole.VIEWER,
-		displayName: "Marine Nannier",
-	},
-] as const;

@@ -1,4 +1,4 @@
-import { getKratosMetadataApi } from "./client";
+import { getMetadataApi } from "./client";
 
 /**
  * Check if Kratos is healthy and accessible
@@ -8,7 +8,7 @@ export async function checkKratosHealth(): Promise<{
 	error?: string;
 }> {
 	try {
-		const api = getKratosMetadataApi();
+		const api = getMetadataApi();
 		// Try to call a lightweight endpoint to check connectivity
 		await api.isReady();
 		return { isHealthy: true };
