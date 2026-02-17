@@ -1,0 +1,58 @@
+{
+	"name": "athena",
+	"version": "0.1.1",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "biome check",
+		"lint:fix": "biome check --write",
+		"format": "biome format --write .",
+		"typecheck": "tsc --noEmit",
+		"ci": "biome ci && tsc --noEmit",
+		"docker:dev": "docker compose -f ../dev/docker-compose.yml up"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
+		"@mui/icons-material": "^7.3.7",
+		"@mui/material": "^7.3.7",
+		"@mui/material-nextjs": "^7.3.7",
+		"@mui/x-charts": "^8.25.0",
+		"@mui/x-data-grid": "^8.25.0",
+		"@ory/hydra-client": "^25.4.0",
+		"@ory/kratos-client": "^25.4.0",
+		"@rjsf/core": "6.2.5",
+		"@rjsf/mui": "6.2.5",
+		"@rjsf/utils": "6.2.5",
+		"@rjsf/validator-ajv8": "6.2.5",
+		"@tailwindcss/postcss": "^4.1.18",
+		"@tanstack/react-query": "^5.90.19",
+		"@tanstack/react-query-devtools": "^5.91.2",
+		"axios": "^1.13.2",
+		"jwt-decode": "^4.0.0",
+		"libphonenumber-js": "^1.12.34",
+		"next": "16.1.4",
+		"postcss": "^8.5.6",
+		"react": "19.2.3",
+		"react-dom": "19.2.3",
+		"react-hook-form": "^7.71.1",
+		"react-syntax-highlighter": "^16.1.0",
+		"tailwindcss": "^4.1.18",
+		"zustand": "^5.0.10"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.11",
+		"@playwright/test": "^1.57.0",
+		"@types/node": "^25.0.9",
+		"@types/react": "19.2.9",
+		"@types/react-dom": "19.2.3",
+		"@types/react-syntax-highlighter": "^15.5.13",
+		"typescript": "^5.9.3"
+	},
+	"overrides": {
+		"@types/react": "19.2.7",
+		"@types/react-dom": "19.2.3"
+	}
+}
