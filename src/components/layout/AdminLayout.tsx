@@ -40,9 +40,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 		setAnchorEl(null);
 	};
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
 		handleClose();
-		logout();
+		await logout();
 		router.push("/login");
 	};
 
