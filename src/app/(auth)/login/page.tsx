@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthError, useClearError, useLogin } from "@/features/auth/hooks/useAuth";
 import { getIamKratosFrontendApi } from "@/services/iam-kratos";
+import { APP_TITLE } from "@/lib/constants";
 import { gradientColors, gradients } from "@/theme";
 
 export default function LoginPage() {
@@ -186,7 +187,7 @@ export default function LoginPage() {
 							mb: 1,
 						}}
 					>
-						Ory Admin
+						{APP_TITLE}
 					</Typography>
 					<Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontWeight: 500 }}>
 						Sign in to your account

@@ -69,6 +69,13 @@ export const VALIDATION = {
 } as const;
 
 /**
+ * Application instance configuration
+ * Set via NEXT_PUBLIC_APP_INSTANCE env var: "CIAM" or "IAM"
+ */
+export const APP_INSTANCE = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
+export const APP_TITLE = APP_INSTANCE ? `Athena ${APP_INSTANCE}` : "Athena";
+
+/**
  * API configuration
  */
 export const API = {

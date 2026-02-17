@@ -13,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from "@/components/ui";
 import { UserRole, useLogout, useUser } from "@/features/auth";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
+import { APP_TITLE } from "@/lib/constants";
 import { useTheme } from "@/providers/ThemeProvider";
 import { alpha, gradientColors, gradients } from "@/theme";
 
@@ -148,7 +149,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 						WebkitTextFillColor: "transparent",
 					}}
 				>
-					Ory Admin
+					{APP_TITLE}
 				</Typography>
 				<IconButton
 					variant="action"
