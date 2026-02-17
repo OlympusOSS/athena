@@ -18,12 +18,15 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			requestHeaders.delete(h);
 		}
 
-		// Strip Origin and Referer for IAM Kratos native/API flows.
-		// Browser fetch includes Origin automatically, but Kratos rejects
-		// API-initiated flows that arrive with a browser Origin header.
+		// Strip browser-specific headers for IAM Kratos native/API flows.
+		// Kratos rejects API-initiated flows that arrive with browser headers
+		// (Origin, Cookie, Referer) to prevent CSRF attacks. Since IAM auth
+		// uses native flows with session tokens (not cookies), these headers
+		// must be removed by the proxy.
 		if (serviceName === "IAMKratos") {
 			requestHeaders.delete("origin");
 			requestHeaders.delete("referer");
+			requestHeaders.delete("cookie");
 		}
 
 		let authorizationHeader: string | undefined;
