@@ -109,19 +109,19 @@ export const useAuthStore = create<AuthStoreState>()(
 
 			login: async (flowId: string, csrfToken: string, email: string, password: string) => {
 				try {
-					const body: Record<string, string> = {
-						method: "password",
-						identifier: email,
-						password,
-					};
+					// Kratos v25 API flows require form-urlencoded, not JSON
+					const params = new URLSearchParams();
+					params.set("method", "password");
+					params.set("identifier", email);
+					params.set("password", password);
 					if (csrfToken) {
-						body.csrf_token = csrfToken;
+						params.set("csrf_token", csrfToken);
 					}
 
 					const res = await fetch(`${IAM_KRATOS_BASE}/self-service/login?flow=${flowId}`, {
 						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify(body),
+						headers: { "Content-Type": "application/x-www-form-urlencoded" },
+						body: params.toString(),
 					});
 
 					if (!res.ok) {
