@@ -1,7 +1,7 @@
-import { DarkMode, LightMode, Logout, Menu as MenuIcon, Person, Settings } from "@mui/icons-material";
+import { DarkMode, GitHub, LightMode, Logout, Menu as MenuIcon, Person, Settings } from "@mui/icons-material";
 import { CssBaseline, useMediaQuery, useTheme as useMuiTheme } from "@mui/material";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 import { type ReactNode, useState } from "react";
 import { Sidebar } from "@/components/navigation/Sidebar";
@@ -26,6 +26,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 	const { theme: currentTheme, toggleTheme } = useTheme();
 	const user = useUser();
 	const logout = useLogout();
+	const router = useRouter();
 
 	const handleDrawerToggle = () => {
 		setOpen(!open);
@@ -39,9 +40,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 		setAnchorEl(null);
 	};
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
 		handleClose();
-		await logout();
+		logout();
+		router.push("/login");
 	};
 
 	return (
@@ -90,10 +92,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 									color: currentTheme === "dark" ? "#ffffff" : "rgba(255, 255, 255, 0.95)",
 								}}
 							>
-								Athena
+								Ory Admin
 							</Typography>
 						</Box>
 						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+							<Tooltip content="GitHub Repository">
+								<IconButton
+									variant="action"
+									sx={{
+										color: "inherit",
+										background: "rgba(255,255,255,0.1)",
+										"&:hover": {
+											background: "rgba(255,255,255,0.2)",
+											transform: "translateY(-2px)",
+										},
+										transition: "all 0.2s ease",
+									}}
+								>
+									<GitHub />
+								</IconButton>
+							</Tooltip>
 							<Tooltip content="Settings">
 								<IconButton
 									variant="action"

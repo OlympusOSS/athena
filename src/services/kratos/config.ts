@@ -6,8 +6,8 @@ export type KratosConfig = {
 
 // For server-side API calls
 let serverConfig: KratosConfig = {
-	kratosPublicUrl: process.env.KRATOS_PUBLIC_URL || "http://localhost:5000",
-	kratosAdminUrl: process.env.KRATOS_ADMIN_URL || "http://localhost:5001",
+	kratosPublicUrl: process.env.KRATOS_PUBLIC_URL || "http://localhost:3100",
+	kratosAdminUrl: process.env.KRATOS_ADMIN_URL || "http://localhost:3101",
 	basePath: process.env.BASE_PATH || "",
 };
 
@@ -33,12 +33,12 @@ export const setKratosConfig = (newConfig: Partial<KratosConfig>): void => {
 	}
 };
 
-export const getKratosAdminUrl = (path: string = ""): string => {
+export const getAdminUrl = (path: string = ""): string => {
 	const config = getKratosConfig();
 	return `${config.kratosAdminUrl}${path}`;
 };
 
-export const getKratosPublicUrl = (path: string = ""): string => {
+export const getPublicUrl = (path: string = ""): string => {
 	const config = getKratosConfig();
 	return `${config.kratosPublicUrl}${path}`;
 };

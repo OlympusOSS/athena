@@ -24,7 +24,7 @@ import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { MessageDetailDialog, MessagesTable } from "@/features/messages/components";
 import { useMessagesPaginated, useMessagesWithSearch } from "@/features/messages/hooks";
-import type { CourierMessageStatus } from "@/services/ciam-kratos/endpoints/courier";
+import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 
 export default function MessagesPage() {
 	const [searchQuery, setSearchQuery] = useState("");

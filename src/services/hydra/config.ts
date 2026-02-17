@@ -6,8 +6,8 @@ export type HydraConfig = {
 
 // For server-side API calls
 let serverConfig: HydraConfig = {
-	hydraPublicUrl: process.env.HYDRA_PUBLIC_URL || "http://localhost:5002",
-	hydraAdminUrl: process.env.HYDRA_ADMIN_URL || "http://localhost:5003",
+	hydraPublicUrl: process.env.HYDRA_PUBLIC_URL || "http://localhost:3102",
+	hydraAdminUrl: process.env.HYDRA_ADMIN_URL || "http://localhost:3103",
 	basePath: process.env.BASE_PATH || "",
 };
 

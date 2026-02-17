@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import React from "react";
-import { type CourierMessageStatus, getMessage, getMessagesPage } from "@/services/ciam-kratos/endpoints/courier";
+import { type CourierMessageStatus, getMessage, getMessagesPage } from "@/services/kratos/endpoints/courier";
 
 // Infinite pagination messages hook
 export const useMessagesPaginated = (options?: { pageSize?: number; status?: CourierMessageStatus; recipient?: string }) => {

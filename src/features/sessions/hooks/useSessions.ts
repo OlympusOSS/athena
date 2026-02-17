@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
-import { getSessionsPage } from "@/services/ciam-kratos";
+import { getSessionsPage } from "@/services/kratos";
 
 // Infinite pagination sessions hook with automatic cleanup
 export const useSessionsPaginated = (options?: { pageSize?: number; active?: boolean }) => {

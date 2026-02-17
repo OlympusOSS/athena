@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydraEnabled, useIsOryNetwork, useSettingsLoaded } from "@/features/settings/hooks/useSettings";
-import { checkHydraHealth, listOAuth2Clients } from "@/services/ciam-hydra";
-import { checkKratosHealth, getAllIdentities, getSessionsUntilDate, listIdentitySchemas, listSessions } from "@/services/ciam-kratos";
+import { checkHydraHealth, listOAuth2Clients } from "@/services/hydra";
+import { checkKratosHealth, getAllIdentities, getSessionsUntilDate, listIdentitySchemas, listSessions } from "@/services/kratos";
 import type { HydraAnalytics, IdentityAnalytics, SessionAnalytics, SystemAnalytics } from "../types";
 
 // Health check hooks

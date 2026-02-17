@@ -142,7 +142,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 						WebkitTextFillColor: "transparent",
 					}}
 				>
-					Athena
+					Ory Admin
 				</Typography>
 				<IconButton
 					variant="action"
@@ -221,7 +221,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 			<List sx={{ px: 1.5, py: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton
-						onClick={async () => await logout()}
+						onClick={logout}
 						sx={{
 							borderRadius: 2,
 							py: 1.5,

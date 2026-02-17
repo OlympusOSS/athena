@@ -21,76 +21,27 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import type { LoginFlow } from "@ory/kratos-client";
-import { getIamKratosFrontendApi } from "@/services/iam-kratos";
-import { DEMO_ACCOUNTS, UserRole } from "@/features/auth";
-import { useAuthStore } from "@/features/auth/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { USERS, UserRole } from "@/features/auth";
+import { useLogin } from "@/features/auth/hooks/useAuth";
 import { alpha, gradientColors, gradients } from "@/theme";
 
 export default function LoginPage() {
-	const [email, setEmail] = useState("");
+	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
-	const [flow, setFlow] = useState<LoginFlow | null>(null);
-	const [flowLoading, setFlowLoading] = useState(true);
 
-	const { login } = useAuthStore();
+	const login = useLogin();
 	const router = useRouter();
-	const searchParams = useSearchParams();
-	const returnTo = searchParams.get("return_to") || "/dashboard";
-
-	// Create or fetch login flow
-	const initializeFlow = useCallback(async () => {
-		try {
-			setFlowLoading(true);
-			const api = getIamKratosFrontendApi();
-
-			// Check if there's a flow ID in the URL (Kratos redirect)
-			const flowId = searchParams.get("flow");
-			if (flowId) {
-				const { data } = await api.getLoginFlow({ id: flowId });
-				setFlow(data);
-			} else {
-				const { data } = await api.createBrowserLoginFlow({
-					returnTo,
-				});
-				setFlow(data);
-			}
-		} catch (err) {
-			console.error("Failed to initialize login flow:", err);
-			setError("Failed to initialize login. Please refresh the page.");
-		} finally {
-			setFlowLoading(false);
-		}
-	}, [searchParams, returnTo]);
-
-	useEffect(() => {
-		initializeFlow();
-	}, [initializeFlow]);
-
-	// Extract CSRF token from flow UI nodes
-	const getCsrfToken = (): string => {
-		if (!flow?.ui?.nodes) return "";
-		const csrfNode = flow.ui.nodes.find(
-			(node) => node.attributes && "name" in node.attributes && node.attributes.name === "csrf_token" && "type" in node.attributes && node.attributes.type === "hidden",
-		);
-		return csrfNode?.attributes && "value" in csrfNode.attributes ? (csrfNode.attributes.value as string) : "";
-	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!email || !password) {
-			setError("Please enter both email and password");
-			return;
-		}
-
-		if (!flow) {
-			setError("Login flow not initialized. Please refresh the page.");
+		if (!username || !password) {
+			setError("Please enter both username and password");
 			return;
 		}
 
@@ -98,22 +49,16 @@ export default function LoginPage() {
 		setError("");
 
 		try {
-			const csrfToken = getCsrfToken();
-			const success = await login(flow.id, csrfToken, email, password);
+			const success = await login(username, password);
 
 			if (success) {
-				router.push(returnTo);
+				router.push("/dashboard");
 			} else {
-				// Error is set in the store; get it
-				const storeError = useAuthStore.getState().error;
-				setError(storeError || "Invalid email or password");
-				// Re-initialize flow (Kratos may invalidate used flows)
-				await initializeFlow();
+				setError("Invalid username or password");
 			}
 		} catch (err) {
 			setError("An error occurred during login");
 			console.error(err);
-			await initializeFlow();
 		} finally {
 			setLoading(false);
 		}
@@ -123,9 +68,9 @@ export default function LoginPage() {
 		setShowPassword(!showPassword);
 	};
 
-	const setDemoCredentials = (demoEmail: string, demoPassword: string) => {
-		setEmail(demoEmail);
-		setPassword(demoPassword);
+	const setDemoCredentials = (username: string, password: string) => {
+		setUsername(username);
+		setPassword(password);
 	};
 
 	return (
@@ -208,7 +153,7 @@ export default function LoginPage() {
 							mb: 1,
 						}}
 					>
-						Athena
+						Ory Admin
 					</Typography>
 					<Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontWeight: 500 }}>
 						Sign in to your account
@@ -220,73 +165,66 @@ export default function LoginPage() {
 						</Alert>
 					)}
 
-					{flowLoading ? (
-						<Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-							<CircularProgress />
-						</Box>
-					) : (
-						<Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
-							<TextField
-								margin="normal"
-								required
-								fullWidth
-								id="email"
-								label="Email"
-								name="email"
-								type="email"
-								autoComplete="email"
-								autoFocus
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
+					<Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
+						<TextField
+							margin="normal"
+							required
+							fullWidth
+							id="username"
+							label="Username"
+							name="username"
+							autoComplete="username"
+							autoFocus
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+							disabled={loading}
+						/>
+						<FormControl variant="outlined" margin="normal" required fullWidth>
+							<InputLabel htmlFor="password">Password</InputLabel>
+							<OutlinedInput
+								id="password"
+								type={showPassword ? "text" : "password"}
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
 								disabled={loading}
+								autoComplete="current-password"
+								endAdornment={
+									<InputAdornment position="end">
+										<IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
+											{showPassword ? <VisibilityOff /> : <Visibility />}
+										</IconButton>
+									</InputAdornment>
+								}
+								label="Password"
 							/>
-							<FormControl variant="outlined" margin="normal" required fullWidth>
-								<InputLabel htmlFor="password">Password</InputLabel>
-								<OutlinedInput
-									id="password"
-									type={showPassword ? "text" : "password"}
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									disabled={loading}
-									autoComplete="current-password"
-									endAdornment={
-										<InputAdornment position="end">
-											<IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
-												{showPassword ? <VisibilityOff /> : <Visibility />}
-											</IconButton>
-										</InputAdornment>
-									}
-									label="Password"
-								/>
-							</FormControl>
-							<Button
-								type="submit"
-								fullWidth
-								variant="contained"
-								sx={{
-									mt: 3,
-									mb: 2,
-									py: 1.8,
-									fontSize: "1.1rem",
-									fontWeight: 600,
-									background: gradients.normal,
-									boxShadow: "0 4px 15px 0 rgba(116, 75, 162, 0.4)",
-									transition: "all 0.3s ease",
-									"&:hover": {
-										background: gradients.reversed,
-										boxShadow: "0 6px 20px 0 rgba(116, 75, 162, 0.6)",
-										transform: "translateY(-2px)",
-									},
-									"&:active": {
-										transform: "translateY(0)",
-									},
-								}}
-								disabled={loading || !flow}
-							>
-								{loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Sign In"}
-							</Button>
-						</Box>
-					)}
+						</FormControl>
+						<Button
+							type="submit"
+							fullWidth
+							variant="contained"
+							sx={{
+								mt: 3,
+								mb: 2,
+								py: 1.8,
+								fontSize: "1.1rem",
+								fontWeight: 600,
+								background: gradients.normal,
+								boxShadow: "0 4px 15px 0 rgba(116, 75, 162, 0.4)",
+								transition: "all 0.3s ease",
+								"&:hover": {
+									background: gradients.reversed,
+									boxShadow: "0 6px 20px 0 rgba(116, 75, 162, 0.6)",
+									transform: "translateY(-2px)",
+								},
+								"&:active": {
+									transform: "translateY(0)",
+								},
+							}}
+							disabled={loading}
+						>
+							{loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Sign In"}
+						</Button>
+					</Box>
 
 					<Divider sx={{ width: "100%", my: 4 }}>
 						<Typography variant="body1" sx={{ fontWeight: 600, color: "text.secondary" }}>
@@ -295,32 +233,31 @@ export default function LoginPage() {
 					</Divider>
 
 					<Grid container spacing={2}>
-						{DEMO_ACCOUNTS.map((account) => (
-							<Grid size={{ xs: 12, sm: 6 }} key={account.email}>
+						{USERS.map((user) => (
+							<Grid size={{ xs: 12, sm: 6 }} key={user.username}>
 								<Card
 									elevation={0}
 									sx={{
 										cursor: "pointer",
 										background:
-											account.role === UserRole.ADMIN
+											user.role === UserRole.ADMIN
 												? gradients.subtle
 												: "linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(79, 172, 254, 0.1) 100%)",
 										border: "2px solid",
-										borderColor: account.role === UserRole.ADMIN ? alpha.primary[30] : "rgba(240, 147, 251, 0.3)",
+										borderColor: user.role === UserRole.ADMIN ? alpha.primary[30] : "rgba(240, 147, 251, 0.3)",
 										borderRadius: 3,
 										transition: "all 0.3s ease",
 										"&:hover": {
-											borderColor: account.role === UserRole.ADMIN ? gradientColors.primary : "#f093fb",
+											borderColor: user.role === UserRole.ADMIN ? gradientColors.primary : "#f093fb",
 											transform: "translateY(-4px)",
-											boxShadow:
-												account.role === UserRole.ADMIN ? `0 8px 24px ${alpha.primary[30]}` : "0 8px 24px rgba(240, 147, 251, 0.3)",
+											boxShadow: user.role === UserRole.ADMIN ? `0 8px 24px ${alpha.primary[30]}` : "0 8px 24px rgba(240, 147, 251, 0.3)",
 										},
 									}}
-									onClick={() => setDemoCredentials(account.email, account.password)}
+									onClick={() => setDemoCredentials(user.username, user.password)}
 								>
 									<CardContent sx={{ p: 2.5 }}>
 										<Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-											{account.role === UserRole.ADMIN ? (
+											{user.role === UserRole.ADMIN ? (
 												<AdminPanelSettings
 													sx={{
 														mr: 1.5,
@@ -338,25 +275,24 @@ export default function LoginPage() {
 												/>
 											)}
 											<Typography variant="h6" sx={{ fontWeight: 700 }}>
-												{account.displayName}
+												{user.displayName}
 											</Typography>
 										</Box>
 										<Chip
-											label={account.role}
+											label={user.role}
 											size="small"
 											sx={{
 												mb: 1.5,
 												fontWeight: 600,
-												background:
-													account.role === UserRole.ADMIN ? gradients.normal : "linear-gradient(135deg, #f093fb 0%, #4facfe 100%)",
+												background: user.role === UserRole.ADMIN ? gradients.normal : "linear-gradient(135deg, #f093fb 0%, #4facfe 100%)",
 												color: "white",
 											}}
 										/>
 										<Typography variant="body2" sx={{ mb: 0.5, color: "text.primary" }}>
-											Email: <strong>{account.email}</strong>
+											Username: <strong>{user.username}</strong>
 										</Typography>
 										<Typography variant="body2" sx={{ color: "text.primary" }}>
-											Password: <strong>{account.password}</strong>
+											Password: <strong>{user.password}</strong>
 										</Typography>
 									</CardContent>
 								</Card>

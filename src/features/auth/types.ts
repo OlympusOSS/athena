@@ -4,11 +4,19 @@ export enum UserRole {
 	VIEWER = "viewer",
 }
 
-export interface AuthUser {
-	id: string;
-	email: string;
+export interface UserCredentials {
+	username: string;
+	password: string;
 	role: UserRole;
 	displayName: string;
+	email: string;
+}
+
+export interface AuthUser {
+	username: string;
+	role: UserRole;
+	displayName: string;
+	email: string;
 }
 
 export interface AuthState {
@@ -17,6 +25,6 @@ export interface AuthState {
 }
 
 export interface LoginCredentials {
-	email: string;
+	username: string;
 	password: string;
 }

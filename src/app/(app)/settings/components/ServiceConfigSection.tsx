@@ -40,12 +40,12 @@ export interface ServiceConfigSectionProps {
 }
 
 const serviceConfig = {
-	"Kratos": {
+	Kratos: {
 		icon: KratosIcon,
 		color: themeColors.info,
 		description: "Identity & User Management",
 	},
-	"Hydra": {
+	Hydra: {
 		icon: HydraIcon,
 		color: themeColors.purple,
 		description: "OAuth2 & OpenID Connect",

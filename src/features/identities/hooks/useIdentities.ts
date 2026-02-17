@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { DeleteIdentityCredentialsTypeEnum } from "@/services/ciam-kratos";
+import type { DeleteIdentityCredentialsTypeEnum } from "@/services/kratos";
 import {
 	createIdentity,
 	createRecoveryLink,
@@ -8,7 +8,7 @@ import {
 	getIdentity,
 	listIdentities,
 	patchIdentity,
-} from "@/services/ciam-kratos";
+} from "@/services/kratos";
 
 // Identity list hook with pagination
 export const useIdentities = (params?: { pageSize?: number; pageToken?: string }) => {

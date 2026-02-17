@@ -10,7 +10,7 @@ import {
 	listOAuth2Clients,
 	type UpdateOAuth2ClientRequest,
 	updateOAuth2Client,
-} from "@/services/ciam-hydra";
+} from "@/services/hydra";
 import type { OAuth2ClientFilters } from "../types";
 
 // Query keys

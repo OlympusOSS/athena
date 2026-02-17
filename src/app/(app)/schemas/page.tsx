@@ -34,7 +34,7 @@ import {
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { useSchemas } from "@/features/schemas/hooks";
-import { getIdentitySchema } from "@/services/ciam-kratos";
+import { getIdentitySchema } from "@/services/kratos";
 
 // Define the schema interface based on the provided example
 interface SchemaItem {

@@ -1,5 +1,5 @@
 import { Configuration, type ConfigurationParameters, CourierApi, IdentityApi, MetadataApi } from "@ory/kratos-client";
-import { getKratosAdminUrl, getKratosPublicUrl } from "./config";
+import { getAdminUrl, getPublicUrl } from "./config";
 
 // Create configurations for API clients
 const getAdminConfiguration = (): Configuration => {
@@ -7,7 +7,7 @@ const getAdminConfiguration = (): Configuration => {
 
 	return new Configuration({
 		...defaultConfig,
-		basePath: getKratosAdminUrl(),
+		basePath: getAdminUrl(),
 	});
 };
 
@@ -16,7 +16,7 @@ const getPublicConfiguration = (): Configuration => {
 
 	return new Configuration({
 		...defaultConfig,
-		basePath: getKratosPublicUrl(),
+		basePath: getPublicUrl(),
 		baseOptions: {
 			withCredentials: true,
 		},
@@ -30,28 +30,28 @@ let metadataApiInstance: MetadataApi | null = null;
 let courierApiInstance: CourierApi | null = null;
 
 // API client getters with singleton pattern
-export const getKratosAdminApi = (): IdentityApi => {
+export const getAdminApi = (): IdentityApi => {
 	if (!adminApiInstance) {
 		adminApiInstance = new IdentityApi(getAdminConfiguration());
 	}
 	return adminApiInstance;
 };
 
-export const getKratosPublicApi = (): IdentityApi => {
+export const getPublicApi = (): IdentityApi => {
 	if (!publicApiInstance) {
 		publicApiInstance = new IdentityApi(getPublicConfiguration());
 	}
 	return publicApiInstance;
 };
 
-export const getKratosMetadataApi = (): MetadataApi => {
+export const getMetadataApi = (): MetadataApi => {
 	if (!metadataApiInstance) {
-		metadataApiInstance = new MetadataApi(getPublicConfiguration());
+		metadataApiInstance = new MetadataApi(getAdminConfiguration());
 	}
 	return metadataApiInstance;
 };
 
-export const getKratosCourierApi = (): CourierApi => {
+export const getCourierApi = (): CourierApi => {
 	if (!courierApiInstance) {
 		courierApiInstance = new CourierApi(getAdminConfiguration());
 	}
@@ -59,7 +59,7 @@ export const getKratosCourierApi = (): CourierApi => {
 };
 
 // Reset function for testing or configuration changes
-export const resetKratosApiClients = (): void => {
+export const resetApiClients = (): void => {
 	adminApiInstance = null;
 	publicApiInstance = null;
 	metadataApiInstance = null;

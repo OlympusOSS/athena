@@ -1,4 +1,4 @@
-import type { IntrospectedOAuth2Token } from "@/services/ciam-hydra";
+import type { IntrospectedOAuth2Token } from "@/services/hydra";
 import type {
 	FlushTokensFormData,
 	IntrospectTokenFormData,

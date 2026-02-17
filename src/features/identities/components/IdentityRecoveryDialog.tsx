@@ -16,7 +16,7 @@ import {
 	TextField,
 	Typography,
 } from "@/components/ui";
-import { createRecoveryLink } from "@/services/ciam-kratos";
+import { createRecoveryLink } from "@/services/kratos";
 
 interface IdentityRecoveryDialogProps {
 	open: boolean;

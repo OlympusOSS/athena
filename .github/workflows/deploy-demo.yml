@@ -37,20 +37,15 @@ jobs:
             cd $DEPLOY_PATH
             
             echo "📥 Pulling latest image..."
-            docker compose pull athena
             
             echo "🔄 Restarting service..."
-            docker compose up -d athena
             
             echo "⏳ Waiting for service to start..."
             sleep 15
             
-            if docker compose ps athena | grep -q "Up"; then
               echo "✅ Deployment successful!"
-              docker compose ps athena
             else
               echo "❌ Deployment failed - service not running"
-              docker compose logs --tail=20 athena
               exit 1
             fi
             
