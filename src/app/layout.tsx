@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 const appInstance = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
-const appTitle = appInstance ? `Athena ${appInstance}` : "Athena";
+const appTitle = appInstance ? `Olympus ${appInstance} Admin` : "Olympus Admin";
 
 export const metadata: Metadata = {
 	title: appTitle,

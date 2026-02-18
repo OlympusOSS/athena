@@ -9,7 +9,7 @@ import {
 	SecurityOutlined,
 } from "@mui/icons-material";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from "@/components/ui";
 import { UserRole, useLogout, useUser } from "@/features/auth";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
@@ -80,15 +80,13 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
 	const pathname = usePathname();
-	const router = useRouter();
 	const logout = useLogout();
 	const user = useUser();
 	const { theme: currentTheme } = useTheme();
 	const hydraEnabled = useHydraEnabled();
 
-	const handleLogout = async () => {
-		await logout();
-		router.push("/login");
+	const handleLogout = () => {
+		logout();
 	};
 
 	const isActive = (path: string) => {
