@@ -18,7 +18,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	const [isInitializing, setIsInitializing] = useState(true);
 	const hasCheckedSession = useRef(false);
 
-	// Check Kratos session on mount
+	// Check OAuth2 session on mount (reads httpOnly cookie via /api/auth/session)
 	useEffect(() => {
 		if (!hasCheckedSession.current) {
 			hasCheckedSession.current = true;
@@ -29,9 +29,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	useEffect(() => {
 		// Wait for auth state to be loaded
 		if (!isLoading) {
-			// If not authenticated and not on login page, redirect to login
+			// If not authenticated and not on login page, redirect to OAuth2 login
 			if (!isAuthenticated && pathname !== "/login") {
-				router.push("/login");
+				window.location.href = "/api/auth/login";
+				return;
 			}
 
 			// If authenticated and on login page, redirect to dashboard

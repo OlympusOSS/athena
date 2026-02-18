@@ -1,7 +1,7 @@
 import { DarkMode, GitHub, LightMode, Logout, Menu as MenuIcon, Person, Settings } from "@mui/icons-material";
 import { CssBaseline, useMediaQuery, useTheme as useMuiTheme } from "@mui/material";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type React from "react";
 import { type ReactNode, useState } from "react";
 import { Sidebar } from "@/components/navigation/Sidebar";
@@ -27,7 +27,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 	const { theme: currentTheme, toggleTheme } = useTheme();
 	const user = useUser();
 	const logout = useLogout();
-	const router = useRouter();
 
 	const handleDrawerToggle = () => {
 		setOpen(!open);
@@ -41,10 +40,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 		setAnchorEl(null);
 	};
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
 		handleClose();
-		await logout();
-		router.push("/login");
+		logout();
 	};
 
 	return (

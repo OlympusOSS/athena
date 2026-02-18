@@ -18,17 +18,6 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			requestHeaders.delete(h);
 		}
 
-		// Strip browser-specific headers for IAM Kratos native/API flows.
-		// Kratos rejects API-initiated flows that arrive with browser headers
-		// (Origin, Cookie, Referer) to prevent CSRF attacks. Since IAM auth
-		// uses native flows with session tokens (not cookies), these headers
-		// must be removed by the proxy.
-		if (serviceName === "IAMKratos") {
-			requestHeaders.delete("origin");
-			requestHeaders.delete("referer");
-			requestHeaders.delete("cookie");
-		}
-
 		let authorizationHeader: string | undefined;
 		if (serviceName === "Kratos") {
 			const kratosApiKeyEncrypted =
@@ -158,22 +147,22 @@ export async function proxy(request: NextRequest) {
 		return proxyToService(request, kratosAdminUrl, "/api/kratos-admin", "Kratos");
 	}
 
-	// Handle IAM Kratos public API proxying (for authentication)
+	// Handle IAM Kratos public API proxying (used by IAM Athena for identity management)
 	if (pathname.startsWith("/api/iam-kratos/")) {
 		const iamKratosPublicUrl =
 			process.env.IAM_KRATOS_PUBLIC_URL ||
 			"http://localhost:4100";
 
-		return proxyToService(request, iamKratosPublicUrl, "/api/iam-kratos", "IAMKratos");
+		return proxyToService(request, iamKratosPublicUrl, "/api/iam-kratos", "Kratos");
 	}
 
-	// Handle IAM Kratos admin API proxying (for authentication)
+	// Handle IAM Kratos admin API proxying (used by IAM Athena for identity management)
 	if (pathname.startsWith("/api/iam-kratos-admin/")) {
 		const iamKratosAdminUrl =
 			process.env.IAM_KRATOS_ADMIN_URL ||
 			"http://localhost:4101";
 
-		return proxyToService(request, iamKratosAdminUrl, "/api/iam-kratos-admin", "IAMKratos");
+		return proxyToService(request, iamKratosAdminUrl, "/api/iam-kratos-admin", "Kratos");
 	}
 
 	// Handle Hydra public API proxying

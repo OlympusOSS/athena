@@ -1,214 +1,107 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { type AuthUser, UserRole } from "../types";
-
-const IAM_KRATOS_BASE = "/api/iam-kratos";
 
 // Define auth store interface
 interface AuthStoreState {
 	user: AuthUser | null;
-	sessionToken: string | null;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	error: string | null;
 
 	// Actions
 	checkSession: () => Promise<void>;
-	login: (flowId: string, csrfToken: string, email: string, password: string) => Promise<boolean>;
-	logout: () => Promise<void>;
+	login: () => void;
+	logout: () => void;
 	hasPermission: (requiredRole: UserRole) => boolean;
 	setLoading: (isLoading: boolean) => void;
 	clearError: () => void;
 }
 
-// Helper: map Kratos identity to AuthUser
-function identityToAuthUser(identity: Record<string, unknown>): AuthUser {
-	const traits = identity.traits as {
-		email?: string;
-		name?: { first?: string; last?: string };
-		role?: string;
-	};
+// Auth store — session is managed server-side via httpOnly cookies (OAuth2/OIDC)
+export const useAuthStore = create<AuthStoreState>()((set, get) => ({
+	user: null,
+	isAuthenticated: false,
+	isLoading: true,
+	error: null,
 
-	const email = traits?.email || "";
-	const firstName = traits?.name?.first || "";
-	const lastName = traits?.name?.last || "";
-	const displayName = [firstName, lastName].filter(Boolean).join(" ") || email;
-	const role = traits?.role === "admin" ? UserRole.ADMIN : UserRole.VIEWER;
+	setLoading: (isLoading: boolean) => set({ isLoading }),
+	clearError: () => set({ error: null }),
 
-	return {
-		kratosIdentityId: identity.id as string,
-		email,
-		role,
-		displayName,
-	};
-}
+	checkSession: async () => {
+		// Check if login is disabled (for testing/screenshots)
+		const disableLogin = process.env.NEXT_PUBLIC_DISABLE_LOGIN === "true";
+		if (disableLogin) {
+			set({
+				user: {
+					kratosIdentityId: "test-admin",
+					email: "admin@test.local",
+					role: UserRole.ADMIN,
+					displayName: "Test Admin",
+				},
+				isAuthenticated: true,
+				isLoading: false,
+			});
+			return;
+		}
 
-// Create auth store with persistence for session token
-export const useAuthStore = create<AuthStoreState>()(
-	persist(
-		(set, get) => ({
+		try {
+			const res = await fetch("/api/auth/session");
+
+			if (!res.ok) {
+				set({ user: null, isAuthenticated: false, isLoading: false });
+				return;
+			}
+
+			const data = await res.json();
+			const user: AuthUser = {
+				kratosIdentityId: data.user.kratosIdentityId || "",
+				email: data.user.email || "",
+				role: data.user.role === "admin" ? UserRole.ADMIN : UserRole.VIEWER,
+				displayName: data.user.displayName || data.user.email || "",
+			};
+
+			set({
+				user,
+				isAuthenticated: true,
+				isLoading: false,
+				error: null,
+			});
+		} catch {
+			set({
+				user: null,
+				isAuthenticated: false,
+				isLoading: false,
+			});
+		}
+	},
+
+	login: () => {
+		// Redirect to OAuth2 login flow via IAM Hydra → IAM Hera
+		window.location.href = "/api/auth/login";
+	},
+
+	logout: () => {
+		set({
 			user: null,
-			sessionToken: null,
 			isAuthenticated: false,
-			isLoading: true,
 			error: null,
+		});
+		// Redirect to logout endpoint (clears cookie, revokes token)
+		window.location.href = "/api/auth/logout";
+	},
 
-			setLoading: (isLoading: boolean) => set({ isLoading }),
-			clearError: () => set({ error: null }),
+	hasPermission: (requiredRole: UserRole) => {
+		const { user } = get();
 
-			checkSession: async () => {
-				// Check if login is disabled (for testing/screenshots)
-				const disableLogin = process.env.NEXT_PUBLIC_DISABLE_LOGIN === "true";
-				if (disableLogin) {
-					set({
-						user: {
-							kratosIdentityId: "test-admin",
-							email: "admin@test.local",
-							role: UserRole.ADMIN,
-							displayName: "Test Admin",
-						},
-						isAuthenticated: true,
-						isLoading: false,
-					});
-					return;
-				}
+		if (!user) return false;
 
-				const { sessionToken } = get();
-				if (!sessionToken) {
-					set({ user: null, isAuthenticated: false, isLoading: false });
-					return;
-				}
+		// Admin can access everything
+		if (user.role === UserRole.ADMIN) return true;
 
-				try {
-					const res = await fetch(`${IAM_KRATOS_BASE}/sessions/whoami`, {
-						headers: { "X-Session-Token": sessionToken },
-					});
-
-					if (!res.ok) {
-						set({ user: null, sessionToken: null, isAuthenticated: false, isLoading: false });
-						return;
-					}
-
-					const session = await res.json();
-					const user = identityToAuthUser(session.identity);
-					set({
-						user,
-						isAuthenticated: true,
-						isLoading: false,
-						error: null,
-					});
-				} catch {
-					set({
-						user: null,
-						sessionToken: null,
-						isAuthenticated: false,
-						isLoading: false,
-					});
-				}
-			},
-
-			login: async (flowId: string, csrfToken: string, email: string, password: string) => {
-				try {
-					// Kratos v25 API flows require form-urlencoded, not JSON
-					const params = new URLSearchParams();
-					params.set("method", "password");
-					params.set("identifier", email);
-					params.set("password", password);
-					if (csrfToken) {
-						params.set("csrf_token", csrfToken);
-					}
-
-					const res = await fetch(`${IAM_KRATOS_BASE}/self-service/login?flow=${flowId}`, {
-						method: "POST",
-						headers: { "Content-Type": "application/x-www-form-urlencoded" },
-						body: params.toString(),
-					});
-
-					if (!res.ok) {
-						const data = await res.json().catch(() => ({}));
-						const msg =
-							data?.ui?.messages?.[0]?.text || data?.error?.message || "Invalid email or password";
-						set({ error: msg });
-						return false;
-					}
-
-					const data = await res.json();
-					const sessionToken = data.session_token;
-					const user = identityToAuthUser(data.session?.identity);
-
-					set({
-						user,
-						sessionToken,
-						isAuthenticated: true,
-						isLoading: false,
-						error: null,
-					});
-					return true;
-				} catch (error) {
-					console.error("Login error:", error);
-					set({ error: "An error occurred during login" });
-					return false;
-				}
-			},
-
-			logout: async () => {
-				const { sessionToken } = get();
-
-				if (sessionToken) {
-					try {
-						// Revoke the session token
-						await fetch(`${IAM_KRATOS_BASE}/self-service/logout/api`, {
-							method: "DELETE",
-							headers: {
-								"Content-Type": "application/json",
-								"X-Session-Token": sessionToken,
-							},
-							body: JSON.stringify({ session_token: sessionToken }),
-						});
-					} catch (error) {
-						console.error("Logout error:", error);
-					}
-				}
-
-				set({
-					user: null,
-					sessionToken: null,
-					isAuthenticated: false,
-					error: null,
-				});
-			},
-
-			hasPermission: (requiredRole: UserRole) => {
-				const { user } = get();
-
-				if (!user) return false;
-
-				// Admin can access everything
-				if (user.role === UserRole.ADMIN) return true;
-
-				// Check if user has the required role
-				return user.role === requiredRole;
-			},
-		}),
-		{
-			name: "athena-auth",
-			partialize: (state) => ({
-				sessionToken: state.sessionToken,
-				user: state.user,
-				isAuthenticated: state.isAuthenticated,
-			}),
-			onRehydrateStorage: () => (state) => {
-				// After rehydration, verify the session is still valid
-				if (state && state.sessionToken) {
-					// Don't set loading to false yet — checkSession will do that
-					state.checkSession();
-				} else if (state) {
-					state.setLoading(false);
-				}
-			},
-		},
-	),
-);
+		// Check if user has the required role
+		return user.role === requiredRole;
+	},
+}));
 
 // Hooks for easier access to auth store
 export const useUser = () => useAuthStore((state) => state.user);
