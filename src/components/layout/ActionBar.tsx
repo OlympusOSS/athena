@@ -1,7 +1,7 @@
 "use client";
 
+import { Button, cn, Icon } from "@olympus/canvas";
 import type { ReactNode } from "react";
-import { Button, Icon, cn } from "@olympus/canvas";
 
 export interface ActionBarProps {
 	primaryAction?: {
@@ -30,39 +30,22 @@ const alignMap: Record<string, string> = {
 	"space-between": "justify-between",
 };
 
-export function ActionBar({
-	primaryAction,
-	secondaryActions = [],
-	align = "right",
-	className,
-}: ActionBarProps) {
+export function ActionBar({ primaryAction, secondaryActions = [], align = "right", className }: ActionBarProps) {
 	return (
 		<div className={cn("flex items-center gap-2", alignMap[align], className)}>
-			{secondaryActions.map((action, index) => (
-				<Button
-					key={action.label}
-					onClick={action.onClick}
-					disabled={action.disabled}
-					variant={action.variant || "outline"}
-					size="sm"
-				>
+			{secondaryActions.map((action, _index) => (
+				<Button key={action.label} onClick={action.onClick} disabled={action.disabled} variant={action.variant || "outline"} size="sm">
 					{action.icon && <span className="mr-1">{action.icon}</span>}
 					{action.label}
 				</Button>
 			))}
 
 			{primaryAction && (
-				<Button
-					onClick={primaryAction.onClick}
-					disabled={primaryAction.disabled || primaryAction.loading}
-					size="sm"
-				>
+				<Button onClick={primaryAction.onClick} disabled={primaryAction.disabled || primaryAction.loading} size="sm">
 					{primaryAction.loading ? (
 						<Icon name="loading" className="mr-1 h-4 w-4 animate-spin" />
 					) : (
-						primaryAction.icon && (
-							<span className="mr-1">{primaryAction.icon}</span>
-						)
+						primaryAction.icon && <span className="mr-1">{primaryAction.icon}</span>
 					)}
 					{primaryAction.label}
 				</Button>

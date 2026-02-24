@@ -1,15 +1,10 @@
 "use client";
 
+import { Button, Icon } from "@olympus/canvas";
 import { useRouter } from "next/navigation";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button, Icon } from "@olympus/canvas";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
-import {
-	getDefaultOAuth2ClientFormData,
-	OAuth2ClientForm,
-	transformFormDataToCreateRequest,
-	useCreateOAuth2Client,
-} from "@/features/oauth2-clients";
+import { getDefaultOAuth2ClientFormData, OAuth2ClientForm, transformFormDataToCreateRequest, useCreateOAuth2Client } from "@/features/oauth2-clients";
 
 export default function CreateOAuth2ClientPage() {
 	const router = useRouter();

@@ -149,18 +149,14 @@ export async function proxy(request: NextRequest) {
 
 	// Handle IAM Kratos public API proxying (used by IAM Athena for identity management)
 	if (pathname.startsWith("/api/iam-kratos/")) {
-		const iamKratosPublicUrl =
-			process.env.IAM_KRATOS_PUBLIC_URL ||
-			"http://localhost:4100";
+		const iamKratosPublicUrl = process.env.IAM_KRATOS_PUBLIC_URL || "http://localhost:4100";
 
 		return proxyToService(request, iamKratosPublicUrl, "/api/iam-kratos", "Kratos");
 	}
 
 	// Handle IAM Kratos admin API proxying (used by IAM Athena for identity management)
 	if (pathname.startsWith("/api/iam-kratos-admin/")) {
-		const iamKratosAdminUrl =
-			process.env.IAM_KRATOS_ADMIN_URL ||
-			"http://localhost:4101";
+		const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 		return proxyToService(request, iamKratosAdminUrl, "/api/iam-kratos-admin", "Kratos");
 	}
@@ -193,5 +189,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/api/kratos/:path*", "/api/kratos-admin/:path*", "/api/iam-kratos/:path*", "/api/iam-kratos-admin/:path*", "/api/hydra/:path*", "/api/hydra-admin/:path*"],
+	matcher: [
+		"/api/kratos/:path*",
+		"/api/kratos-admin/:path*",
+		"/api/iam-kratos/:path*",
+		"/api/iam-kratos-admin/:path*",
+		"/api/hydra/:path*",
+		"/api/hydra-admin/:path*",
+	],
 };

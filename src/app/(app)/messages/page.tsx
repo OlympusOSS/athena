@@ -1,25 +1,26 @@
 "use client";
 
-import type { Message } from "@ory/kratos-client";
-import { useEffect, useMemo, useState } from "react";
-import { Icon, SearchBar } from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { AdminLayout, PageHeader } from "@/components/layout";
-import { Button } from "@olympus/canvas";
-import { Card, CardContent } from "@olympus/canvas";
 import {
+	Button,
+	Card,
+	CardContent,
+	ErrorState,
+	Icon,
+	LoadingState,
+	SearchBar,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@olympus/canvas";
-import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@olympus/canvas";
+import type { Message } from "@ory/kratos-client";
+import { useEffect, useMemo, useState } from "react";
+import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { MessageDetailDialog, MessagesTable } from "@/features/messages/components";
@@ -139,7 +140,7 @@ export default function MessagesPage() {
 
 								<Select
 									value={statusFilter || "all"}
-									onValueChange={(value) => setStatusFilter(value === "all" ? "" : value as CourierMessageStatus)}
+									onValueChange={(value) => setStatusFilter(value === "all" ? "" : (value as CourierMessageStatus))}
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Status" />
@@ -193,16 +194,8 @@ export default function MessagesPage() {
 									{/* Manual load more for browsing mode */}
 									{!isSearching && hasNextPage && (
 										<div className="flex items-center justify-center py-4">
-											<Button
-												variant="outline"
-												onClick={() => fetchNextPage()}
-												disabled={isFetchingNextPage}
-											>
-												{isFetchingNextPage ? (
-													<Icon name="loading" />
-												) : (
-													<Icon name="chevron-down" />
-												)}
+											<Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+												{isFetchingNextPage ? <Icon name="loading" /> : <Icon name="chevron-down" />}
 												{isFetchingNextPage ? "Loading..." : "Load More Messages"}
 											</Button>
 										</div>

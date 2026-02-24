@@ -1,47 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { Icon, SearchBar } from "@olympus/canvas";
-import { EmptyState, ErrorState, LoadingState } from "@olympus/canvas";
-import { AdminLayout, PageHeader } from "@/components/layout";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Card, CardContent } from "@olympus/canvas";
 import {
+	Badge,
+	Button,
+	Card,
+	CardContent,
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@olympus/canvas";
-import {
+	EmptyState,
+	ErrorState,
+	Icon,
+	LoadingState,
+	SearchBar,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@olympus/canvas";
-import {
 	Table,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@olympus/canvas";
-import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@olympus/canvas";
-import { useTheme } from "@/providers/ThemeProvider";
+import type { IdentitySchemaContainer } from "@ory/kratos-client";
+import { useEffect, useState } from "react";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { useSchemas } from "@/features/schemas/hooks";
-import type { IdentitySchemaContainer } from "@ory/kratos-client";
+import { useTheme } from "@/providers/ThemeProvider";
 import { getIdentitySchema } from "@/services/kratos";
 
 export default function SchemasPage() {
@@ -198,28 +196,18 @@ export default function SchemasPage() {
 													paginatedSchemas.map((schema) => (
 														<TableRow key={schema.id}>
 															<TableCell>
-																<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
-																	{schema.id}
-																</code>
+																<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">{schema.id}</code>
 															</TableCell>
 															<TableCell>{getSchemaTitle(schema)}</TableCell>
 															<TableCell>
-																<Badge variant="secondary">
-																	{(schema.schema as Record<string, unknown>).type as string || "unknown"}
-																</Badge>
+																<Badge variant="secondary">{((schema.schema as Record<string, unknown>).type as string) || "unknown"}</Badge>
 															</TableCell>
 															<TableCell>
-																<Badge variant="outline">
-																	{getPropertiesCount(schema)} trait(s)
-																</Badge>
+																<Badge variant="outline">{getPropertiesCount(schema)} trait(s)</Badge>
 															</TableCell>
 															<TableCell>
 																<div className="flex items-center gap-1">
-																	<Button
-																		variant="outline"
-																		size="sm"
-																		onClick={() => handleViewSchema(schema.id)}
-																	>
+																	<Button variant="outline" size="sm" onClick={() => handleViewSchema(schema.id)}>
 																		<Icon name="code" />
 																		View Schema
 																	</Button>
@@ -256,20 +244,10 @@ export default function SchemasPage() {
 												&ndash;
 												{Math.min((page + 1) * rowsPerPage, filteredSchemas.length)} of {filteredSchemas.length}
 											</span>
-											<Button
-												variant="ghost"
-												size="icon"
-												disabled={page === 0}
-												onClick={() => handleChangePage(page - 1)}
-											>
+											<Button variant="ghost" size="icon" disabled={page === 0} onClick={() => handleChangePage(page - 1)}>
 												&lsaquo;
 											</Button>
-											<Button
-												variant="ghost"
-												size="icon"
-												disabled={page >= totalPages - 1}
-												onClick={() => handleChangePage(page + 1)}
-											>
+											<Button variant="ghost" size="icon" disabled={page >= totalPages - 1} onClick={() => handleChangePage(page + 1)}>
 												&rsaquo;
 											</Button>
 										</div>
@@ -294,12 +272,7 @@ export default function SchemasPage() {
 						<DialogContent>
 							<DialogHeader>
 								<DialogTitle>
-									Schema Details{" "}
-									{selectedSchemaId && (
-										<code className="text-sm font-mono text-muted-foreground">
-											(ID: {selectedSchemaId})
-										</code>
-									)}
+									Schema Details {selectedSchemaId && <code className="text-sm font-mono text-muted-foreground">(ID: {selectedSchemaId})</code>}
 								</DialogTitle>
 							</DialogHeader>
 							<div className="space-y-4">
@@ -332,9 +305,7 @@ export default function SchemasPage() {
 										</SyntaxHighlighter>
 									</div>
 								) : (
-									<p className="text-sm text-muted-foreground">
-										Failed to load schema content. Please try again.
-									</p>
+									<p className="text-sm text-muted-foreground">Failed to load schema content. Please try again.</p>
 								)}
 							</div>
 							<DialogFooter>

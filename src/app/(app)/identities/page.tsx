@@ -1,7 +1,7 @@
 "use client";
 
-import { lazy, Suspense } from "react";
 import { Icon, LoadingState } from "@olympus/canvas";
+import { lazy, Suspense } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 
@@ -10,11 +10,7 @@ const IdentitiesTable = lazy(() => import("@/features/identities/components/Iden
 export default function IdentitiesPage() {
 	return (
 		<ProtectedPage requiredRole={UserRole.ADMIN}>
-			<PageHeader
-				title="Identities"
-				subtitle="Manage user identities in your Kratos instance"
-				icon={<Icon name="users" />}
-			/>
+			<PageHeader title="Identities" subtitle="Manage user identities in your Kratos instance" icon={<Icon name="users" />} />
 			<Suspense fallback={<LoadingState variant="page" />}>
 				<IdentitiesTable />
 			</Suspense>

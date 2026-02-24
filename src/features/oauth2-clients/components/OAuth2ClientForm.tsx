@@ -1,18 +1,7 @@
 "use client";
 
+import { Badge, Button, Icon, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
 import { useState } from "react";
-import { Badge, Icon } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Input } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
 import type { OAuth2ClientFormData, OAuth2ClientFormErrors } from "../types";
 import { OAUTH2_GRANT_TYPES, OAUTH2_RESPONSE_TYPES, OAUTH2_SUBJECT_TYPES, OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS } from "../types";
 import { validateOAuth2ClientForm } from "../utils";
@@ -81,9 +70,7 @@ export function OAuth2ClientForm({
 
 	const toggleArrayItem = (field: keyof OAuth2ClientFormData, item: string) => {
 		const currentValues = (formData[field] as string[]) || [];
-		const newValues = currentValues.includes(item)
-			? currentValues.filter((v) => v !== item)
-			: [...currentValues, item];
+		const newValues = currentValues.includes(item) ? currentValues.filter((v) => v !== item) : [...currentValues, item];
 		handleArrayChange(field, newValues);
 	};
 
@@ -131,53 +118,23 @@ export function OAuth2ClientForm({
 							<Label htmlFor="client_name">
 								Client Name <span>*</span>
 							</Label>
-							<Input
-								id="client_name"
-								value={formData.client_name}
-								onChange={handleChange("client_name")}
-							/>
-							{errors.client_name && (
-								<p>{errors.client_name}</p>
-							)}
+							<Input id="client_name" value={formData.client_name} onChange={handleChange("client_name")} />
+							{errors.client_name && <p>{errors.client_name}</p>}
 						</div>
 						<div>
 							<Label htmlFor="owner">Owner</Label>
-							<Input
-								id="owner"
-								value={formData.owner}
-								onChange={handleChange("owner")}
-							/>
+							<Input id="owner" value={formData.owner} onChange={handleChange("owner")} />
 							<p>Optional: Organization or user that owns this client</p>
 						</div>
 						<div>
 							<Label htmlFor="client_uri">Client URI</Label>
-							<Input
-								id="client_uri"
-								value={formData.client_uri}
-								onChange={handleChange("client_uri")}
-							/>
-							<p>
-								{errors.client_uri ? (
-									<span>{errors.client_uri}</span>
-								) : (
-									"URL of the client's homepage"
-								)}
-							</p>
+							<Input id="client_uri" value={formData.client_uri} onChange={handleChange("client_uri")} />
+							<p>{errors.client_uri ? <span>{errors.client_uri}</span> : "URL of the client's homepage"}</p>
 						</div>
 						<div>
 							<Label htmlFor="logo_uri">Logo URI</Label>
-							<Input
-								id="logo_uri"
-								value={formData.logo_uri}
-								onChange={handleChange("logo_uri")}
-							/>
-							<p>
-								{errors.logo_uri ? (
-									<span>{errors.logo_uri}</span>
-								) : (
-									"URL of the client's logo image"
-								)}
-							</p>
+							<Input id="logo_uri" value={formData.logo_uri} onChange={handleChange("logo_uri")} />
+							<p>{errors.logo_uri ? <span>{errors.logo_uri}</span> : "URL of the client's logo image"}</p>
 						</div>
 					</div>
 				</div>
@@ -191,21 +148,15 @@ export function OAuth2ClientForm({
 							<Label>Grant Types</Label>
 							<div>
 								{OAUTH2_GRANT_TYPES.map((grantType) => {
-									const isSelected = formData.grant_types.includes(grantType);
+									const _isSelected = formData.grant_types.includes(grantType);
 									return (
-										<button
-											key={grantType}
-											type="button"
-											onClick={() => toggleArrayItem("grant_types", grantType)}
-										>
+										<button key={grantType} type="button" onClick={() => toggleArrayItem("grant_types", grantType)}>
 											{grantType.replace(/_/g, " ")}
 										</button>
 									);
 								})}
 							</div>
-							{errors.grant_types && (
-								<p>{errors.grant_types}</p>
-							)}
+							{errors.grant_types && <p>{errors.grant_types}</p>}
 						</div>
 
 						{/* Response Types - multi-select as toggleable badges */}
@@ -213,40 +164,26 @@ export function OAuth2ClientForm({
 							<Label>Response Types</Label>
 							<div>
 								{OAUTH2_RESPONSE_TYPES.map((responseType) => {
-									const isSelected = formData.response_types.includes(responseType);
+									const _isSelected = formData.response_types.includes(responseType);
 									return (
-										<button
-											key={responseType}
-											type="button"
-											onClick={() => toggleArrayItem("response_types", responseType)}
-										>
+										<button key={responseType} type="button" onClick={() => toggleArrayItem("response_types", responseType)}>
 											{responseType}
 										</button>
 									);
 								})}
 							</div>
-							{errors.response_types && (
-								<p>{errors.response_types}</p>
-							)}
+							{errors.response_types && <p>{errors.response_types}</p>}
 						</div>
 
 						<div>
 							<Label htmlFor="scope">Scope</Label>
-							<Input
-								id="scope"
-								value={formData.scope}
-								onChange={handleChange("scope")}
-								placeholder="openid profile email"
-							/>
+							<Input id="scope" value={formData.scope} onChange={handleChange("scope")} placeholder="openid profile email" />
 							<p>Space-separated list of scopes</p>
 						</div>
 
 						<div>
 							<Label htmlFor="subject_type">Subject Type</Label>
-							<Select
-								value={formData.subject_type}
-								onValueChange={handleSelectChange("subject_type")}
-							>
+							<Select value={formData.subject_type} onValueChange={handleSelectChange("subject_type")}>
 								<SelectTrigger>
 									<SelectValue placeholder="Select subject type" />
 								</SelectTrigger>
@@ -282,19 +219,12 @@ export function OAuth2ClientForm({
 							Add
 						</Button>
 					</div>
-					{errors.redirect_uris && (
-						<div>
-							{errors.redirect_uris}
-						</div>
-					)}
+					{errors.redirect_uris && <div>{errors.redirect_uris}</div>}
 					<div>
 						{formData.redirect_uris.map((uri, index) => (
 							<Badge key={index} variant="secondary">
 								{uri}
-								<button
-									type="button"
-									onClick={() => removeRedirectUri(index)}
-								>
+								<button type="button" onClick={() => removeRedirectUri(index)}>
 									<Icon name="close" />
 								</button>
 							</Badge>
@@ -308,10 +238,7 @@ export function OAuth2ClientForm({
 					<div>
 						<div>
 							<Label htmlFor="token_endpoint_auth_method">Token Endpoint Auth Method</Label>
-							<Select
-								value={formData.token_endpoint_auth_method}
-								onValueChange={handleSelectChange("token_endpoint_auth_method")}
-							>
+							<Select value={formData.token_endpoint_auth_method} onValueChange={handleSelectChange("token_endpoint_auth_method")}>
 								<SelectTrigger>
 									<SelectValue placeholder="Select auth method" />
 								</SelectTrigger>
@@ -335,33 +262,13 @@ export function OAuth2ClientForm({
 						</div>
 						<div>
 							<Label htmlFor="policy_uri">Policy URI</Label>
-							<Input
-								id="policy_uri"
-								value={formData.policy_uri}
-								onChange={handleChange("policy_uri")}
-							/>
-							<p>
-								{errors.policy_uri ? (
-									<span>{errors.policy_uri}</span>
-								) : (
-									"URL of privacy policy"
-								)}
-							</p>
+							<Input id="policy_uri" value={formData.policy_uri} onChange={handleChange("policy_uri")} />
+							<p>{errors.policy_uri ? <span>{errors.policy_uri}</span> : "URL of privacy policy"}</p>
 						</div>
 						<div>
 							<Label htmlFor="tos_uri">Terms of Service URI</Label>
-							<Input
-								id="tos_uri"
-								value={formData.tos_uri}
-								onChange={handleChange("tos_uri")}
-							/>
-							<p>
-								{errors.tos_uri ? (
-									<span>{errors.tos_uri}</span>
-								) : (
-									"URL of terms of service"
-								)}
-							</p>
+							<Input id="tos_uri" value={formData.tos_uri} onChange={handleChange("tos_uri")} />
+							<p>{errors.tos_uri ? <span>{errors.tos_uri}</span> : "URL of terms of service"}</p>
 						</div>
 					</div>
 				</div>
@@ -391,10 +298,7 @@ export function OAuth2ClientForm({
 							{(formData.contacts || []).map((contact, index) => (
 								<Badge key={index} variant="secondary">
 									{contact}
-									<button
-										type="button"
-										onClick={() => removeContact(index)}
-									>
+									<button type="button" onClick={() => removeContact(index)}>
 										<Icon name="close" />
 									</button>
 								</Badge>
@@ -425,10 +329,7 @@ export function OAuth2ClientForm({
 							{(formData.audience || []).map((aud, index) => (
 								<Badge key={index} variant="secondary">
 									{aud}
-									<button
-										type="button"
-										onClick={() => removeAudience(index)}
-									>
+									<button type="button" onClick={() => removeAudience(index)}>
 										<Icon name="close" />
 									</button>
 								</Badge>

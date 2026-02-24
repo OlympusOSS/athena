@@ -1,32 +1,33 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { FieldDisplay } from "@olympus/canvas";
-import { LoadingState } from "@olympus/canvas";
-import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
-import { Alert, AlertDescription } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Card, CardContent } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
+	Card,
+	CardContent,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@olympus/canvas";
-import { Separator } from "@olympus/canvas";
-import {
+	FieldDisplay,
+	Icon,
+	LoadingState,
+	Separator,
+	StatusBadge,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@olympus/canvas";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { CredentialDeleteDialog } from "@/features/identities/components/CredentialDeleteDialog";
 import { IdentityDeleteDialog } from "@/features/identities/components/IdentityDeleteDialog";
@@ -157,15 +158,9 @@ export default function IdentityDetailPage() {
 		return (
 			<ProtectedPage requiredRole={UserRole.ADMIN}>
 				<div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
-					<h1 className="text-2xl font-bold text-foreground">
-						Identity Not Found
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						The identity with ID &quot;{identityId}&quot; could not be found.
-					</p>
-					<Button onClick={handleBack}>
-						Back to Identities
-					</Button>
+					<h1 className="text-2xl font-bold text-foreground">Identity Not Found</h1>
+					<p className="text-sm text-muted-foreground">The identity with ID &quot;{identityId}&quot; could not be found.</p>
+					<Button onClick={handleBack}>Back to Identities</Button>
 				</div>
 			</ProtectedPage>
 		);
@@ -184,12 +179,8 @@ export default function IdentityDetailPage() {
 								<Icon name="arrow-left" />
 							</Button>
 							<div className="space-y-1">
-								<h1 className="text-2xl font-bold text-foreground">
-									Identity Details
-								</h1>
-								<code className="text-xs font-mono text-muted-foreground">
-									{identityId}
-								</code>
+								<h1 className="text-2xl font-bold text-foreground">Identity Details</h1>
+								<code className="text-xs font-mono text-muted-foreground">{identityId}</code>
 							</div>
 						</FlexBox>
 					}
@@ -243,9 +234,7 @@ export default function IdentityDetailPage() {
 					<SectionCard title="Basic Information">
 						<div className="space-y-4">
 							<div className="grid gap-4">
-								<span className="text-sm font-medium text-muted-foreground">
-									Status
-								</span>
+								<span className="text-sm font-medium text-muted-foreground">Status</span>
 								<div className="flex items-center gap-2">
 									<StatusBadge status={identity.state === "active" ? "active" : "inactive"} label={identity.state || "active"} />
 								</div>
@@ -299,9 +288,7 @@ export default function IdentityDetailPage() {
 									</SyntaxHighlighter>
 								</div>
 							) : (
-								<p className="text-sm text-muted-foreground">
-									No public metadata available
-								</p>
+								<p className="text-sm text-muted-foreground">No public metadata available</p>
 							)}
 						</CardContent>
 					</Card>
@@ -333,9 +320,7 @@ export default function IdentityDetailPage() {
 									</SyntaxHighlighter>
 								</div>
 							) : (
-								<p className="text-sm text-muted-foreground">
-									No admin metadata available
-								</p>
+								<p className="text-sm text-muted-foreground">No admin metadata available</p>
 							)}
 						</CardContent>
 					</Card>
@@ -361,29 +346,16 @@ export default function IdentityDetailPage() {
 											// For OIDC/SAML, render one row per identifier
 											if (needsIdentifier && identifiers.length > 0) {
 												return identifiers.map((identifier) => (
-													<div
-														key={`${type}-${identifier}`}
-														className="flex items-center justify-between rounded-lg border border-border p-3"
-													>
+													<div key={`${type}-${identifier}`} className="flex items-center justify-between rounded-lg border border-border p-3">
 														<div className="flex flex-wrap items-center gap-2">
 															<Badge variant="secondary">{CREDENTIAL_TYPE_LABELS[type] || type}</Badge>
-															<span className="text-sm text-muted-foreground">
-																{identifier}
-															</span>
-															{credential.created_at && (
-																<span className="text-xs text-muted-foreground">
-																	{formatDate(credential.created_at)}
-																</span>
-															)}
+															<span className="text-sm text-muted-foreground">{identifier}</span>
+															{credential.created_at && <span className="text-xs text-muted-foreground">{formatDate(credential.created_at)}</span>}
 														</div>
 														<TooltipProvider delayDuration={0}>
 															<Tooltip>
 																<TooltipTrigger asChild>
-																	<Button
-																		variant="ghost"
-																		size="icon"
-																		onClick={() => setCredentialToDelete({ type, identifier })}
-																	>
+																	<Button variant="ghost" size="icon" onClick={() => setCredentialToDelete({ type, identifier })}>
 																		<Icon name="delete" />
 																	</Button>
 																</TooltipTrigger>
@@ -396,22 +368,11 @@ export default function IdentityDetailPage() {
 
 											// For other types, render one row per credential
 											return [
-												<div
-													key={type}
-													className="flex items-center justify-between rounded-lg border border-border p-3"
-												>
+												<div key={type} className="flex items-center justify-between rounded-lg border border-border p-3">
 													<div className="flex flex-wrap items-center gap-2">
 														<Badge variant="secondary">{CREDENTIAL_TYPE_LABELS[type] || type}</Badge>
-														{identifiers.length > 0 && (
-															<span className="text-sm text-muted-foreground">
-																{identifiers.join(", ")}
-															</span>
-														)}
-														{credential.created_at && (
-															<span className="text-xs text-muted-foreground">
-																{formatDate(credential.created_at)}
-															</span>
-														)}
+														{identifiers.length > 0 && <span className="text-sm text-muted-foreground">{identifiers.join(", ")}</span>}
+														{credential.created_at && <span className="text-xs text-muted-foreground">{formatDate(credential.created_at)}</span>}
 													</div>
 													{NON_DELETABLE_CREDENTIALS.has(type) ? (
 														<TooltipProvider delayDuration={0}>
@@ -428,11 +389,7 @@ export default function IdentityDetailPage() {
 														<TooltipProvider delayDuration={0}>
 															<Tooltip>
 																<TooltipTrigger asChild>
-																	<Button
-																		variant="ghost"
-																		size="icon"
-																		onClick={() => setCredentialToDelete({ type })}
-																	>
+																	<Button variant="ghost" size="icon" onClick={() => setCredentialToDelete({ type })}>
 																		<Icon name="delete" />
 																	</Button>
 																</TooltipTrigger>
@@ -446,9 +403,7 @@ export default function IdentityDetailPage() {
 									</div>
 								) : (
 									<div className="py-6 text-center">
-										<p className="text-sm text-muted-foreground">
-											No credentials found for this identity
-										</p>
+										<p className="text-sm text-muted-foreground">No credentials found for this identity</p>
 									</div>
 								)}
 							</CardContent>
@@ -490,9 +445,7 @@ export default function IdentityDetailPage() {
 
 								{sessionsError ? (
 									<Alert variant="destructive">
-										<AlertDescription>
-											Failed to load sessions: {sessionsError.message}
-										</AlertDescription>
+										<AlertDescription>Failed to load sessions: {sessionsError.message}</AlertDescription>
 									</Alert>
 								) : sessionsLoading ? (
 									<div className="flex items-center justify-center py-8">
@@ -500,9 +453,7 @@ export default function IdentityDetailPage() {
 									</div>
 								) : !sessionsData?.data?.length ? (
 									<div className="py-6 text-center">
-										<p className="text-sm text-muted-foreground">
-											No active sessions found for this identity
-										</p>
+										<p className="text-sm text-muted-foreground">No active sessions found for this identity</p>
 									</div>
 								) : (
 									<>
@@ -515,9 +466,7 @@ export default function IdentityDetailPage() {
 											onSessionClick={handleSessionClick}
 										/>
 										<div className="py-2 text-center">
-											<p className="text-sm text-muted-foreground">
-												Showing {sessionsData.data.length} session(s) for this identity
-											</p>
+											<p className="text-sm text-muted-foreground">Showing {sessionsData.data.length} session(s) for this identity</p>
 										</div>
 									</>
 								)}
@@ -597,12 +546,12 @@ export default function IdentityDetailPage() {
 									This action will revoke all active sessions for this identity. The user will be logged out from all devices.
 								</AlertDescription>
 							</Alert>
-							<p className="text-sm text-muted-foreground">Are you sure you want to delete all sessions for this identity? This action cannot be undone.</p>
+							<p className="text-sm text-muted-foreground">
+								Are you sure you want to delete all sessions for this identity? This action cannot be undone.
+							</p>
 							{deleteSessionsMutation.error && (
 								<Alert variant="destructive">
-									<AlertDescription>
-										Failed to delete sessions: {deleteSessionsMutation.error.message}
-									</AlertDescription>
+									<AlertDescription>Failed to delete sessions: {deleteSessionsMutation.error.message}</AlertDescription>
 								</Alert>
 							)}
 						</div>
@@ -644,12 +593,12 @@ export default function IdentityDetailPage() {
 										: "Activating this identity will allow the user to sign in again."}
 								</AlertDescription>
 							</Alert>
-							<p className="text-sm text-muted-foreground">Are you sure you want to {pendingState === "active" ? "activate" : "deactivate"} this identity?</p>
+							<p className="text-sm text-muted-foreground">
+								Are you sure you want to {pendingState === "active" ? "activate" : "deactivate"} this identity?
+							</p>
 							{patchIdentityMutation.error && (
 								<Alert variant="destructive">
-									<AlertDescription>
-										Failed to update identity state: {patchIdentityMutation.error.message}
-									</AlertDescription>
+									<AlertDescription>Failed to update identity state: {patchIdentityMutation.error.message}</AlertDescription>
 								</Alert>
 							)}
 						</div>

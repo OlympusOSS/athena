@@ -1,12 +1,8 @@
 "use client";
 
+import { Badge, cn, FieldDisplay, Icon, Input, Label } from "@olympus/canvas";
 import { useEffect, useState } from "react";
-import { FieldDisplay, Icon } from "@olympus/canvas";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
-import { Badge } from "@olympus/canvas";
-import { Input } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { useUser } from "@/features/auth/hooks/useAuth";
 
@@ -88,11 +84,7 @@ export default function ProfilePage() {
 									{user.displayName.charAt(0)}
 								</div>
 
-								<Badge
-									variant={user.role === UserRole.ADMIN ? "default" : "secondary"}
-								>
-									{user.role}
-								</Badge>
+								<Badge variant={user.role === UserRole.ADMIN ? "default" : "secondary"}>{user.role}</Badge>
 
 								<span className="text-xs text-muted-foreground">Account created: March 1, 2025</span>
 							</div>
@@ -111,9 +103,7 @@ export default function ProfilePage() {
 									<div className="space-y-2">
 										{isEditing ? (
 											<div className="space-y-2">
-												<Label>
-													Display Name
-												</Label>
+												<Label>Display Name</Label>
 												<Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
 											</div>
 										) : (
@@ -124,9 +114,7 @@ export default function ProfilePage() {
 									<div className="space-y-2">
 										{isEditing ? (
 											<div className="space-y-2">
-												<Label>
-													Email Address
-												</Label>
+												<Label>Email Address</Label>
 												<Input value={email} onChange={(e) => setEmail(e.target.value)} />
 											</div>
 										) : (
@@ -160,14 +148,12 @@ export default function ProfilePage() {
 			</div>
 
 			{/* Success Toast */}
-			<div className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0")}>
+			<div
+				className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0")}
+			>
 				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
 					<span className="text-sm font-medium text-foreground">Profile updated successfully!</span>
-					<button
-						type="button"
-						onClick={() => setShowToast(false)}
-						className="ml-2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
-					>
+					<button type="button" onClick={() => setShowToast(false)} className="ml-2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground">
 						<Icon name="close" />
 					</button>
 				</div>

@@ -1,16 +1,23 @@
+import {
+	Badge,
+	Button,
+	DataTable,
+	type DataTableColumn,
+	ErrorState,
+	Icon,
+	LoadingState,
+	StatusBadge,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import type { Identity } from "@ory/kratos-client";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { DataTable, type DataTableColumn, Icon } from "@olympus/canvas";
-import { StatusBadge } from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useIdentities, useIdentitiesSearch } from "@/features/identities/hooks";
 import { useSchemas } from "@/features/schemas/hooks";
 import { formatDate } from "@/lib/date-utils";
-import { cn } from "@olympus/canvas";
 import { BulkOperationDialog } from "./BulkOperationDialog";
 
 type BulkOpType = "delete" | "deleteSessions" | "activate" | "deactivate";
@@ -156,9 +163,7 @@ const IdentitiesTable: React.FC = React.memo(() => {
 					<TooltipProvider delayDuration={0}>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<code>
-									{value.substring(0, 8)}...
-								</code>
+								<code>{value.substring(0, 8)}...</code>
 							</TooltipTrigger>
 							<TooltipContent>{value}</TooltipContent>
 						</Tooltip>
@@ -169,30 +174,20 @@ const IdentitiesTable: React.FC = React.memo(() => {
 				field: "identifier",
 				headerName: "Identifier",
 				minWidth: 220,
-				renderCell: (_: unknown, identity: Identity) => (
-					<span>
-						{getIdentifier(identity)}
-					</span>
-				),
+				renderCell: (_: unknown, identity: Identity) => <span>{getIdentifier(identity)}</span>,
 			},
 			{
 				field: "schema_id",
 				headerName: "Schema",
 				minWidth: 140,
-				renderCell: (_: unknown, identity: Identity) => (
-					<Badge variant="secondary">{getSchemaName(identity)}</Badge>
-				),
+				renderCell: (_: unknown, identity: Identity) => <Badge variant="secondary">{getSchemaName(identity)}</Badge>,
 			},
 			{
 				field: "state",
 				headerName: "State",
 				minWidth: 100,
 				renderCell: (value: string) => (
-					<StatusBadge
-						status={value === "active" ? "active" : "inactive"}
-						label={value === "active" ? "Active" : "Inactive"}
-						size="small"
-					/>
+					<StatusBadge status={value === "active" ? "active" : "inactive"} label={value === "active" ? "Active" : "Inactive"} size="small" />
 				),
 			},
 			{

@@ -1,8 +1,8 @@
 "use client";
 
+import { Button, cn, Icon, Input, Label, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useEffect, useState } from "react";
 import { type Control, Controller, type FieldPath, type FieldValues } from "react-hook-form";
-import { Button, Icon, Input, Label, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, cn } from "@olympus/canvas";
 
 export interface ApiKeyFieldProps<TFieldValues extends FieldValues = FieldValues> {
 	name: FieldPath<TFieldValues>;
@@ -48,11 +48,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 				{label && <Label>{label}</Label>}
 				<div className="relative flex items-center">
 					<Icon name="lock" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
-					<Input
-						value="••••••••••••••••"
-						disabled
-						className="pl-8 pr-10 text-sm"
-					/>
+					<Input value="••••••••••••••••" disabled className="pl-8 pr-10 text-sm" />
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
@@ -86,12 +82,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 					{label && <Label>{label}</Label>}
 					<div className="relative flex items-center">
 						<Icon name="key" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
-						<Input
-							{...field}
-							placeholder={placeholder}
-							type={showPassword ? "text" : "password"}
-							className="pl-8 pr-10 text-sm"
-						/>
+						<Input {...field} placeholder={placeholder} type={showPassword ? "text" : "password"} className="pl-8 pr-10 text-sm" />
 						<TooltipProvider>
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -103,16 +94,10 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 										type="button"
 										className="absolute right-1 h-7 w-7"
 									>
-										{showPassword ? (
-											<Icon name="eye-off" className="h-3.5 w-3.5" />
-										) : (
-											<Icon name="view" className="h-3.5 w-3.5" />
-										)}
+										{showPassword ? <Icon name="eye-off" className="h-3.5 w-3.5" /> : <Icon name="view" className="h-3.5 w-3.5" />}
 									</Button>
 								</TooltipTrigger>
-								<TooltipContent>
-									{showPassword ? "Hide API key" : "Show API key"}
-								</TooltipContent>
+								<TooltipContent>{showPassword ? "Hide API key" : "Show API key"}</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 					</div>

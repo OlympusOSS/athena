@@ -1,6 +1,5 @@
+import { DataTable, type DataTableColumn, Icon, StatusBadge } from "@olympus/canvas";
 import React, { useMemo } from "react";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { DataTable, type DataTableColumn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 
@@ -70,18 +69,14 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				headerName: "Recipient",
 				minWidth: 200,
 				maxWidth: 250,
-				renderCell: (value: string) => (
-					<span>{value}</span>
-				),
+				renderCell: (value: string) => <span>{value}</span>,
 			},
 			{
 				field: "subject",
 				headerName: "Subject",
 				minWidth: 250,
 				maxWidth: 300,
-				renderCell: (value: string) => (
-					<span>{value || "No subject"}</span>
-				),
+				renderCell: (value: string) => <span>{value || "No subject"}</span>,
 			},
 			{
 				field: "status",
@@ -98,11 +93,7 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				field: "template_type",
 				headerName: "Template",
 				minWidth: 160,
-				renderCell: (value: string) => (
-					<code>
-						{value || "Unknown"}
-					</code>
-				),
+				renderCell: (value: string) => <code>{value || "Unknown"}</code>,
 			},
 			{
 				field: "created_at",

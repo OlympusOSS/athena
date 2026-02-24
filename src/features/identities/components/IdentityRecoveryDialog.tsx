@@ -1,19 +1,20 @@
-import type { Identity } from "@ory/kratos-client";
-import type React from "react";
-import { useState } from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Icon,
+	Label,
 } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
+import type { Identity } from "@ory/kratos-client";
+import type React from "react";
+import { useState } from "react";
 import { createRecoveryLink } from "@/services/kratos";
-import { cn } from "@olympus/canvas";
 
 interface IdentityRecoveryDialogProps {
 	open: boolean;
@@ -72,7 +73,12 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 	const email = (traits?.email as string) || "N/A";
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
+		<Dialog
+			open={open}
+			onOpenChange={(isOpen: boolean) => {
+				if (!isOpen) handleClose();
+			}}
+		>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
@@ -105,39 +111,22 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 						<div>
 							<Alert>
 								<Icon name="success" />
-								<AlertDescription>
-									Recovery link generated successfully! The link is valid for a limited time.
-								</AlertDescription>
+								<AlertDescription>Recovery link generated successfully! The link is valid for a limited time.</AlertDescription>
 							</Alert>
 
 							<div>
 								<Label>Recovery Link</Label>
 								<div>
-									<textarea
-										readOnly
-										value={recoveryLink}
-										rows={3}
-									/>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={handleCopyToClipboard}
-										title="Copy to clipboard"
-									>
+									<textarea readOnly value={recoveryLink} rows={3} />
+									<Button variant="ghost" size="icon" onClick={handleCopyToClipboard} title="Copy to clipboard">
 										<Icon name="copy" />
 									</Button>
 								</div>
 							</div>
 
-							<p>
-								Send this link to the user via a secure channel. The link will expire after a short period for security.
-							</p>
+							<p>Send this link to the user via a secure channel. The link will expire after a short period for security.</p>
 
-							{showCopySuccess && (
-								<p>
-									Recovery link copied to clipboard
-								</p>
-							)}
+							{showCopySuccess && <p>Recovery link copied to clipboard</p>}
 						</div>
 					)}
 				</div>
@@ -145,11 +134,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 				<DialogFooter>
 					{!recoveryLink && (
 						<Button onClick={handleGenerateRecoveryLink} disabled={loading}>
-							{loading ? (
-								<Icon name="loading" />
-							) : (
-								<Icon name="link" />
-							)}
+							{loading ? <Icon name="loading" /> : <Icon name="link" />}
 							Generate Recovery Link
 						</Button>
 					)}

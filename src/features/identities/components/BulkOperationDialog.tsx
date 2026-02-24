@@ -1,18 +1,19 @@
-import type { Identity } from "@ory/kratos-client";
-import { useQueryClient } from "@tanstack/react-query";
-import type React from "react";
-import { useCallback, useState } from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Icon,
 } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
+import type { Identity } from "@ory/kratos-client";
+import { useQueryClient } from "@tanstack/react-query";
+import type React from "react";
+import { useCallback, useState } from "react";
 import { deleteIdentity, patchIdentity } from "@/services/kratos/endpoints/identities";
 import { deleteIdentitySessions } from "@/services/kratos/endpoints/sessions";
 
@@ -170,25 +171,26 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 	}, [resetState, onClose]);
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
-			<DialogContent onInteractOutside={(e: Event) => { if (phase === "processing") e.preventDefault(); }}>
+		<Dialog
+			open={open}
+			onOpenChange={(isOpen: boolean) => {
+				if (!isOpen) handleClose();
+			}}
+		>
+			<DialogContent
+				onInteractOutside={(e: Event) => {
+					if (phase === "processing") e.preventDefault();
+				}}
+			>
 				<DialogHeader>
-					<DialogTitle>
-						{config.title}
-					</DialogTitle>
-					<DialogDescription>
-						{config.warning}
-					</DialogDescription>
+					<DialogTitle>{config.title}</DialogTitle>
+					<DialogDescription>{config.warning}</DialogDescription>
 				</DialogHeader>
 
 				{phase === "confirm" && (
 					<div>
 						<Alert variant={operationType === "activate" ? "default" : "destructive"}>
-							{operationType === "activate" ? (
-								<Icon name="info" />
-							) : (
-								<Icon name="danger" />
-							)}
+							{operationType === "activate" ? <Icon name="info" /> : <Icon name="danger" />}
 							<AlertDescription>{config.warning}</AlertDescription>
 						</Alert>
 
@@ -199,17 +201,10 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 							<ul>
 								{shown.map((identity) => (
 									<li key={identity.id}>
-										{getDisplayName(identity)}{" "}
-										<code>
-											{identity.id.substring(0, 8)}...
-										</code>
+										{getDisplayName(identity)} <code>{identity.id.substring(0, 8)}...</code>
 									</li>
 								))}
-								{remaining > 0 && (
-									<li>
-										+{remaining} more
-									</li>
-								)}
+								{remaining > 0 && <li>+{remaining} more</li>}
 							</ul>
 						</div>
 
@@ -217,10 +212,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 							<Button variant="outline" onClick={handleClose}>
 								Cancel
 							</Button>
-							<Button
-								variant={operationType === "delete" ? "destructive" : "default"}
-								onClick={handleConfirm}
-							>
+							<Button variant={operationType === "delete" ? "destructive" : "default"} onClick={handleConfirm}>
 								{config.confirmLabel}
 							</Button>
 						</DialogFooter>
@@ -237,13 +229,9 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 							...
 						</p>
 						<div>
-							<div
-								style={{ width: `${progress}%` }}
-							/>
+							<div style={{ width: `${progress}%` }} />
 						</div>
-						<p>
-							{Math.round(progress)}% complete
-						</p>
+						<p>{Math.round(progress)}% complete</p>
 					</div>
 				)}
 
@@ -265,20 +253,14 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 									</AlertDescription>
 								</Alert>
 								<div>
-									<button
-										type="button"
-										onClick={() => setShowErrors((v) => !v)}
-									>
+									<button type="button" onClick={() => setShowErrors((v) => !v)}>
 										{showErrors ? "Hide errors" : "Show errors"}
 									</button>
 									{showErrors && (
 										<div>
 											{errors.map((err) => (
 												<p key={err.id}>
-													<code>
-														{err.id.substring(0, 8)}...
-													</code>{" "}
-													&mdash; {err.message}
+													<code>{err.id.substring(0, 8)}...</code> &mdash; {err.message}
 												</p>
 											))}
 										</div>

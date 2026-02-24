@@ -1,9 +1,25 @@
 "use client";
 
+import {
+	Badge,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	cn,
+	Icon,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Switch,
+} from "@olympus/canvas";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Icon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, cn } from "@olympus/canvas";
 import { PageHeader, ProtectedPage } from "@/components/layout";
+import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import {
 	useDefaultClientId,
 	useHydraEnabled,
@@ -18,7 +34,6 @@ import {
 	useSetIsOryNetwork,
 	useSetKratosEndpoints,
 } from "@/features/settings/hooks/useSettings";
-import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import { useTheme } from "@/providers/ThemeProvider";
 import { ServiceConfigSection } from "./components";
 import { useServiceSettingsForm } from "./hooks";
@@ -140,11 +155,7 @@ export default function SettingsPage() {
 
 	return (
 		<ProtectedPage>
-			<PageHeader
-				title="Settings"
-				subtitle="Configure application preferences and API endpoints"
-				icon={<Icon name="settings" />}
-			/>
+			<PageHeader title="Settings" subtitle="Configure application preferences and API endpoints" icon={<Icon name="settings" />} />
 
 			<div className="space-y-6">
 				{/* ── General Settings ── */}
@@ -153,44 +164,28 @@ export default function SettingsPage() {
 						<CardTitle className="text-base">General</CardTitle>
 					</CardHeader>
 					<CardContent className="pt-0">
-						<SettingRow
-							icon="sun"
-							label="Dark mode"
-							description="Toggle between light and dark theme"
-						>
-							<Switch
-								checked={currentTheme === "dark"}
-								onCheckedChange={handleThemeChange}
-							/>
+						<SettingRow icon="sun" label="Dark mode" description="Toggle between light and dark theme">
+							<Switch checked={currentTheme === "dark"} onCheckedChange={handleThemeChange} />
 						</SettingRow>
 
 						<SettingRow
 							icon="cloud"
 							label="Ory Network"
-							description={
-								isOryNetwork
-									? "Connected to Ory Network. Health checks are skipped."
-									: "Self-hosted mode. Health checks are enabled."
-							}
+							description={isOryNetwork ? "Connected to Ory Network. Health checks are skipped." : "Self-hosted mode. Health checks are enabled."}
 							badge={
 								<Badge variant={isOryNetwork ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
 									{isOryNetwork ? "Cloud" : "Self-Hosted"}
 								</Badge>
 							}
 						>
-							<Switch
-								checked={isOryNetwork}
-								onCheckedChange={handleOryNetworkChange}
-							/>
+							<Switch checked={isOryNetwork} onCheckedChange={handleOryNetworkChange} />
 						</SettingRow>
 
 						<SettingRow
 							icon="grid"
 							label="Hydra integration"
 							description={
-								hydraEnabled
-									? "OAuth2 client management and analytics are available."
-									: "Enable to manage OAuth2 clients and view analytics."
+								hydraEnabled ? "OAuth2 client management and analytics are available." : "Enable to manage OAuth2 clients and view analytics."
 							}
 							badge={
 								<Badge variant={hydraEnabled ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
@@ -199,23 +194,12 @@ export default function SettingsPage() {
 							}
 							last={!hydraEnabled}
 						>
-							<Switch
-								checked={hydraEnabled}
-								onCheckedChange={handleHydraEnabledChange}
-							/>
+							<Switch checked={hydraEnabled} onCheckedChange={handleHydraEnabledChange} />
 						</SettingRow>
 
 						{hydraEnabled && (
-							<SettingRow
-								icon="key"
-								label="Default client"
-								description="OAuth2 client used when users navigate directly to the login page."
-								last
-							>
-								<Select
-									value={defaultClientId || "none"}
-									onValueChange={handleDefaultClientChange}
-								>
+							<SettingRow icon="key" label="Default client" description="OAuth2 client used when users navigate directly to the login page." last>
+								<Select value={defaultClientId || "none"} onValueChange={handleDefaultClientChange}>
 									<SelectTrigger className="w-[220px]">
 										<SelectValue placeholder="Select a client…" />
 									</SelectTrigger>
@@ -295,13 +279,14 @@ export default function SettingsPage() {
 			</div>
 
 			{/* Success toast */}
-			<div className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showSuccessMessage ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none")}>
+			<div
+				className={cn(
+					"fixed bottom-4 right-4 z-50 transition-all duration-300",
+					showSuccessMessage ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none",
+				)}
+			>
 				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
-					<svg
-						className="h-5 w-5 text-success"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-					>
+					<svg className="h-5 w-5 text-success" fill="currentColor" viewBox="0 0 20 20">
 						<path
 							fillRule="evenodd"
 							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"

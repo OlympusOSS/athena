@@ -1,41 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo } from "react";
 import {
 	AnimatedAreaChart,
 	AnimatedPieChart,
+	Button,
 	ChartCard,
+	ErrorState,
 	Icon,
+	LoadingState,
 	StatCard,
-	VerificationGauge,
-} from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { PageHeader, ProtectedPage } from "@/components/layout";
-import { Button } from "@olympus/canvas";
-import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
+	VerificationGauge,
 } from "@olympus/canvas";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { PageHeader, ProtectedPage } from "@/components/layout";
 import { useAnalytics } from "@/features/analytics/hooks";
 import { UserRole } from "@/features/auth";
 import { useFormatters } from "@/hooks";
 import { parseError } from "@/utils/errors";
 
 export default function Dashboard() {
-	const {
-		identity,
-		session,
-		system,
-		hydra,
-		isLoading,
-		isError,
-		isHydraAvailable,
-		hydraEnabled,
-		refetchAll,
-	} = useAnalytics();
+	const { identity, session, system, hydra, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
 	const { formatNumber, formatDuration } = useFormatters();
 	const router = useRouter();
 
@@ -50,10 +39,7 @@ export default function Dashboard() {
 		[session.data?.sessionsByDay],
 	);
 
-	const sessionValues = useMemo(
-		() => session.data?.sessionsByDay?.map((item) => item.count) || [],
-		[session.data?.sessionsByDay],
-	);
+	const sessionValues = useMemo(() => session.data?.sessionsByDay?.map((item) => item.count) || [], [session.data?.sessionsByDay]);
 
 	const identityDays = useMemo(
 		() =>
@@ -66,10 +52,7 @@ export default function Dashboard() {
 		[identity.data?.identitiesByDay],
 	);
 
-	const identityValues = useMemo(
-		() => identity.data?.identitiesByDay?.map((item) => item.count) || [],
-		[identity.data?.identitiesByDay],
-	);
+	const identityValues = useMemo(() => identity.data?.identitiesByDay?.map((item) => item.count) || [], [identity.data?.identitiesByDay]);
 
 	const verificationRate = useMemo(() => {
 		if (!identity.data) return 0;
@@ -78,14 +61,11 @@ export default function Dashboard() {
 	}, [identity.data]);
 
 	if (isLoading) {
-		return (
-			<LoadingState variant="page" message="Loading analytics data..." />
-		);
+		return <LoadingState variant="page" message="Loading analytics data..." />;
 	}
 
 	if (isError) {
-		const firstError =
-			identity.error || session.error || system.error || hydra.error;
+		const firstError = identity.error || session.error || system.error || hydra.error;
 		const parsedError = parseError(firstError);
 
 		return (
@@ -128,50 +108,31 @@ export default function Dashboard() {
 		value: sessionValues[i] ?? 0,
 	}));
 
-	const schemasPieData = (identity.data?.identitiesBySchema || []).map(
-		(item) => ({
-			name:
-				item.schema.length > 20
-					? `${item.schema.slice(0, 20)}...`
-					: item.schema,
-			value: item.count,
-		}),
-	);
+	const schemasPieData = (identity.data?.identitiesBySchema || []).map((item) => ({
+		name: item.schema.length > 20 ? `${item.schema.slice(0, 20)}...` : item.schema,
+		value: item.count,
+	}));
 
 	const oauthClientTypesPieData = [
 		{ name: "Public", value: hydra.data?.publicClients || 0 },
 		{ name: "Confidential", value: hydra.data?.confidentialClients || 0 },
 	];
 
-	const grantTypesPieData = (hydra.data?.clientsByGrantType || []).map(
-		(item) => ({
-			name:
-				item.grantType.length > 20
-					? `${item.grantType.slice(0, 20)}...`
-					: item.grantType,
-			value: item.count,
-		}),
-	);
+	const grantTypesPieData = (hydra.data?.clientsByGrantType || []).map((item) => ({
+		name: item.grantType.length > 20 ? `${item.grantType.slice(0, 20)}...` : item.grantType,
+		value: item.count,
+	}));
 
 	return (
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
 			<PageHeader
 				title="Analytics Dashboard"
-				subtitle={
-					isHydraAvailable
-						? "Insights and metrics for your Ory Kratos and Hydra systems"
-						: "Insights and metrics for your Ory Kratos system"
-				}
+				subtitle={isHydraAvailable ? "Insights and metrics for your Ory Kratos and Hydra systems" : "Insights and metrics for your Ory Kratos system"}
 				actions={
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={refetchAll}
-									aria-label="Refresh data"
-								>
+								<Button variant="outline" size="icon" onClick={refetchAll} aria-label="Refresh data">
 									<Icon name="refresh" />
 								</Button>
 							</TooltipTrigger>
@@ -216,12 +177,7 @@ export default function Dashboard() {
 					icon={<Icon name="time" />}
 				/>
 
-				<StatCard
-					title="Verification Rate"
-					value={`${verificationRate}%`}
-					subtitle="Email verified users"
-					icon={<Icon name="verified" />}
-				/>
+				<StatCard title="Verification Rate" value={`${verificationRate}%`} subtitle="Email verified users" icon={<Icon name="verified" />} />
 
 				<StatCard
 					title="Identity Schemas"
@@ -232,11 +188,7 @@ export default function Dashboard() {
 
 				<StatCard
 					title="Kratos Health"
-					value={
-						system.data?.systemHealth === "healthy"
-							? "\u2713 Healthy"
-							: system.data?.systemHealth || "Unknown"
-					}
+					value={system.data?.systemHealth === "healthy" ? "\u2713 Healthy" : system.data?.systemHealth || "Unknown"}
 					subtitle={system.data?.systemHealth || "Unknown"}
 					icon={<Icon name="health" />}
 				/>
@@ -260,13 +212,7 @@ export default function Dashboard() {
 
 						<StatCard
 							title="Hydra Health"
-							value={
-								hydra.data?.systemHealth === "healthy"
-									? "\u2713 Healthy"
-									: hydra.data?.systemHealth === "error"
-										? "\u2717 Error"
-										: "Unknown"
-							}
+							value={hydra.data?.systemHealth === "healthy" ? "\u2713 Healthy" : hydra.data?.systemHealth === "error" ? "\u2717 Error" : "Unknown"}
 							subtitle={hydra.data?.systemHealth || "Unknown"}
 							icon={<Icon name="cloud" />}
 						/>
@@ -279,36 +225,21 @@ export default function Dashboard() {
 				{/* User Growth Chart */}
 				<div>
 					<ChartCard title="New User Registrations (Last 30 Days)">
-						<AnimatedAreaChart
-							data={identityChartData}
-							height={350}
-							color="var(--chart-1)"
-							gradientId="identityAreaGradient"
-						/>
+						<AnimatedAreaChart data={identityChartData} height={350} color="var(--chart-1)" gradientId="identityAreaGradient" />
 					</ChartCard>
 				</div>
 
 				{/* Identity Schema Distribution */}
 				<div>
 					<ChartCard title="Users by Schema">
-						<AnimatedPieChart
-							data={schemasPieData}
-							height={350}
-							innerRadius={40}
-							outerRadius={100}
-						/>
+						<AnimatedPieChart data={schemasPieData} height={350} innerRadius={40} outerRadius={100} />
 					</ChartCard>
 				</div>
 
 				{/* Session Activity Chart */}
 				<div>
 					<ChartCard title="Session Activity (Last 7 Days)">
-						<AnimatedAreaChart
-							data={sessionChartData}
-							height={350}
-							color="var(--chart-2)"
-							gradientId="sessionAreaGradient"
-						/>
+						<AnimatedAreaChart data={sessionChartData} height={350} color="var(--chart-2)" gradientId="sessionAreaGradient" />
 					</ChartCard>
 				</div>
 
@@ -330,23 +261,13 @@ export default function Dashboard() {
 					<>
 						<div>
 							<ChartCard title="OAuth2 Client Types">
-								<AnimatedPieChart
-									data={oauthClientTypesPieData}
-									height={350}
-									innerRadius={40}
-									outerRadius={100}
-								/>
+								<AnimatedPieChart data={oauthClientTypesPieData} height={350} innerRadius={40} outerRadius={100} />
 							</ChartCard>
 						</div>
 
 						<div>
 							<ChartCard title="OAuth2 Grant Types Usage">
-								<AnimatedPieChart
-									data={grantTypesPieData}
-									height={350}
-									innerRadius={60}
-									outerRadius={120}
-								/>
+								<AnimatedPieChart data={grantTypesPieData} height={350} innerRadius={60} outerRadius={120} />
 							</ChartCard>
 						</div>
 					</>

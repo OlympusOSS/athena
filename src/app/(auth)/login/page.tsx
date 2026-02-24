@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Icon } from "@olympus/canvas";
+import { useEffect, useRef } from "react";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 
 export default function LoginPage() {
@@ -32,9 +32,7 @@ export default function LoginPage() {
 				}
 			`}</style>
 			<Icon name="loading" className="mb-6 h-12 w-12 animate-spin text-white" />
-			<h2 className="text-lg font-medium text-white">
-				Redirecting to login...
-			</h2>
+			<h2 className="text-lg font-medium text-white">Redirecting to login...</h2>
 		</div>
 	);
 }

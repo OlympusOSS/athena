@@ -1,18 +1,20 @@
-import type { Identity } from "@ory/kratos-client";
-import Form, { type IChangeEvent } from "@rjsf/core";
-import validator from "@rjsf/validator-ajv8";
-import React, { useEffect, useState } from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Icon,
 } from "@olympus/canvas";
+import type { Identity } from "@ory/kratos-client";
+import Form, { type IChangeEvent } from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
+import React, { useEffect, useState } from "react";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { uiLogger } from "@/lib/logger";
 import { useUpdateIdentity } from "../hooks/useIdentities";
@@ -115,7 +117,12 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 	if (!identity) return null;
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
+		<Dialog
+			open={open}
+			onOpenChange={(isOpen: boolean) => {
+				if (!isOpen) handleClose();
+			}}
+		>
 			<DialogContent>
 				<DialogHeader>
 					<div>
@@ -131,9 +138,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 					{updateIdentityMutation.isError && (
 						<Alert variant="destructive">
 							<Icon name="danger" />
-							<AlertDescription>
-								Failed to update identity: {(updateIdentityMutation.error as Error)?.message || "Unknown error"}
-							</AlertDescription>
+							<AlertDescription>Failed to update identity: {(updateIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 						</Alert>
 					)}
 
@@ -149,8 +154,12 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 								schema={formSchema}
 								uiSchema={createUISchema(formSchema)}
 								formData={formData}
-								onChange={(data: IChangeEvent) => { if (data.formData) setFormData(data.formData); }}
-								onSubmit={(data: IChangeEvent) => { if (data.formData) onSubmit(data.formData as Record<string, unknown>); }}
+								onChange={(data: IChangeEvent) => {
+									if (data.formData) setFormData(data.formData);
+								}}
+								onSubmit={(data: IChangeEvent) => {
+									if (data.formData) onSubmit(data.formData as Record<string, unknown>);
+								}}
 								validator={validator}
 								widgets={widgets}
 								templates={templates}
@@ -159,21 +168,11 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 								noHtml5Validate
 							>
 								<DialogFooter>
-									<Button
-										variant="outline"
-										onClick={handleClose}
-										disabled={updateIdentityMutation.isPending}
-										type="button"
-									>
+									<Button variant="outline" onClick={handleClose} disabled={updateIdentityMutation.isPending} type="button">
 										Cancel
 									</Button>
-									<Button
-										type="submit"
-										disabled={updateIdentityMutation.isPending}
-									>
-										{updateIdentityMutation.isPending && (
-											<Icon name="loading" />
-										)}
+									<Button type="submit" disabled={updateIdentityMutation.isPending}>
+										{updateIdentityMutation.isPending && <Icon name="loading" />}
 										Save Changes
 									</Button>
 								</DialogFooter>

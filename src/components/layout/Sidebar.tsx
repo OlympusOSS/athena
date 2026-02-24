@@ -1,8 +1,8 @@
 "use client";
 
+import { Button, cn, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, cn } from "@olympus/canvas";
 import { UserRole, useLogout, useUser } from "@/features/auth";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
 import { APP_TITLE } from "@/lib/constants";
@@ -77,12 +77,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 		return user.role === requiredRole;
 	};
 
-	const filteredMainNavItems = mainNavItems.filter((item) =>
-		hasRequiredRole(item.requiredRole),
-	);
-	const filteredHydraNavItems = hydraEnabled
-		? hydraNavItems.filter((item) => hasRequiredRole(item.requiredRole))
-		: [];
+	const filteredMainNavItems = mainNavItems.filter((item) => hasRequiredRole(item.requiredRole));
+	const filteredHydraNavItems = hydraEnabled ? hydraNavItems.filter((item) => hasRequiredRole(item.requiredRole)) : [];
 
 	return (
 		<aside
@@ -93,15 +89,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 		>
 			{/* Sidebar header */}
 			<div className="flex h-14 items-center justify-between px-4">
-				<span className="text-lg font-semibold text-foreground">
-					{APP_TITLE}
-				</span>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={onClose}
-					className="h-8 w-8"
-				>
+				<span className="text-lg font-semibold text-foreground">{APP_TITLE}</span>
+				<Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
 					<Icon name="chevron-left" />
 				</Button>
 			</div>
@@ -113,30 +102,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 				<nav className="flex flex-col gap-1">
 					<TooltipProvider delayDuration={0}>
 						{/* Main nav */}
-						<p className="mb-1 mt-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-							Main
-						</p>
+						<p className="mb-1 mt-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Main</p>
 						{filteredMainNavItems.map((item) => {
 							const active = isActive(item.path);
-								return (
+							return (
 								<Tooltip key={item.path}>
 									<TooltipTrigger asChild>
 										<Link
 											href={item.path}
 											className={cn(
 												"flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-												active
-													? "bg-primary/10 text-primary"
-													: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+												active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 											)}
 										>
 											<Icon name={item.icon} className="h-4 w-4" />
 											<span>{item.title}</span>
 										</Link>
 									</TooltipTrigger>
-									<TooltipContent side="right">
-										{item.title}
-									</TooltipContent>
+									<TooltipContent side="right">{item.title}</TooltipContent>
 								</Tooltip>
 							);
 						})}
@@ -145,9 +128,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 						{filteredHydraNavItems.length > 0 && (
 							<>
 								<Separator className="my-2" />
-								<p className="mb-1 mt-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-									Hydra
-								</p>
+								<p className="mb-1 mt-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Hydra</p>
 								{filteredHydraNavItems.map((item) => {
 									const active = isActive(item.path);
 
@@ -158,18 +139,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 													href={item.path}
 													className={cn(
 														"flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-														active
-															? "bg-primary/10 text-primary"
-															: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+														active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 													)}
 												>
 													<Icon name={item.icon} className="h-4 w-4" />
 													<span>{item.title}</span>
 												</Link>
 											</TooltipTrigger>
-											<TooltipContent side="right">
-												{item.title}
-											</TooltipContent>
+											<TooltipContent side="right">{item.title}</TooltipContent>
 										</Tooltip>
 									);
 								})}

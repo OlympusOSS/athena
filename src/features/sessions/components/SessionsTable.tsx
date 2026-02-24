@@ -1,13 +1,5 @@
+import { DataTable, type DataTableColumn, Icon, StatusBadge, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import React, { useMemo } from "react";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { DataTable, type DataTableColumn } from "@olympus/canvas";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 
 interface SessionsTableProps {
@@ -58,9 +50,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 						<TooltipProvider delayDuration={0}>
 							<Tooltip>
 								<TooltipTrigger asChild>
-									<code>
-										{value.substring(0, 8)}...
-									</code>
+									<code>{value.substring(0, 8)}...</code>
 								</TooltipTrigger>
 								<TooltipContent>{value}</TooltipContent>
 							</Tooltip>
@@ -72,11 +62,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					headerName: "Identity",
 					minWidth: 200,
 					maxWidth: 250,
-					renderCell: (_: any, session: any) => (
-						<span>
-							{getIdentityDisplay(session)}
-						</span>
-					),
+					renderCell: (_: any, session: any) => <span>{getIdentityDisplay(session)}</span>,
 				},
 				{
 					field: "active",
@@ -111,9 +97,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 						return (
 							<div>
 								{isExpiringSoon && <Icon name="danger" />}
-								<span>
-									{timeRemaining}
-								</span>
+								<span>{timeRemaining}</span>
 							</div>
 						);
 					},

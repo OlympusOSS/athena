@@ -1,5 +1,5 @@
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
 
 export async function GET() {
 	const hydraPublicUrl = process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
