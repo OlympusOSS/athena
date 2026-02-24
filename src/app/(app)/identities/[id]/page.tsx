@@ -1,31 +1,32 @@
 "use client";
 
-import { ArrowBack, Block, CheckCircleOutline, Delete, DeleteSweep, Edit, Key, Link as LinkIcon, Lock, Person, Refresh } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { StatusBadge } from "@/components";
-import { FieldDisplay } from "@/components/display";
-import { LoadingState } from "@/components/feedback";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { FieldDisplay } from "@olympus/canvas";
+import { LoadingState } from "@olympus/canvas";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
+import { Alert, AlertDescription } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Card, CardContent } from "@olympus/canvas";
 import {
-	Alert,
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Chip,
 	Dialog,
-	DialogActions,
-	Divider,
-	DottedLoader,
-	Grid,
-	IconButton,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import { Separator } from "@olympus/canvas";
+import {
 	Tooltip,
-	Typography,
-} from "@/components/ui";
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { CredentialDeleteDialog } from "@/features/identities/components/CredentialDeleteDialog";
 import { IdentityDeleteDialog } from "@/features/identities/components/IdentityDeleteDialog";
@@ -37,6 +38,7 @@ import { SessionsTable } from "@/features/sessions/components/SessionsTable";
 import { useDeleteIdentitySessions, useIdentitySessions } from "@/features/sessions/hooks";
 import { useDialog } from "@/hooks";
 import { formatDate } from "@/lib/date-utils";
+import { useTheme } from "@/providers/ThemeProvider";
 
 const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
 	password: "Password",
@@ -55,7 +57,7 @@ const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
 const NON_DELETABLE_CREDENTIALS = new Set(["password", "passkey", "code"]);
 
 export default function IdentityDetailPage() {
-	const theme = useTheme();
+	const { theme } = useTheme();
 	const params = useParams();
 	const router = useRouter();
 	const identityId = params.id as string;
@@ -154,229 +156,204 @@ export default function IdentityDetailPage() {
 	if (isError || !identity) {
 		return (
 			<ProtectedPage requiredRole={UserRole.ADMIN}>
-				<Box sx={{ p: 3 }}>
-					<Typography variant="heading" level="h1" color="error">
+				<div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
+					<h1 className="text-2xl font-bold text-foreground">
 						Identity Not Found
-					</Typography>
-					<Typography variant="body" style={{ marginBottom: "1.5rem" }}>
+					</h1>
+					<p className="text-sm text-muted-foreground">
 						The identity with ID &quot;{identityId}&quot; could not be found.
-					</Typography>
-					<Button variant="primary" onClick={handleBack}>
+					</p>
+					<Button onClick={handleBack}>
 						Back to Identities
 					</Button>
-				</Box>
+				</div>
 			</ProtectedPage>
 		);
 	}
 
 	const traits = identity.traits as Record<string, unknown>;
+	const isDark = theme === "dark";
 
 	return (
 		<ProtectedPage requiredRole={UserRole.ADMIN}>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				<PageHeader
 					title={
 						<FlexBox align="center" gap={2}>
-							<IconButton onClick={handleBack} aria-label="Go back">
-								<ArrowBack />
-							</IconButton>
-							<Box>
-								<Typography variant="heading" level="h1">
+							<Button variant="ghost" size="icon" onClick={handleBack} aria-label="Go back">
+								<Icon name="arrow-left" />
+							</Button>
+							<div className="space-y-1">
+								<h1 className="text-2xl font-bold text-foreground">
 									Identity Details
-								</Typography>
-								<Typography variant="code" color="secondary">
+								</h1>
+								<code className="text-xs font-mono text-muted-foreground">
 									{identityId}
-								</Typography>
-							</Box>
+								</code>
+							</div>
 						</FlexBox>
 					}
 					actions={
 						<FlexBox gap={1}>
-							<Tooltip content="Refresh">
-								<IconButton onClick={() => refetch()} aria-label="Refresh">
-									<Refresh />
-								</IconButton>
-							</Tooltip>
-							<Button variant="outlined" onClick={handleEdit}>
-								<Edit style={{ marginRight: "0.5rem" }} />
+							<TooltipProvider delayDuration={0}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button variant="ghost" size="icon" onClick={() => refetch()} aria-label="Refresh">
+											<Icon name="refresh" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Refresh</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+							<Button variant="outline" onClick={handleEdit}>
+								<Icon name="edit" />
 								Edit
 							</Button>
-							<Button variant="outlined" onClick={handleRecover}>
-								<LinkIcon style={{ marginRight: "0.5rem" }} />
+							<Button variant="outline" onClick={handleRecover}>
+								<Icon name="link" />
 								Recover
 							</Button>
 							<Button
-								variant={identity.state === "active" ? "outlined" : "primary"}
+								variant={identity.state === "active" ? "outline" : "default"}
 								onClick={handleStateToggle}
 								disabled={patchIdentityMutation.isPending}
 							>
 								{identity.state === "active" ? (
 									<>
-										<Block style={{ marginRight: "0.5rem" }} />
+										<Icon name="blocked" />
 										Deactivate
 									</>
 								) : (
 									<>
-										<CheckCircleOutline style={{ marginRight: "0.5rem" }} />
+										<Icon name="success" />
 										Activate
 									</>
 								)}
 							</Button>
-							<Button variant="danger" onClick={handleDelete}>
-								<Delete style={{ marginRight: "0.5rem" }} />
+							<Button variant="destructive" onClick={handleDelete}>
+								<Icon name="delete" />
 								Delete
 							</Button>
 						</FlexBox>
 					}
 				/>
 
-				<Grid container spacing={3}>
+				<div className="space-y-6">
 					{/* Basic Information */}
-					<Grid size={{ xs: 12, md: 6 }}>
-						<SectionCard title="Basic Information">
-							<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-								<Box>
-									<Typography variant="subtitle2" color="text.secondary" gutterBottom>
-										Status
-									</Typography>
+					<SectionCard title="Basic Information">
+						<div className="space-y-4">
+							<div className="grid gap-4">
+								<span className="text-sm font-medium text-muted-foreground">
+									Status
+								</span>
+								<div className="flex items-center gap-2">
 									<StatusBadge status={identity.state === "active" ? "active" : "inactive"} label={identity.state || "active"} />
-								</Box>
-								<FieldDisplay label="Schema ID" value={identity.schema_id} valueType="code" copyable />
-								<FieldDisplay label="Created At" value={formatDate(identity.created_at || "")} />
-								<FieldDisplay label="Updated At" value={formatDate(identity.updated_at || "")} />
-							</Box>
-						</SectionCard>
-					</Grid>
+								</div>
+							</div>
+							<FieldDisplay label="Schema ID" value={identity.schema_id} valueType="code" copyable />
+							<FieldDisplay label="Created At" value={formatDate(identity.created_at || "")} />
+							<FieldDisplay label="Updated At" value={formatDate(identity.updated_at || "")} />
+						</div>
+					</SectionCard>
 
 					{/* Traits */}
-					<Grid size={{ xs: 12, md: 6 }}>
-						<SectionCard title="Traits" emptyMessage={!traits || Object.keys(traits).length === 0 ? "No traits available" : undefined}>
-							{traits && Object.keys(traits).length > 0 && (
-								<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-									{Object.entries(traits).map(([key, value]) => (
-										<FieldDisplay
-											key={key}
-											label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ")}
-											value={typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
-											valueType={typeof value === "object" ? "code" : "text"}
-										/>
-									))}
-								</Box>
-							)}
-						</SectionCard>
-					</Grid>
+					<SectionCard title="Traits" emptyMessage={!traits || Object.keys(traits).length === 0 ? "No traits available" : undefined}>
+						{traits && Object.keys(traits).length > 0 && (
+							<div className="space-y-4">
+								{Object.entries(traits).map(([key, value]) => (
+									<FieldDisplay
+										key={key}
+										label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ")}
+										value={typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
+										valueType={typeof value === "object" ? "code" : "text"}
+									/>
+								))}
+							</div>
+						)}
+					</SectionCard>
 
 					{/* Public Metadata */}
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Public Metadata
-								</Typography>
-								<Divider sx={{ mb: 2 }} />
+					<Card>
+						<CardContent className="space-y-4">
+							<h3 className="text-lg font-semibold text-foreground">Public Metadata</h3>
+							<Separator />
 
-								{identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
-									<Box
-										sx={{
-											borderRadius: 1,
-											overflow: "auto",
-											maxHeight: "400px",
-											background: theme.palette.background.default,
+							{identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
+								<div className="overflow-auto rounded-md" style={{ maxHeight: "400px" }}>
+									<SyntaxHighlighter
+										language="json"
+										style={isDark ? vs2015 : github}
+										customStyle={{
+											margin: 0,
+											padding: "1rem",
+											fontSize: "0.875rem",
+											background: isDark ? "#1e1e1e" : "#f8f9fa",
+											borderRadius: "var(--radius)",
+											lineHeight: 1.4,
+											border: `1px solid ${isDark ? "hsl(var(--border))" : "hsl(var(--border))"}`,
 										}}
+										showLineNumbers={false}
+										wrapLongLines={true}
 									>
-										<SyntaxHighlighter
-											language="json"
-											style={theme.palette.mode === "dark" ? vs2015 : github}
-											customStyle={{
-												margin: 0,
-												padding: "1rem",
-												fontSize: "0.875rem",
-												background: theme.palette.mode === "dark" ? "#1e1e1e" : "#f8f9fa",
-												borderRadius: "var(--radius)",
-												lineHeight: 1.4,
-												border: `1px solid ${theme.palette.divider}`,
-											}}
-											showLineNumbers={false}
-											wrapLongLines={true}
-										>
-											{JSON.stringify(identity.metadata_public, null, 2)}
-										</SyntaxHighlighter>
-									</Box>
-								) : (
-									<Typography variant="body2" color="text.secondary">
-										No public metadata available
-									</Typography>
-								)}
-							</CardContent>
-						</Card>
-					</Grid>
+										{JSON.stringify(identity.metadata_public, null, 2)}
+									</SyntaxHighlighter>
+								</div>
+							) : (
+								<p className="text-sm text-muted-foreground">
+									No public metadata available
+								</p>
+							)}
+						</CardContent>
+					</Card>
 
 					{/* Admin Metadata */}
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Admin Metadata
-								</Typography>
-								<Divider sx={{ mb: 2 }} />
+					<Card>
+						<CardContent className="space-y-4">
+							<h3 className="text-lg font-semibold text-foreground">Admin Metadata</h3>
+							<Separator />
 
-								{identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
-									<Box
-										sx={{
-											borderRadius: 1,
-											overflow: "auto",
-											maxHeight: "400px",
-											background: theme.palette.background.default,
+							{identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
+								<div className="overflow-auto rounded-md" style={{ maxHeight: "400px" }}>
+									<SyntaxHighlighter
+										language="json"
+										style={isDark ? vs2015 : github}
+										customStyle={{
+											margin: 0,
+											padding: "1rem",
+											fontSize: "0.875rem",
+											background: isDark ? "#1e1e1e" : "#f8f9fa",
+											borderRadius: "var(--radius)",
+											lineHeight: 1.4,
+											border: `1px solid ${isDark ? "hsl(var(--border))" : "hsl(var(--border))"}`,
 										}}
+										showLineNumbers={false}
+										wrapLongLines={true}
 									>
-										<SyntaxHighlighter
-											language="json"
-											style={theme.palette.mode === "dark" ? vs2015 : github}
-											customStyle={{
-												margin: 0,
-												padding: "1rem",
-												fontSize: "0.875rem",
-												background: theme.palette.mode === "dark" ? "#1e1e1e" : "#f8f9fa",
-												borderRadius: "var(--radius)",
-												lineHeight: 1.4,
-												border: `1px solid ${theme.palette.divider}`,
-											}}
-											showLineNumbers={false}
-											wrapLongLines={true}
-										>
-											{JSON.stringify(identity.metadata_admin, null, 2)}
-										</SyntaxHighlighter>
-									</Box>
-								) : (
-									<Typography variant="body2" color="text.secondary">
-										No admin metadata available
-									</Typography>
-								)}
-							</CardContent>
-						</Card>
-					</Grid>
+										{JSON.stringify(identity.metadata_admin, null, 2)}
+									</SyntaxHighlighter>
+								</div>
+							) : (
+								<p className="text-sm text-muted-foreground">
+									No admin metadata available
+								</p>
+							)}
+						</CardContent>
+					</Card>
 
 					{/* Credentials Section */}
-					<Grid size={{ xs: 12 }}>
-						<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-							<CardContent>
-								<Box
-									sx={{
-										display: "flex",
-										justifyContent: "space-between",
-										alignItems: "center",
-										mb: 2,
-									}}
-								>
-									<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-										<Key color="primary" />
-										<Typography variant="h6">Credentials</Typography>
-									</Box>
-								</Box>
-								<Divider sx={{ mb: 2 }} />
+					<div className="space-y-3">
+						<Card>
+							<CardContent className="space-y-4">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<Icon name="key-round" />
+										<h3 className="text-lg font-semibold text-foreground">Credentials</h3>
+									</div>
+								</div>
+								<Separator />
 
 								{identity.credentials && Object.keys(identity.credentials).length > 0 ? (
-									<Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+									<div className="space-y-3">
 										{Object.entries(identity.credentials).flatMap(([type, credential]) => {
 											const needsIdentifier = type === "oidc" || type === "saml";
 											const identifiers = credential.identifiers || [];
@@ -384,214 +361,192 @@ export default function IdentityDetailPage() {
 											// For OIDC/SAML, render one row per identifier
 											if (needsIdentifier && identifiers.length > 0) {
 												return identifiers.map((identifier) => (
-													<Box
+													<div
 														key={`${type}-${identifier}`}
-														sx={{
-															display: "flex",
-															alignItems: "center",
-															justifyContent: "space-between",
-															p: 1.5,
-															border: 1,
-															borderColor: "divider",
-															borderRadius: 1,
-														}}
+														className="flex items-center justify-between rounded-lg border border-border p-3"
 													>
-														<Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, flex: 1 }}>
-															<Chip label={CREDENTIAL_TYPE_LABELS[type] || type} variant="tag" />
-															<Typography
-																variant="body2"
-																sx={{
-																	fontFamily: "monospace",
-																	fontSize: "0.8rem",
-																	overflow: "hidden",
-																	textOverflow: "ellipsis",
-																	whiteSpace: "nowrap",
-																}}
-															>
+														<div className="flex flex-wrap items-center gap-2">
+															<Badge variant="secondary">{CREDENTIAL_TYPE_LABELS[type] || type}</Badge>
+															<span className="text-sm text-muted-foreground">
 																{identifier}
-															</Typography>
+															</span>
 															{credential.created_at && (
-																<Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap", ml: "auto" }}>
+																<span className="text-xs text-muted-foreground">
 																	{formatDate(credential.created_at)}
-																</Typography>
+																</span>
 															)}
-														</Box>
-														<Tooltip content={`Delete ${CREDENTIAL_TYPE_LABELS[type] || type} credential`}>
-															<IconButton
-																size="small"
-																sx={{ ml: 1, color: "error.main" }}
-																onClick={() => setCredentialToDelete({ type, identifier })}
-															>
-																<Delete fontSize="small" />
-															</IconButton>
-														</Tooltip>
-													</Box>
+														</div>
+														<TooltipProvider delayDuration={0}>
+															<Tooltip>
+																<TooltipTrigger asChild>
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		onClick={() => setCredentialToDelete({ type, identifier })}
+																	>
+																		<Icon name="delete" />
+																	</Button>
+																</TooltipTrigger>
+																<TooltipContent>Delete {CREDENTIAL_TYPE_LABELS[type] || type} credential</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
 												));
 											}
 
 											// For other types, render one row per credential
 											return [
-												<Box
+												<div
 													key={type}
-													sx={{
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "space-between",
-														p: 1.5,
-														border: 1,
-														borderColor: "divider",
-														borderRadius: 1,
-													}}
+													className="flex items-center justify-between rounded-lg border border-border p-3"
 												>
-													<Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, flex: 1 }}>
-														<Chip label={CREDENTIAL_TYPE_LABELS[type] || type} variant="tag" />
+													<div className="flex flex-wrap items-center gap-2">
+														<Badge variant="secondary">{CREDENTIAL_TYPE_LABELS[type] || type}</Badge>
 														{identifiers.length > 0 && (
-															<Typography
-																variant="body2"
-																sx={{
-																	fontFamily: "monospace",
-																	fontSize: "0.8rem",
-																	overflow: "hidden",
-																	textOverflow: "ellipsis",
-																	whiteSpace: "nowrap",
-																}}
-															>
+															<span className="text-sm text-muted-foreground">
 																{identifiers.join(", ")}
-															</Typography>
+															</span>
 														)}
 														{credential.created_at && (
-															<Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap", ml: "auto" }}>
+															<span className="text-xs text-muted-foreground">
 																{formatDate(credential.created_at)}
-															</Typography>
+															</span>
 														)}
-													</Box>
+													</div>
 													{NON_DELETABLE_CREDENTIALS.has(type) ? (
-														<Tooltip content="Cannot be deleted via API">
-															<Lock sx={{ ml: 1, color: "text.disabled", fontSize: "1.2rem" }} />
-														</Tooltip>
+														<TooltipProvider delayDuration={0}>
+															<Tooltip>
+																<TooltipTrigger asChild>
+																	<span className="text-sm text-muted-foreground">
+																		<Icon name="lock" />
+																	</span>
+																</TooltipTrigger>
+																<TooltipContent>Cannot be deleted via API</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
 													) : (
-														<Tooltip content={`Delete ${CREDENTIAL_TYPE_LABELS[type] || type} credential`}>
-															<IconButton size="small" sx={{ ml: 1, color: "error.main" }} onClick={() => setCredentialToDelete({ type })}>
-																<Delete fontSize="small" />
-															</IconButton>
-														</Tooltip>
+														<TooltipProvider delayDuration={0}>
+															<Tooltip>
+																<TooltipTrigger asChild>
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		onClick={() => setCredentialToDelete({ type })}
+																	>
+																		<Icon name="delete" />
+																	</Button>
+																</TooltipTrigger>
+																<TooltipContent>Delete {CREDENTIAL_TYPE_LABELS[type] || type} credential</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
 													)}
-												</Box>,
+												</div>,
 											];
 										})}
-									</Box>
+									</div>
 								) : (
-									<Box sx={{ textAlign: "center", py: 4 }}>
-										<Typography variant="body2" color="text.secondary">
+									<div className="py-6 text-center">
+										<p className="text-sm text-muted-foreground">
 											No credentials found for this identity
-										</Typography>
-									</Box>
+										</p>
+									</div>
 								)}
 							</CardContent>
 						</Card>
-					</Grid>
+					</div>
 
 					{/* Sessions Section */}
-					<Grid size={{ xs: 12 }}>
-						<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-							<CardContent>
-								<Box
-									sx={{
-										display: "flex",
-										justifyContent: "space-between",
-										alignItems: "center",
-										mb: 2,
-									}}
-								>
-									<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-										<Person color="primary" />
-										<Typography variant="h6">Sessions</Typography>
-									</Box>
-									<Box sx={{ display: "flex", gap: 1 }}>
-										<Tooltip title="Refresh Sessions">
-											<IconButton onClick={() => refetchSessions()} size="small">
-												<Refresh />
-											</IconButton>
-										</Tooltip>
+					<div className="space-y-3">
+						<Card>
+							<CardContent className="space-y-4">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<Icon name="user" />
+										<h3 className="text-lg font-semibold text-foreground">Sessions</h3>
+									</div>
+									<div className="flex items-center gap-2">
+										<TooltipProvider delayDuration={0}>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button variant="ghost" size="icon" onClick={() => refetchSessions()}>
+														<Icon name="refresh" />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>Refresh Sessions</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
 										<Button
-											variant="danger"
-											size="small"
-											startIcon={<DeleteSweep />}
+											variant="destructive"
+											size="sm"
 											onClick={handleDeleteAllSessions}
 											disabled={deleteSessionsMutation.isPending || sessionsLoading || !sessionsData?.data?.length}
 										>
+											<Icon name="delete" />
 											Delete All Sessions
 										</Button>
-									</Box>
-								</Box>
-								<Divider sx={{ mb: 2 }} />
+									</div>
+								</div>
+								<Separator />
 
 								{sessionsError ? (
-									<Alert severity="error" sx={{ mb: 2 }}>
-										Failed to load sessions: {sessionsError.message}
+									<Alert variant="destructive">
+										<AlertDescription>
+											Failed to load sessions: {sessionsError.message}
+										</AlertDescription>
 									</Alert>
 								) : sessionsLoading ? (
-									<Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-										<DottedLoader />
-									</Box>
+									<div className="flex items-center justify-center py-8">
+										<Icon name="loading" />
+									</div>
 								) : !sessionsData?.data?.length ? (
-									<Box sx={{ textAlign: "center", py: 4 }}>
-										<Typography variant="body2" color="text.secondary">
+									<div className="py-6 text-center">
+										<p className="text-sm text-muted-foreground">
 											No active sessions found for this identity
-										</Typography>
-									</Box>
+										</p>
+									</div>
 								) : (
 									<>
 										<SessionsTable
-											key={sessionsData.headers?.etag || "identity-sessions"} // Force re-render when data updates
+											key={sessionsData.headers?.etag || "identity-sessions"}
 											sessions={sessionsData.data}
 											isLoading={false}
 											isFetchingNextPage={false}
 											searchQuery=""
 											onSessionClick={handleSessionClick}
 										/>
-										<Box sx={{ mt: 2, textAlign: "center" }}>
-											<Typography variant="body2" color="text.secondary">
+										<div className="py-2 text-center">
+											<p className="text-sm text-muted-foreground">
 												Showing {sessionsData.data.length} session(s) for this identity
-											</Typography>
-										</Box>
+											</p>
+										</div>
 									</>
 								)}
 							</CardContent>
 						</Card>
-					</Grid>
+					</div>
 
 					{/* Raw JSON */}
-					<Grid size={{ xs: 12 }}>
-						<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Raw Data
-								</Typography>
-								<Divider sx={{ mb: 2 }} />
-								<Box
-									sx={{
-										borderRadius: 1,
-										overflow: "auto",
-										maxHeight: "60vh",
-										background: theme.palette.background.default,
-									}}
-								>
+					<div className="space-y-3">
+						<Card>
+							<CardContent className="space-y-4">
+								<h3 className="text-lg font-semibold text-foreground">Raw Data</h3>
+								<Separator />
+								<div className="overflow-auto rounded-md" style={{ maxHeight: "60vh" }}>
 									<SyntaxHighlighter
 										language="json"
-										style={theme.palette.mode === "dark" ? vs2015 : github}
+										style={isDark ? vs2015 : github}
 										customStyle={{
 											margin: 0,
 											padding: "1.5rem",
 											fontSize: "0.875rem",
-											background: theme.palette.mode === "dark" ? "#1e1e1e" : "#f8f9fa",
+											background: isDark ? "#1e1e1e" : "#f8f9fa",
 											borderRadius: "var(--radius)",
 											lineHeight: 1.5,
-											border: `1px solid ${theme.palette.divider}`,
+											border: `1px solid hsl(var(--border))`,
 										}}
 										showLineNumbers={true}
 										lineNumberStyle={{
-											color: theme.palette.text.secondary,
+											color: isDark ? "hsl(var(--muted-foreground))" : "hsl(var(--muted-foreground))",
 											paddingRight: "1rem",
 											minWidth: "2rem",
 											userSelect: "none",
@@ -600,11 +555,11 @@ export default function IdentityDetailPage() {
 									>
 										{JSON.stringify(identity, null, 2)}
 									</SyntaxHighlighter>
-								</Box>
+								</div>
 							</CardContent>
 						</Card>
-					</Grid>
-				</Grid>
+					</div>
+				</div>
 
 				{/* Edit Modal */}
 				<IdentityEditModal open={editModalOpen} onClose={closeEditModal} identity={identity} onSuccess={handleEditSuccess} />
@@ -628,75 +583,100 @@ export default function IdentityDetailPage() {
 				)}
 
 				{/* Delete All Sessions Dialog */}
-				<Dialog open={deleteSessionsDialogOpen} onClose={closeDeleteSessionsDialog} title="Delete All Sessions" maxWidth="sm">
-					<Alert severity="warning" style={{ marginBottom: "1rem" }}>
-						This action will revoke all active sessions for this identity. The user will be logged out from all devices.
-					</Alert>
-					<Typography variant="body">Are you sure you want to delete all sessions for this identity? This action cannot be undone.</Typography>
-					{deleteSessionsMutation.error && (
-						<Alert severity="error" style={{ marginTop: "1rem" }}>
-							Failed to delete sessions: {deleteSessionsMutation.error.message}
-						</Alert>
-					)}
-					<DialogActions>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: deleteSessionsMutation.isPending ? "Deleting..." : "Delete All Sessions",
-								onClick: handleDeleteAllSessionsConfirm,
-								disabled: deleteSessionsMutation.isPending,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: closeDeleteSessionsDialog,
-								},
-							]}
-						/>
-					</DialogActions>
+				<Dialog open={deleteSessionsDialogOpen} onOpenChange={(open) => !open && closeDeleteSessionsDialog()}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Delete All Sessions</DialogTitle>
+							<DialogDescription>
+								This action will revoke all active sessions for this identity. The user will be logged out from all devices.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="space-y-4">
+							<Alert>
+								<AlertDescription>
+									This action will revoke all active sessions for this identity. The user will be logged out from all devices.
+								</AlertDescription>
+							</Alert>
+							<p className="text-sm text-muted-foreground">Are you sure you want to delete all sessions for this identity? This action cannot be undone.</p>
+							{deleteSessionsMutation.error && (
+								<Alert variant="destructive">
+									<AlertDescription>
+										Failed to delete sessions: {deleteSessionsMutation.error.message}
+									</AlertDescription>
+								</Alert>
+							)}
+						</div>
+						<DialogFooter>
+							<ActionBar
+								align="right"
+								primaryAction={{
+									label: deleteSessionsMutation.isPending ? "Deleting..." : "Delete All Sessions",
+									onClick: handleDeleteAllSessionsConfirm,
+									disabled: deleteSessionsMutation.isPending,
+								}}
+								secondaryActions={[
+									{
+										label: "Cancel",
+										onClick: closeDeleteSessionsDialog,
+									},
+								]}
+							/>
+						</DialogFooter>
+					</DialogContent>
 				</Dialog>
 
 				{/* State Toggle Confirmation Dialog */}
-				<Dialog
-					open={stateDialogOpen}
-					onClose={closeStateDialog}
-					title={pendingState === "active" ? "Activate Identity" : "Deactivate Identity"}
-					maxWidth="sm"
-				>
-					<Alert severity="warning" style={{ marginBottom: "1rem" }}>
-						{pendingState === "inactive"
-							? "Deactivating this identity will prevent the user from signing in. All active sessions will remain until they expire."
-							: "Activating this identity will allow the user to sign in again."}
-					</Alert>
-					<Typography variant="body">Are you sure you want to {pendingState === "active" ? "activate" : "deactivate"} this identity?</Typography>
-					{patchIdentityMutation.error && (
-						<Alert severity="error" style={{ marginTop: "1rem" }}>
-							Failed to update identity state: {patchIdentityMutation.error.message}
-						</Alert>
-					)}
-					<DialogActions>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: patchIdentityMutation.isPending ? "Updating..." : pendingState === "active" ? "Activate" : "Deactivate",
-								onClick: handleStateToggleConfirm,
-								disabled: patchIdentityMutation.isPending,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: closeStateDialog,
-								},
-							]}
-						/>
-					</DialogActions>
+				<Dialog open={stateDialogOpen} onOpenChange={(open) => !open && closeStateDialog()}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>{pendingState === "active" ? "Activate Identity" : "Deactivate Identity"}</DialogTitle>
+							<DialogDescription>
+								{pendingState === "inactive"
+									? "Deactivating this identity will prevent the user from signing in."
+									: "Activating this identity will allow the user to sign in again."}
+							</DialogDescription>
+						</DialogHeader>
+						<div className="space-y-4">
+							<Alert>
+								<AlertDescription>
+									{pendingState === "inactive"
+										? "Deactivating this identity will prevent the user from signing in. All active sessions will remain until they expire."
+										: "Activating this identity will allow the user to sign in again."}
+								</AlertDescription>
+							</Alert>
+							<p className="text-sm text-muted-foreground">Are you sure you want to {pendingState === "active" ? "activate" : "deactivate"} this identity?</p>
+							{patchIdentityMutation.error && (
+								<Alert variant="destructive">
+									<AlertDescription>
+										Failed to update identity state: {patchIdentityMutation.error.message}
+									</AlertDescription>
+								</Alert>
+							)}
+						</div>
+						<DialogFooter>
+							<ActionBar
+								align="right"
+								primaryAction={{
+									label: patchIdentityMutation.isPending ? "Updating..." : pendingState === "active" ? "Activate" : "Deactivate",
+									onClick: handleStateToggleConfirm,
+									disabled: patchIdentityMutation.isPending,
+								}}
+								secondaryActions={[
+									{
+										label: "Cancel",
+										onClick: closeStateDialog,
+									},
+								]}
+							/>
+						</DialogFooter>
+					</DialogContent>
 				</Dialog>
 
 				{/* Session Detail Dialog */}
 				{selectedSessionId && (
 					<SessionDetailDialog open={true} onClose={handleSessionDialogClose} sessionId={selectedSessionId} onSessionUpdated={handleSessionUpdated} />
 				)}
-			</Box>
+			</div>
 		</ProtectedPage>
 	);
 }

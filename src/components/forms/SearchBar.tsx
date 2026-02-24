@@ -1,9 +1,7 @@
 "use client";
 
-import { Clear, Search } from "@mui/icons-material";
-import { CircularProgress } from "@mui/material";
 import type React from "react";
-import { Box, Chip, IconButton, InputAdornment, TextField } from "@/components/ui";
+import { Badge, Button, Icon, Input, cn } from "@olympus/canvas";
 
 export interface SearchBarProps {
 	value: string;
@@ -30,80 +28,76 @@ export function SearchBar({
 	activeFilter,
 	loading = false,
 }: SearchBarProps) {
-	const handleKeyPress = (e: React.KeyboardEvent) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
 		if (e.key === "Enter" && onSearch) {
 			onSearch();
 		}
 	};
 
-	const handleClear = () => {
+	const handleClear = (): void => {
 		onChange("");
 		if (onSearch) {
 			onSearch();
 		}
 	};
 
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+		onChange(e.target.value);
+	};
+
+	const handleFilterClick = (filterValue: string): void => {
+		onFilterChange?.(filterValue);
+	};
+
 	return (
-		<Box sx={{ width: "100%" }}>
-			<Box
-				sx={{
-					display: "flex",
-					gap: 2,
-					alignItems: "center",
-					mb: filters ? 2 : 0,
-				}}
-			>
-				<TextField
-					fullWidth
-					value={value}
-					onChange={(e) => onChange(e.target.value)}
-					onKeyPress={handleKeyPress}
-					placeholder={placeholder}
-					InputProps={{
-						startAdornment: (
-							<InputAdornment position="start">
-								<Search sx={{ color: "text.secondary" }} />
-							</InputAdornment>
-						),
-						endAdornment: (
-							<InputAdornment position="end">
-								{loading ? (
-									<CircularProgress size={20} sx={{ mr: 1 }} />
-								) : value ? (
-									<IconButton size="small" onClick={handleClear} sx={{ mr: 1 }}>
-										<Clear sx={{ fontSize: 20 }} />
-									</IconButton>
-								) : null}
-							</InputAdornment>
-						),
-					}}
-				/>
-			</Box>
+		<div className="space-y-3">
+			<div className="flex items-center gap-2">
+				<div className="relative flex flex-1 items-center">
+					<Icon name="search" className="absolute left-3 h-4 w-4 text-muted-foreground" />
+					<Input
+						value={value}
+						onChange={handleChange}
+						onKeyDown={handleKeyDown}
+						placeholder={placeholder}
+						className="pl-9 pr-8"
+					/>
+					<div className="absolute right-2 flex items-center">
+						{loading ? (
+							<Icon name="loading" className="h-4 w-4 animate-spin text-muted-foreground" />
+						) : value ? (
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={handleClear}
+								aria-label="Clear search"
+								type="button"
+								className="h-6 w-6"
+							>
+								<Icon name="close" className="h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</div>
+				</div>
+			</div>
 
 			{filters && filters.length > 0 && (
-				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+				<div className="flex flex-wrap gap-2">
 					{filters.map((filter) => (
-						<Chip
+						<Badge
 							key={filter.value}
-							label={filter.label}
-							icon={filter.icon ? <Box component="span">{filter.icon}</Box> : undefined}
-							onClick={() => onFilterChange?.(filter.value)}
-							variant={activeFilter === filter.value ? "gradient" : "outlined"}
-							sx={{
-								cursor: "pointer",
-								transition: "all 0.2s",
-								...(activeFilter !== filter.value && {
-									"&:hover": {
-										borderColor: "primary.main",
-										backgroundColor: "action.hover",
-									},
-								}),
-							}}
-						/>
+							variant={activeFilter === filter.value ? "default" : "outline"}
+							onClick={() => handleFilterClick(filter.value)}
+							className="cursor-pointer"
+						>
+							{filter.icon && (
+								<span className="mr-1">{filter.icon}</span>
+							)}
+							{filter.label}
+						</Badge>
 					))}
-				</Box>
+				</div>
 			)}
-		</Box>
+		</div>
 	);
 }
 

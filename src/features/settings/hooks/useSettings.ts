@@ -18,11 +18,13 @@ export interface SettingsStoreState {
 	hydraEndpoints: HydraEndpoints;
 	isOryNetwork: boolean;
 	hydraEnabled: boolean;
+	defaultClientId: string;
 	isReady: boolean;
 	setKratosEndpoints: (endpoints: KratosEndpoints) => Promise<void>;
 	setHydraEndpoints: (endpoints: HydraEndpoints) => Promise<void>;
 	setIsOryNetwork: (value: boolean) => void;
 	setHydraEnabled: (value: boolean) => void;
+	setDefaultClientId: (id: string) => void;
 	resetToDefaults: () => Promise<void>;
 	isValidUrl: (url: string) => boolean;
 	initialize: () => Promise<void>;
@@ -65,6 +67,7 @@ async function fetchServerDefaults(): Promise<{
 	hydra: HydraEndpoints;
 	isOryNetwork: boolean;
 	hydraEnabled: boolean;
+	defaultClientId: string;
 }> {
 	try {
 		const response = await fetch("/api/config");
@@ -83,6 +86,7 @@ async function fetchServerDefaults(): Promise<{
 				},
 				isOryNetwork: config.isOryNetwork || false,
 				hydraEnabled: config.hydraEnabled ?? true,
+				defaultClientId: config.defaultClientId || "",
 			};
 		}
 	} catch (error) {
@@ -101,6 +105,7 @@ async function fetchServerDefaults(): Promise<{
 		},
 		isOryNetwork: false,
 		hydraEnabled: true,
+		defaultClientId: "",
 	};
 }
 
@@ -110,6 +115,7 @@ function readSettingsFromCookies(): {
 	hydra: HydraEndpoints;
 	isOryNetwork: boolean;
 	hydraEnabled: boolean;
+	defaultClientId: string;
 } | null {
 	const kratosPublicUrl = getCookie("kratos-public-url");
 	const kratosAdminUrl = getCookie("kratos-admin-url");
@@ -136,11 +142,12 @@ function readSettingsFromCookies(): {
 		isOryNetwork: getCookie("is-ory-network") === "true",
 		// Default to true if cookie doesn't exist (for backwards compatibility)
 		hydraEnabled: hydraEnabledCookie !== "false",
+		defaultClientId: getCookie("default-client-id") || "",
 	};
 }
 
 // Write all settings to cookies
-function writeSettingsToCookies(settings: { kratos: KratosEndpoints; hydra: HydraEndpoints; isOryNetwork: boolean; hydraEnabled: boolean }) {
+function writeSettingsToCookies(settings: { kratos: KratosEndpoints; hydra: HydraEndpoints; isOryNetwork: boolean; hydraEnabled: boolean; defaultClientId: string }) {
 	setCookie("kratos-public-url", settings.kratos.publicUrl);
 	setCookie("kratos-admin-url", settings.kratos.adminUrl);
 	setCookie("kratos-api-key", settings.kratos.apiKey || "");
@@ -149,6 +156,7 @@ function writeSettingsToCookies(settings: { kratos: KratosEndpoints; hydra: Hydr
 	setCookie("hydra-api-key", settings.hydra.apiKey || "");
 	setCookie("is-ory-network", settings.isOryNetwork ? "true" : "false");
 	setCookie("hydra-enabled", settings.hydraEnabled ? "true" : "false");
+	setCookie("default-client-id", settings.defaultClientId);
 }
 
 // Initial state - empty until initialized
@@ -167,6 +175,7 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 	hydraEndpoints: INITIAL_HYDRA_ENDPOINTS,
 	isOryNetwork: false,
 	hydraEnabled: true,
+	defaultClientId: "",
 	isReady: false,
 
 	initialize: async () => {
@@ -183,6 +192,7 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 				hydraEndpoints: cookieSettings.hydra,
 				isOryNetwork: cookieSettings.isOryNetwork,
 				hydraEnabled: cookieSettings.hydraEnabled,
+				defaultClientId: cookieSettings.defaultClientId,
 				isReady: true,
 			});
 			return;
@@ -200,6 +210,7 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 			hydraEndpoints: defaults.hydra,
 			isOryNetwork: defaults.isOryNetwork,
 			hydraEnabled: defaults.hydraEnabled,
+			defaultClientId: defaults.defaultClientId,
 			isReady: true,
 		});
 	},
@@ -248,6 +259,11 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 		set({ hydraEnabled: value });
 	},
 
+	setDefaultClientId: (id: string) => {
+		setCookie("default-client-id", id);
+		set({ defaultClientId: id });
+	},
+
 	resetToDefaults: async () => {
 		const defaults = await fetchServerDefaults();
 
@@ -260,6 +276,7 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 			hydraEndpoints: defaults.hydra,
 			isOryNetwork: defaults.isOryNetwork,
 			hydraEnabled: defaults.hydraEnabled,
+			defaultClientId: defaults.defaultClientId,
 		});
 	},
 
@@ -299,6 +316,8 @@ export const useSetKratosEndpoints = () => useSettingsStore((state) => state.set
 export const useSetHydraEndpoints = () => useSettingsStore((state) => state.setHydraEndpoints);
 export const useSetIsOryNetwork = () => useSettingsStore((state) => state.setIsOryNetwork);
 export const useSetHydraEnabled = () => useSettingsStore((state) => state.setHydraEnabled);
+export const useDefaultClientId = () => useSettingsStore((state) => state.defaultClientId);
+export const useSetDefaultClientId = () => useSettingsStore((state) => state.setDefaultClientId);
 export const useResetSettings = () => useSettingsStore((state) => state.resetToDefaults);
 export const useIsValidUrl = () => useSettingsStore((state) => state.isValidUrl);
 

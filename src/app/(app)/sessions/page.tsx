@@ -1,11 +1,17 @@
 "use client";
 
-import { ExpandMore, Refresh, Security } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
-import { ErrorState, SearchBar } from "@/components";
+import { Icon, SearchBar } from "@olympus/canvas";
+import { ErrorState } from "@olympus/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
-import { Box, Button, Card, CardContent, IconButton, Tooltip, Typography } from "@/components/ui";
-import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@olympus/canvas";
+import { Card, CardContent } from "@olympus/canvas";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { SessionDetailDialog } from "@/features/sessions/components/SessionDetailDialog";
@@ -64,13 +70,14 @@ export default function SessionsPage() {
 	};
 
 	// Helper to get identity display name - memoized for stability
-	const getIdentityDisplay = useCallback((session: any) => {
-		if (!session.identity) return "Unknown";
+	const getIdentityDisplay = useCallback((session: Record<string, unknown>) => {
+		if (!(session as { identity?: { traits?: Record<string, string>; id?: string } }).identity) return "Unknown";
 
-		const traits = session.identity.traits;
-		if (!traits) return session.identity.id;
+		const identity = (session as { identity: { traits?: Record<string, string>; id?: string } }).identity;
+		const traits = identity.traits;
+		if (!traits) return identity.id || "Unknown";
 
-		return traits.email || traits.username || session.identity.id;
+		return traits.email || traits.username || identity.id || "Unknown";
 	}, []);
 
 	// Use the stable sessions hook for truly stable references
@@ -93,42 +100,36 @@ export default function SessionsPage() {
 	return (
 		<ProtectedRoute requiredRole={UserRole.ADMIN}>
 			<AdminLayout>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<PageHeader
 						title="Active Sessions"
 						subtitle="Monitor and manage user sessions across your system"
-						icon={<Security sx={{ fontSize: 32, color: "white" }} />}
+						icon={<Icon name="shield" />}
 						actions={
-							<Tooltip title="Refresh">
-								<IconButton variant="action" onClick={() => refetch()}>
-									<Refresh />
-								</IconButton>
-							</Tooltip>
+							<TooltipProvider delayDuration={0}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button variant="ghost" size="icon" onClick={() => refetch()}>
+											<Icon name="refresh" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Refresh</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						}
 					/>
 
-					<Card variant="bordered" sx={{ mb: 4 }}>
+					<Card>
 						<CardContent>
-							<Box
-								sx={{
-									display: "flex",
-									justifyContent: "space-between",
-									alignItems: "center",
-									mb: 2,
-									gap: 2,
-								}}
-							>
-								<Typography variant="heading" size="lg">
-									All Sessions
-								</Typography>
-								<Box sx={{ width: { xs: "100%", sm: "300px" } }}>
+							<div className="flex items-center justify-between">
+								<h2 className="text-lg font-semibold text-foreground">All Sessions</h2>
+								<div className="w-full max-w-sm">
 									<SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search sessions..." />
-								</Box>
-							</Box>
+								</div>
+							</div>
 
 							{isError ? (
 								<ErrorState
-									variant="page"
 									message={error?.message || "Unable to fetch sessions. Please check your connection and try again."}
 									action={{
 										label: "Retry",
@@ -148,37 +149,42 @@ export default function SessionsPage() {
 
 									{/* Loading/pagination controls for search mode */}
 									{isSearching && hasNextPage && (
-										<Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+										<div className="flex items-center justify-center py-4">
 											{searchQuery_.isAutoSearching ? (
-												<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-													<Spinner variant="inline" />
-													<Typography variant="subheading">Searching for more sessions...</Typography>
-												</Box>
+												<div className="flex items-center gap-2 text-sm text-muted-foreground">
+													<Icon name="loading" className="h-4 w-4 animate-spin" />
+													<span>Searching for more sessions...</span>
+												</div>
 											) : (
-												<Button onClick={() => searchQuery_.loadMoreMatches()} variant="outlined" startIcon={<ExpandMore />}>
+												<Button variant="outline" onClick={() => searchQuery_.loadMoreMatches()}>
+													<Icon name="chevron-down" />
 													Load More Matches
 												</Button>
 											)}
-										</Box>
+										</div>
 									)}
 
 									{/* Manual load more for browsing mode */}
 									{!isSearching && hasNextPage && (
-										<Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+										<div className="flex items-center justify-center py-4">
 											<Button
+												variant="outline"
 												onClick={() => fetchNextPage()}
 												disabled={isFetchingNextPage}
-												variant="outlined"
-												startIcon={isFetchingNextPage ? <Spinner variant="button" /> : <ExpandMore />}
 											>
+												{isFetchingNextPage ? (
+													<Icon name="loading" />
+												) : (
+													<Icon name="chevron-down" />
+												)}
 												{isFetchingNextPage ? "Loading..." : "Load More Sessions"}
 											</Button>
-										</Box>
+										</div>
 									)}
 
 									{/* Sessions count info */}
-									<Box sx={{ p: 2, textAlign: "center" }}>
-										<Typography variant="subheading">
+									<div className="py-2 text-center">
+										<p className="text-sm text-muted-foreground">
 											{isSearching ? (
 												<>
 													Found {stableFilteredSessions.length} sessions matching &ldquo;{trimmedSearchQuery}&rdquo;
@@ -203,25 +209,23 @@ export default function SessionsPage() {
 													{hasNextPage && " (more available)"}
 												</>
 											)}
-										</Typography>
-									</Box>
+										</p>
+									</div>
 								</>
 							)}
 						</CardContent>
 					</Card>
 
-					<Card variant="bordered">
+					<Card>
 						<CardContent>
-							<Typography variant="heading" size="lg" sx={{ mb: 2 }}>
-								About Sessions
-							</Typography>
-							<Typography variant="subheading">
+							<h2 className="text-lg font-semibold text-foreground">About Sessions</h2>
+							<p className="text-sm text-muted-foreground">
 								This page shows all active sessions across all identities in the system. Sessions are automatically created when users authenticate
 								and expire based on your Kratos configuration. Use this page to monitor user activity and troubleshoot authentication issues.
-							</Typography>
+							</p>
 						</CardContent>
 					</Card>
-				</Box>
+				</div>
 
 				{/* Session Detail Dialog */}
 				{selectedSessionId && (

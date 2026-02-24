@@ -1,90 +1,73 @@
 "use client";
 
-import { Box, CircularProgress, Button as MuiButton } from "@mui/material";
-import type React from "react";
-import { gradients } from "@/theme";
+import type { ReactNode } from "react";
+import { Button, Icon, cn } from "@olympus/canvas";
 
 export interface ActionBarProps {
 	primaryAction?: {
 		label: string;
 		onClick: () => void;
-		icon?: React.ReactNode;
+		icon?: ReactNode;
 		loading?: boolean;
 		disabled?: boolean;
 	};
 	secondaryActions?: Array<{
 		label: string;
 		onClick: () => void;
-		icon?: React.ReactNode;
-		variant?: "outlined" | "text";
+		icon?: ReactNode;
+		variant?: "outline" | "ghost";
 		disabled?: boolean;
 	}>;
 	align?: "left" | "right" | "center" | "space-between";
 	spacing?: number;
+	className?: string;
 }
 
-export function ActionBar({ primaryAction, secondaryActions = [], align = "right", spacing = 2 }: ActionBarProps) {
-	const alignmentStyles = {
-		left: "flex-start",
-		right: "flex-end",
-		center: "center",
-		"space-between": "space-between",
-	};
+const alignMap: Record<string, string> = {
+	left: "justify-start",
+	right: "justify-end",
+	center: "justify-center",
+	"space-between": "justify-between",
+};
 
+export function ActionBar({
+	primaryAction,
+	secondaryActions = [],
+	align = "right",
+	className,
+}: ActionBarProps) {
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				gap: spacing,
-				justifyContent: alignmentStyles[align],
-				alignItems: "center",
-				flexWrap: "wrap",
-			}}
-		>
+		<div className={cn("flex items-center gap-2", alignMap[align], className)}>
 			{secondaryActions.map((action, index) => (
-				<MuiButton
-					key={index}
+				<Button
+					key={action.label}
 					onClick={action.onClick}
 					disabled={action.disabled}
-					variant={action.variant || "outlined"}
-					startIcon={action.icon}
-					sx={{
-						...(action.variant === "text" && {
-							color: "text.secondary",
-							"&:hover": {
-								backgroundColor: "rgba(0, 0, 0, 0.04)",
-							},
-						}),
-					}}
+					variant={action.variant || "outline"}
+					size="sm"
 				>
+					{action.icon && <span className="mr-1">{action.icon}</span>}
 					{action.label}
-				</MuiButton>
+				</Button>
 			))}
 
 			{primaryAction && (
-				<MuiButton
+				<Button
 					onClick={primaryAction.onClick}
 					disabled={primaryAction.disabled || primaryAction.loading}
-					startIcon={primaryAction.loading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : primaryAction.icon}
-					sx={{
-						background: gradients.normal,
-						color: "#ffffff",
-						fontWeight: 600,
-						px: 3,
-						"&:hover": {
-							background: gradients.reversed,
-							boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-						},
-						"&:disabled": {
-							background: "rgba(0, 0, 0, 0.12)",
-							color: "rgba(0, 0, 0, 0.26)",
-						},
-					}}
+					size="sm"
 				>
+					{primaryAction.loading ? (
+						<Icon name="loading" className="mr-1 h-4 w-4 animate-spin" />
+					) : (
+						primaryAction.icon && (
+							<span className="mr-1">{primaryAction.icon}</span>
+						)
+					)}
 					{primaryAction.label}
-				</MuiButton>
+				</Button>
 			)}
-		</Box>
+		</div>
 	);
 }
 

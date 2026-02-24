@@ -1,11 +1,15 @@
 "use client";
 
-import { Apps as AppsIcon, ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Box, IconButton, Typography } from "@/components/ui";
+import { Button, Icon } from "@olympus/canvas";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
-import { getDefaultOAuth2ClientFormData, OAuth2ClientForm, transformFormDataToCreateRequest, useCreateOAuth2Client } from "@/features/oauth2-clients";
+import {
+	getDefaultOAuth2ClientFormData,
+	OAuth2ClientForm,
+	transformFormDataToCreateRequest,
+	useCreateOAuth2Client,
+} from "@/features/oauth2-clients";
 
 export default function CreateOAuth2ClientPage() {
 	const router = useRouter();
@@ -22,22 +26,18 @@ export default function CreateOAuth2ClientPage() {
 
 	return (
 		<AdminLayout>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				{/* Header */}
-				<Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-					<IconButton onClick={() => router.back()}>
-						<ArrowBackIcon />
-					</IconButton>
-					<AppsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-					<Box>
-						<Typography variant="h4" component="h1" fontWeight="bold">
-							Create OAuth2 Client
-						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							Configure a new OAuth2 client application
-						</Typography>
-					</Box>
-				</Box>
+				<div className="flex items-center gap-3">
+					<Button variant="ghost" size="icon" onClick={() => router.back()}>
+						<Icon name="arrow-left" />
+					</Button>
+					<Icon name="grid" />
+					<div className="space-y-1">
+						<h1 className="text-2xl font-bold text-foreground">Create OAuth2 Client</h1>
+						<p className="text-sm text-muted-foreground">Configure a new OAuth2 client application</p>
+					</div>
+				</div>
 
 				<OAuth2ClientForm
 					initialData={getDefaultOAuth2ClientFormData()}
@@ -47,7 +47,7 @@ export default function CreateOAuth2ClientPage() {
 					error={createClientMutation.error}
 					onCancel={() => router.back()}
 				/>
-			</Box>
+			</div>
 		</AdminLayout>
 	);
 }

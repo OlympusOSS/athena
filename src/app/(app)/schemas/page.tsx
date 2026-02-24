@@ -1,115 +1,76 @@
 "use client";
 
-import { Code, Description, MoreVert, Refresh, Schema } from "@mui/icons-material";
-import { TablePagination } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { Icon, SearchBar } from "@olympus/canvas";
+import { EmptyState, ErrorState, LoadingState } from "@olympus/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Card, CardContent } from "@olympus/canvas";
 import {
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Chip,
 	Dialog,
-	DialogActions,
 	DialogContent,
-	EmptyState,
-	ErrorState,
-	IconButton,
-	LoadingState,
-	Paper,
-	SearchBar,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@olympus/canvas";
+import {
 	Table,
 	TableBody,
 	TableCell,
-	TableContainer,
 	TableHead,
+	TableHeader,
 	TableRow,
+} from "@olympus/canvas";
+import {
 	Tooltip,
-	Typography,
-} from "@/components/ui";
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
+import { useTheme } from "@/providers/ThemeProvider";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { useSchemas } from "@/features/schemas/hooks";
+import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import { getIdentitySchema } from "@/services/kratos";
 
-// Define the schema interface based on the provided example
-interface SchemaItem {
-	id: string;
-	schema: {
-		$id?: string;
-		title?: string;
-		type?: string;
-		properties?: any;
-		// Add other properties as needed
-	};
-}
-
 export default function SchemasPage() {
-	const theme = useTheme();
+	const { theme } = useTheme();
+	const isDark = theme === "dark";
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 	const [selectedSchemaId, setSelectedSchemaId] = useState<string | null>(null);
 	const [schemaDialogOpen, setSchemaDialogOpen] = useState(false);
-	const [schemaContent, setSchemaContent] = useState<any>(null);
+	const [schemaContent, setSchemaContent] = useState<object | null>(null);
 	const [schemaLoading, setSchemaLoading] = useState(false);
-	const [parsedSchemas, setParsedSchemas] = useState<SchemaItem[]>([]);
+	const [parsedSchemas, setParsedSchemas] = useState<IdentitySchemaContainer[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const { data: schemasResponse, isLoading, error, refetch } = useSchemas();
 
-	// Use useEffect to parse the schemas when the response changes
+	// Update parsed schemas when the response changes
 	useEffect(() => {
 		if (schemasResponse) {
-			// Check if the response has a json property
-			if ((schemasResponse as any).json && Array.isArray((schemasResponse as any).json)) {
-				setParsedSchemas((schemasResponse as any).json);
-			} else {
-				// If not, try to use the response directly if it's an array
-				const mapped = Array.isArray(schemasResponse)
-					? schemasResponse.map((schema) => ({
-							id: schema.id || "",
-							schema: schema.schema || {},
-						}))
-					: [];
-				setParsedSchemas(mapped);
-			}
+			setParsedSchemas(Array.isArray(schemasResponse) ? schemasResponse : []);
 		}
 	}, [schemasResponse]);
 
-	// Use inert attribute to properly hide background content when dialog is open
-	useEffect(() => {
-		// Target the main layout container, not the dialog
-		const layoutContainer = document.querySelector("main");
-		const appBar = document.querySelector("header");
-		const drawer = document.querySelector(".MuiDrawer-root");
-
-		if (schemaDialogOpen) {
-			if (layoutContainer) layoutContainer.setAttribute("inert", "");
-			if (appBar) appBar.setAttribute("inert", "");
-			if (drawer) drawer.setAttribute("inert", "");
-		} else {
-			if (layoutContainer) layoutContainer.removeAttribute("inert");
-			if (appBar) appBar.removeAttribute("inert");
-			if (drawer) drawer.removeAttribute("inert");
-		}
-
-		return () => {
-			if (layoutContainer) layoutContainer.removeAttribute("inert");
-			if (appBar) appBar.removeAttribute("inert");
-			if (drawer) drawer.removeAttribute("inert");
-		};
-	}, [schemaDialogOpen]);
-
-	const handleChangePage = (_: unknown, newPage: number) => {
+	const handleChangePage = (newPage: number) => {
 		setPage(newPage);
 	};
 
-	const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setRowsPerPage(parseInt(event.target.value, 10));
+	const handleChangeRowsPerPage = (value: string) => {
+		setRowsPerPage(parseInt(value, 10));
 		setPage(0);
 	};
 
@@ -146,13 +107,16 @@ export default function SchemasPage() {
 	};
 
 	// Extract schema title or use ID if title is not available
-	const getSchemaTitle = (schema: SchemaItem) => {
-		return schema.schema.title || "Unnamed Schema";
+	const getSchemaTitle = (schema: IdentitySchemaContainer) => {
+		const s = schema.schema as Record<string, unknown>;
+		return (s.title as string) || "Unnamed Schema";
 	};
 
 	// Get schema properties count
-	const getPropertiesCount = (schema: SchemaItem) => {
-		const traits = schema.schema.properties?.traits?.properties;
+	const getPropertiesCount = (schema: IdentitySchemaContainer) => {
+		const s = schema.schema as Record<string, unknown>;
+		const properties = s.properties as Record<string, unknown> | undefined;
+		const traits = (properties?.traits as Record<string, unknown>)?.properties as Record<string, unknown> | undefined;
 		return traits ? Object.keys(traits).length : 0;
 	};
 
@@ -164,40 +128,40 @@ export default function SchemasPage() {
 		return title.includes(query) || id.includes(query);
 	});
 
+	// Pagination
+	const totalPages = Math.ceil(filteredSchemas.length / rowsPerPage);
+	const paginatedSchemas = filteredSchemas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
 	return (
 		<ProtectedRoute requiredRole={UserRole.VIEWER}>
 			<AdminLayout>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<PageHeader
 						title="Identity Schemas"
 						subtitle="View and inspect your identity schemas and their properties"
-						icon={<Schema sx={{ fontSize: 32, color: "white" }} />}
+						icon={<Icon name="shapes" />}
 						actions={
-							<Tooltip title="Refresh">
-								<IconButton variant="action" onClick={() => refetch()}>
-									<Refresh />
-								</IconButton>
-							</Tooltip>
+							<TooltipProvider delayDuration={0}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button variant="ghost" size="icon" onClick={() => refetch()}>
+											<Icon name="refresh" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Refresh</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						}
 					/>
 
-					<Card variant="bordered" sx={{ mb: 4 }}>
+					<Card>
 						<CardContent>
-							<Box
-								sx={{
-									display: "flex",
-									justifyContent: "space-between",
-									alignItems: "center",
-									mb: 2,
-								}}
-							>
-								<Typography variant="heading" size="lg">
-									All Schemas
-								</Typography>
-								<Box sx={{ width: { xs: "100%", sm: "300px" } }}>
+							<div className="flex items-center justify-between">
+								<h2 className="text-lg font-semibold text-foreground">All Schemas</h2>
+								<div className="w-full max-w-sm">
 									<SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search schemas..." />
-								</Box>
-							</Box>
+								</div>
+							</div>
 
 							{isLoading ? (
 								<LoadingState variant="section" message="Loading schemas..." />
@@ -208,183 +172,179 @@ export default function SchemasPage() {
 								/>
 							) : (
 								<>
-									<TableContainer
-										component={Paper}
-										sx={{
-											boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-											borderRadius: "8px",
-											overflow: "hidden",
-											border: "1px solid var(--border)",
-										}}
-									>
-										<Table sx={{ minWidth: 650 }} aria-label="schemas table">
-											<TableHead sx={{ backgroundColor: "var(--table-header)" }}>
+									<div className="overflow-auto rounded-md border">
+										<Table>
+											<TableHeader>
 												<TableRow>
-													<TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-													<TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
-													<TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-													<TableCell sx={{ fontWeight: 600 }}>Properties</TableCell>
-													<TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+													<TableHead>ID</TableHead>
+													<TableHead>Title</TableHead>
+													<TableHead>Type</TableHead>
+													<TableHead>Properties</TableHead>
+													<TableHead>Actions</TableHead>
 												</TableRow>
-											</TableHead>
+											</TableHeader>
 											<TableBody>
-												{filteredSchemas.length === 0 ? (
+												{paginatedSchemas.length === 0 ? (
 													<TableRow>
-														<TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+														<TableCell colSpan={5}>
 															<EmptyState
-																icon={Description}
+																icon={<Icon name="file-text" />}
 																title="No schemas found"
 																description={searchQuery ? "Try a different search term" : "No schemas are currently configured"}
 															/>
 														</TableCell>
 													</TableRow>
 												) : (
-													filteredSchemas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((schema) => (
-														<TableRow
-															key={schema.id}
-															sx={{
-																"&:hover": {
-																	backgroundColor: "var(--table-row-hover)",
-																},
-																borderBottom: "1px solid var(--table-border)",
-															}}
-														>
-															<TableCell
-																component="th"
-																scope="row"
-																sx={{
-																	maxWidth: 200,
-																	overflow: "hidden",
-																	textOverflow: "ellipsis",
-																	whiteSpace: "nowrap",
-																}}
-															>
-																<Typography variant="code">{schema.id}</Typography>
-															</TableCell>
-															<TableCell sx={{ fontWeight: 500 }}>{getSchemaTitle(schema)}</TableCell>
+													paginatedSchemas.map((schema) => (
+														<TableRow key={schema.id}>
 															<TableCell>
-																<Chip variant="gradient" label={schema.schema.type || "unknown"} />
+																<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
+																	{schema.id}
+																</code>
+															</TableCell>
+															<TableCell>{getSchemaTitle(schema)}</TableCell>
+															<TableCell>
+																<Badge variant="secondary">
+																	{(schema.schema as Record<string, unknown>).type as string || "unknown"}
+																</Badge>
 															</TableCell>
 															<TableCell>
-																<Chip variant="tag" label={`${getPropertiesCount(schema)} trait(s)`} />
+																<Badge variant="outline">
+																	{getPropertiesCount(schema)} trait(s)
+																</Badge>
 															</TableCell>
 															<TableCell>
-																<Button
-																	variant="outlined"
-																	size="small"
-																	startIcon={<Code />}
-																	onClick={() => handleViewSchema(schema.id)}
-																	sx={{ mr: 1 }}
-																>
-																	View Schema
-																</Button>
-																<IconButton size="small">
-																	<MoreVert fontSize="small" />
-																</IconButton>
+																<div className="flex items-center gap-1">
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		onClick={() => handleViewSchema(schema.id)}
+																	>
+																		<Icon name="code" />
+																		View Schema
+																	</Button>
+																	<Button variant="ghost" size="icon">
+																		<Icon name="more-vertical" />
+																	</Button>
+																</div>
 															</TableCell>
 														</TableRow>
 													))
 												)}
 											</TableBody>
 										</Table>
-									</TableContainer>
-									<TablePagination
-										rowsPerPageOptions={[5, 10, 25]}
-										component="div"
-										count={filteredSchemas.length}
-										rowsPerPage={rowsPerPage}
-										page={page}
-										onPageChange={handleChangePage}
-										onRowsPerPageChange={handleChangeRowsPerPage}
-										sx={{
-											".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
-												margin: 0,
-											},
-										}}
-									/>
+									</div>
+
+									{/* Pagination */}
+									<div className="flex items-center justify-between px-2 py-4">
+										<div className="flex items-center gap-2">
+											<span className="text-sm text-muted-foreground">Rows per page:</span>
+											<Select value={String(rowsPerPage)} onValueChange={handleChangeRowsPerPage}>
+												<SelectTrigger>
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="5">5</SelectItem>
+													<SelectItem value="10">10</SelectItem>
+													<SelectItem value="25">25</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="flex items-center gap-2">
+											<span className="text-sm text-muted-foreground">
+												{page * rowsPerPage + 1}
+												&ndash;
+												{Math.min((page + 1) * rowsPerPage, filteredSchemas.length)} of {filteredSchemas.length}
+											</span>
+											<Button
+												variant="ghost"
+												size="icon"
+												disabled={page === 0}
+												onClick={() => handleChangePage(page - 1)}
+											>
+												&lsaquo;
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												disabled={page >= totalPages - 1}
+												onClick={() => handleChangePage(page + 1)}
+											>
+												&rsaquo;
+											</Button>
+										</div>
+									</div>
 								</>
 							)}
 						</CardContent>
 					</Card>
 
-					<Card variant="bordered">
+					<Card>
 						<CardContent>
-							<Typography variant="heading" size="lg" sx={{ mb: 2 }}>
-								About Identity Schemas
-							</Typography>
-							<Typography variant="subheading">
+							<h2 className="text-lg font-semibold text-foreground">About Identity Schemas</h2>
+							<p className="text-sm text-muted-foreground">
 								Identity schemas define the structure of identity data in Ory Kratos. They determine what fields are available for registration,
 								login, and profile management. Use schemas to customize the user experience and data collection for your application.
-							</Typography>
+							</p>
 						</CardContent>
 					</Card>
 
 					{/* Schema Dialog */}
-					<Dialog
-						open={schemaDialogOpen}
-						onClose={handleCloseSchemaDialog}
-						title={
-							<>
-								Schema Details{" "}
-								{selectedSchemaId && (
-									<Typography variant="code" component="span" sx={{ ml: 1 }}>
-										(ID: {selectedSchemaId})
-									</Typography>
+					<Dialog open={schemaDialogOpen} onOpenChange={(open) => !open && handleCloseSchemaDialog()}>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>
+									Schema Details{" "}
+									{selectedSchemaId && (
+										<code className="text-sm font-mono text-muted-foreground">
+											(ID: {selectedSchemaId})
+										</code>
+									)}
+								</DialogTitle>
+							</DialogHeader>
+							<div className="space-y-4">
+								{schemaLoading ? (
+									<LoadingState variant="section" message="Loading schema details..." />
+								) : schemaContent ? (
+									<div className="overflow-auto rounded-md" style={{ maxHeight: "60vh" }}>
+										<SyntaxHighlighter
+											language="json"
+											style={isDark ? vs2015 : github}
+											customStyle={{
+												margin: 0,
+												padding: "1.5rem",
+												fontSize: "0.875rem",
+												background: isDark ? "#1e1e1e" : "#f8f9fa",
+												borderRadius: "var(--radius)",
+												lineHeight: 1.5,
+												border: "1px solid hsl(var(--border))",
+											}}
+											showLineNumbers={true}
+											lineNumberStyle={{
+												color: isDark ? "#6b7280" : "#9ca3af",
+												paddingRight: "1rem",
+												minWidth: "2rem",
+												userSelect: "none",
+											}}
+											wrapLongLines={true}
+										>
+											{JSON.stringify(schemaContent, null, 2)}
+										</SyntaxHighlighter>
+									</div>
+								) : (
+									<p className="text-sm text-muted-foreground">
+										Failed to load schema content. Please try again.
+									</p>
 								)}
-							</>
-						}
-						maxWidth="md"
-						fullWidth
-					>
-						<DialogContent dividers sx={{ p: 0 }}>
-							{schemaLoading ? (
-								<LoadingState variant="section" message="Loading schema details..." />
-							) : schemaContent ? (
-								<Box
-									sx={{
-										borderRadius: 1,
-										overflow: "auto",
-										maxHeight: "60vh",
-										background: theme.palette.background.default,
-									}}
-								>
-									<SyntaxHighlighter
-										language="json"
-										style={theme.palette.mode === "dark" ? vs2015 : github}
-										customStyle={{
-											margin: 0,
-											padding: "1.5rem",
-											fontSize: "0.875rem",
-											background: theme.palette.mode === "dark" ? "#1e1e1e" : "#f8f9fa",
-											borderRadius: "var(--radius)",
-											lineHeight: 1.5,
-											border: `1px solid ${theme.palette.divider}`,
-										}}
-										showLineNumbers={true}
-										lineNumberStyle={{
-											color: theme.palette.text.secondary,
-											paddingRight: "1rem",
-											minWidth: "2rem",
-											userSelect: "none",
-										}}
-										wrapLongLines={true}
-									>
-										{JSON.stringify(schemaContent, null, 2)}
-									</SyntaxHighlighter>
-								</Box>
-							) : (
-								<Typography variant="body" color="error" sx={{ p: 3 }}>
-									Failed to load schema content. Please try again.
-								</Typography>
-							)}
+							</div>
+							<DialogFooter>
+								<Button variant="outline" onClick={handleCloseSchemaDialog}>
+									Close
+								</Button>
+							</DialogFooter>
 						</DialogContent>
-						<DialogActions>
-							<Button onClick={handleCloseSchemaDialog} variant="outlined">
-								Close
-							</Button>
-						</DialogActions>
 					</Dialog>
-				</Box>
+				</div>
 			</AdminLayout>
 		</ProtectedRoute>
 	);

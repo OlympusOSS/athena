@@ -1,4 +1,4 @@
-import { LoadingState } from "@/components/ui";
+import { LoadingState } from "@olympus/canvas";
 
 interface SessionsLoadingSkeletonProps {
 	rows?: number;

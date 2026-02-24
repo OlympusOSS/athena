@@ -1,7 +1,6 @@
-import { Cancel, CheckCircle, Error as ErrorIcon, Mail, Schedule, Sms } from "@mui/icons-material";
 import React, { useMemo } from "react";
-import { StatusBadge } from "@/components";
-import { Box, DataTable, type DataTableColumn, Typography } from "@/components/ui";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { DataTable, type DataTableColumn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 
@@ -11,22 +10,22 @@ interface MessagesTableProps {
 	onMessageClick?: (messageId: string) => void;
 }
 
-const getStatusIcon = (status: CourierMessageStatus) => {
+const getStatusIcon = (status: CourierMessageStatus): React.ReactNode => {
 	switch (status) {
 		case "sent":
-			return <CheckCircle color="success" fontSize="small" />;
+			return <Icon name="success-filled" />;
 		case "queued":
-			return <Schedule color="info" fontSize="small" />;
+			return <Icon name="time" />;
 		case "processing":
-			return <Schedule color="warning" fontSize="small" />;
+			return <Icon name="time" />;
 		case "abandoned":
-			return <Cancel color="error" fontSize="small" />;
+			return <Icon name="x-circle" />;
 		default:
-			return <ErrorIcon color="warning" fontSize="small" />;
+			return <Icon name="error" />;
 	}
 };
 
-const _getStatusColor = (status: CourierMessageStatus) => {
+const _getStatusColor = (status: CourierMessageStatus): string => {
 	switch (status) {
 		case "sent":
 			return "success";
@@ -41,14 +40,14 @@ const _getStatusColor = (status: CourierMessageStatus) => {
 	}
 };
 
-const getMessageTypeIcon = (type: string) => {
+const getMessageTypeIcon = (type: string): React.ReactNode => {
 	switch (type) {
 		case "email":
-			return <Mail fontSize="small" />;
+			return <Icon name="mail" />;
 		case "sms":
-			return <Sms fontSize="small" />;
+			return <Icon name="message" />;
 		default:
-			return <Mail fontSize="small" />;
+			return <Icon name="mail" />;
 	}
 };
 
@@ -60,12 +59,10 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				headerName: "Type",
 				minWidth: 120,
 				renderCell: (value: string) => (
-					<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+					<div>
 						{getMessageTypeIcon(value)}
-						<Typography variant="body" sx={{ textTransform: "capitalize" }}>
-							{value}
-						</Typography>
-					</Box>
+						<span>{value}</span>
+					</div>
 				),
 			},
 			{
@@ -74,16 +71,7 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				minWidth: 200,
 				maxWidth: 250,
 				renderCell: (value: string) => (
-					<Typography
-						variant="body"
-						sx={{
-							overflow: "hidden",
-							textOverflow: "ellipsis",
-							whiteSpace: "nowrap",
-						}}
-					>
-						{value}
-					</Typography>
+					<span>{value}</span>
 				),
 			},
 			{
@@ -92,16 +80,7 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				minWidth: 250,
 				maxWidth: 300,
 				renderCell: (value: string) => (
-					<Typography
-						variant="body"
-						sx={{
-							overflow: "hidden",
-							textOverflow: "ellipsis",
-							whiteSpace: "nowrap",
-						}}
-					>
-						{value || "No subject"}
-					</Typography>
+					<span>{value || "No subject"}</span>
 				),
 			},
 			{
@@ -109,29 +88,33 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				headerName: "Status",
 				minWidth: 150,
 				renderCell: (value: CourierMessageStatus) => (
-					<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+					<div>
 						{getStatusIcon(value)}
 						<StatusBadge status={value === "sent" ? "active" : value === "queued" ? "pending" : "inactive"} label={value} showIcon={false} />
-					</Box>
+					</div>
 				),
 			},
 			{
 				field: "template_type",
 				headerName: "Template",
 				minWidth: 160,
-				renderCell: (value: string) => <Typography variant="code">{value || "Unknown"}</Typography>,
+				renderCell: (value: string) => (
+					<code>
+						{value || "Unknown"}
+					</code>
+				),
 			},
 			{
 				field: "created_at",
 				headerName: "Created",
 				minWidth: 180,
-				renderCell: (value: string) => <Typography variant="body">{formatDate(value)}</Typography>,
+				renderCell: (value: string) => <span>{formatDate(value)}</span>,
 			},
 			{
 				field: "send_count",
 				headerName: "Send Count",
 				minWidth: 120,
-				renderCell: (value: number) => <Typography variant="body">{value || 0}</Typography>,
+				renderCell: (value: number) => <span>{value || 0}</span>,
 			},
 		],
 		[],

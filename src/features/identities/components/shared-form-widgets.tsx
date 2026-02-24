@@ -1,8 +1,10 @@
-import { MenuItem as MuiMenuItem, TextField as MuiTextField, useTheme } from "@mui/material";
 import type { FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps, WidgetProps } from "@rjsf/utils";
 import parsePhoneNumber, { type CountryCode, getCountries, getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
 import React, { useState } from "react";
-import { Autocomplete, Box, FormControl, InputLabel, Select as MuiSelect, Typography } from "@/components/ui";
+import { Input } from "@olympus/canvas";
+import { Label } from "@olympus/canvas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 
 // Memoize country options for autocomplete to avoid recalculation
 export const getCountryOptions = () => {
@@ -21,11 +23,11 @@ export const getCountryOptions = () => {
 
 // Custom tel widget component with libphonenumber-js integration
 export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, onFocus, placeholder, disabled, readonly, required, label }) => {
-	const theme = useTheme();
 	const [selectedCountry, setSelectedCountry] = useState<CountryCode>("US");
 	const [phoneInput, setPhoneInput] = useState("");
 	const [error, setError] = useState<string>("");
 	const [isValid, setIsValid] = useState<boolean | null>(null);
+	const [countrySearch, setCountrySearch] = useState("");
 
 	const countryOptions = getCountryOptions();
 
@@ -103,8 +105,8 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 					setError("");
 				} else {
 					// Validate with the new country
-					const isValid = isValidPhoneNumber(phoneInput, newCountry);
-					if (!isValid && phoneInput.length > 3) {
+					const valid = isValidPhoneNumber(phoneInput, newCountry);
+					if (!valid && phoneInput.length > 3) {
 						setError("Invalid phone number format for selected country");
 					} else {
 						setError("");
@@ -112,8 +114,8 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 				}
 			} catch {
 				// Validate even if parsing fails
-				const isValid = isValidPhoneNumber(phoneInput, newCountry);
-				if (!isValid && phoneInput.length > 3) {
+				const valid = isValidPhoneNumber(phoneInput, newCountry);
+				if (!valid && phoneInput.length > 3) {
 					setError("Invalid phone number format for selected country");
 				} else {
 					setError("");
@@ -124,104 +126,70 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 
 	const currentCountry = countryOptions.find((c) => c.code === selectedCountry);
 
-	const getBorderColor = () => {
-		if (isValid === true) return "#4caf50"; // Green for valid
-		if (isValid === false) return "#f44336"; // Red for invalid
-		return theme.palette.divider; // Theme-aware default
+	const getBorderClass = () => {
+		if (isValid === true) return "border-emerald-500 focus-visible:ring-emerald-500";
+		if (isValid === false) return "border-red-500 focus-visible:ring-red-500";
+		return "";
 	};
 
-	const getHoverBorderColor = () => {
-		if (isValid === true) return "#66bb6a"; // Lighter green on hover
-		if (isValid === false) return "#ef5350"; // Lighter red on hover
-		return theme.palette.text.primary; // Theme-aware hover
-	};
+	// Filter countries for the searchable select
+	const filteredCountries = countrySearch
+		? countryOptions.filter((c) => c.label.toLowerCase().includes(countrySearch.toLowerCase()))
+		: countryOptions;
 
 	return (
-		<Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-			<Autocomplete
-				value={currentCountry || null}
-				onChange={(_, newValue) => {
-					if (newValue) {
-						handleCountryChange(newValue.code);
-					}
-				}}
-				options={countryOptions}
-				getOptionLabel={(option) => option.label}
-				renderInput={(params) => (
-					<MuiTextField
-						{...params}
-						label="Country"
-						variant="outlined"
-						sx={{
-							minWidth: 200,
-							"& .MuiOutlinedInput-root": {
-								"& fieldset": {
-									borderColor: theme.palette.divider,
-									borderWidth: "1px",
-								},
-								"&:hover fieldset": {
-									borderColor: theme.palette.text.primary,
-									borderWidth: "1px",
-								},
-								"&.Mui-focused fieldset": {
-									borderColor: "primary.main",
-									borderWidth: "2px",
-								},
-							},
-						}}
-					/>
-				)}
-				disabled={disabled || readonly}
-				size="small"
-			/>
+		<div>
+			<div>
+				<Label>Country</Label>
+				<Select
+					value={selectedCountry}
+					onValueChange={(val: string) => handleCountryChange(val as CountryCode)}
+					disabled={disabled || readonly}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Select country" />
+					</SelectTrigger>
+					<SelectContent>
+						{countryOptions.map((option) => (
+							<SelectItem key={option.code} value={option.code}>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
 
-			<MuiTextField
-				id={id}
-				type="tel"
-				label={required ? `${label || "Phone Number"} *` : label || "Phone Number"}
-				value={phoneInput}
-				onChange={(e) => handlePhoneChange(e.target.value)}
-				onBlur={onBlur && (() => onBlur(id, value))}
-				onFocus={onFocus && (() => onFocus(id, value))}
-				placeholder={placeholder || `Enter phone number (${currentCountry?.callingCode})`}
-				disabled={disabled}
-				slotProps={{ input: { readOnly: readonly } }}
-				error={!!error}
-				helperText={error || (currentCountry ? `Format: ${currentCountry.callingCode} XXX XXX XXXX` : "")}
-				fullWidth
-				variant="outlined"
-				size="small"
-				sx={{
-					"& .MuiInputLabel-root": {
-						"& .MuiInputLabel-asterisk": {
-							color: "error.main",
-						},
-					},
-					"& .MuiOutlinedInput-root": {
-						"& fieldset": {
-							borderColor: getBorderColor(),
-							borderWidth: "1px",
-							transition: "border-color 0.2s ease-in-out",
-						},
-						"&:hover fieldset": {
-							borderColor: getHoverBorderColor(),
-							borderWidth: "1px",
-						},
-						"&.Mui-focused fieldset": {
-							borderColor: isValid === false ? "error.main" : "primary.main",
-							borderWidth: "2px",
-						},
-						"&.Mui-error fieldset": {
-							borderColor: "error.main",
-						},
-					},
-				}}
-			/>
-		</Box>
+			<div>
+				<Label htmlFor={id}>
+					{required ? `${label || "Phone Number"} ` : label || "Phone Number"}
+					{required && <span>*</span>}
+				</Label>
+				<Input
+					id={id}
+					type="tel"
+					value={phoneInput}
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePhoneChange(e.target.value)}
+					onBlur={onBlur ? () => onBlur(id, value) : undefined}
+					onFocus={onFocus ? () => onFocus(id, value) : undefined}
+					placeholder={placeholder || `Enter phone number (${currentCountry?.callingCode})`}
+					disabled={disabled}
+					readOnly={readonly}
+				/>
+				{error ? (
+					<p>{error}</p>
+				) : (
+					currentCountry && (
+						<p>
+							Format: {currentCountry.callingCode} XXX XXX XXXX
+						</p>
+					)
+				)}
+			</div>
+		</div>
 	);
 };
 
-// Custom TextWidget with Material-UI styling
+// Custom TextWidget with Tailwind styling
 export const TextWidget: React.FC<WidgetProps> = ({
 	id,
 	value,
@@ -235,7 +203,6 @@ export const TextWidget: React.FC<WidgetProps> = ({
 	schema,
 	label,
 }) => {
-	const theme = useTheme();
 	const isEmail = schema.format === "email";
 	const [isValid, setIsValid] = React.useState<boolean | null>(null);
 
@@ -288,61 +255,34 @@ export const TextWidget: React.FC<WidgetProps> = ({
 		}
 	}, [value, validateField]);
 
-	const getBorderColor = () => {
-		if (isValid === true) return "#4caf50"; // Green for valid
-		if (isValid === false) return "#f44336"; // Red for invalid
-		return theme.palette.divider; // Theme-aware default
-	};
-
-	const getHoverBorderColor = () => {
-		if (isValid === true) return "#66bb6a"; // Lighter green on hover
-		if (isValid === false) return "#ef5350"; // Lighter red on hover
-		return theme.palette.text.primary; // Theme-aware hover
+	const getBorderClass = () => {
+		if (isValid === true) return "border-emerald-500 focus-visible:ring-emerald-500";
+		if (isValid === false) return "border-red-500 focus-visible:ring-red-500";
+		return "";
 	};
 
 	return (
-		<MuiTextField
-			id={id}
-			label={required ? `${label} *` : label}
-			type={isEmail ? "email" : "text"}
-			value={value || ""}
-			onChange={handleChange}
-			onBlur={handleBlurEvent}
-			onFocus={onFocus && (() => onFocus(id, value))}
-			placeholder={placeholder}
-			disabled={disabled}
-			slotProps={{ input: { readOnly: readonly } }}
-			fullWidth
-			variant="outlined"
-			size="small"
-			sx={{
-				mb: 2,
-				"& .MuiInputLabel-root": {
-					"& .MuiInputLabel-asterisk": {
-						color: "error.main",
-					},
-				},
-				"& .MuiOutlinedInput-root": {
-					"& fieldset": {
-						borderColor: getBorderColor(),
-						borderWidth: "1px",
-						transition: "border-color 0.2s ease-in-out",
-					},
-					"&:hover fieldset": {
-						borderColor: getHoverBorderColor(),
-						borderWidth: "1px",
-					},
-					"&.Mui-focused fieldset": {
-						borderColor: isValid === false ? "#f44336" : "primary.main",
-						borderWidth: "2px",
-					},
-				},
-			}}
-		/>
+		<div>
+			<Label htmlFor={id}>
+				{label}
+				{required && <span>*</span>}
+			</Label>
+			<Input
+				id={id}
+				type={isEmail ? "email" : "text"}
+				value={value || ""}
+				onChange={handleChange}
+				onBlur={handleBlurEvent}
+				onFocus={onFocus ? () => onFocus(id, value) : undefined}
+				placeholder={placeholder}
+				disabled={disabled}
+				readOnly={readonly}
+			/>
+		</div>
 	);
 };
 
-// Custom SelectWidget with Material-UI styling for enum fields
+// Custom SelectWidget with shadcn Select for enum fields
 export const SelectWidget: React.FC<WidgetProps> = ({
 	id,
 	value,
@@ -356,7 +296,6 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 	label,
 	placeholder,
 }) => {
-	const theme = useTheme();
 	const { enumOptions = [] } = options;
 	const [isValid, setIsValid] = React.useState<boolean | null>(null);
 
@@ -370,8 +309,7 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 		}
 	}, [value, required]);
 
-	const handleChange = (event: any) => {
-		const newValue = event.target.value;
+	const handleChange = (newValue: string) => {
 		onChange(newValue === "" ? undefined : newValue);
 		if (newValue) {
 			setIsValid(true);
@@ -382,130 +320,82 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 		}
 	};
 
-	const getBorderColor = () => {
-		if (isValid === true) return "#4caf50"; // Green for valid
-		if (isValid === false) return "#f44336"; // Red for invalid
-		return theme.palette.divider; // Theme-aware default
-	};
-
-	const getHoverBorderColor = () => {
-		if (isValid === true) return "#66bb6a"; // Lighter green on hover
-		if (isValid === false) return "#ef5350"; // Lighter red on hover
-		return theme.palette.text.primary; // Theme-aware hover
+	const getBorderClass = () => {
+		if (isValid === true) return "border-emerald-500";
+		if (isValid === false) return "border-red-500";
+		return "";
 	};
 
 	return (
-		<FormControl
-			fullWidth
-			required={required}
-			disabled={disabled}
-			sx={{
-				mb: 2,
-				"& .MuiInputLabel-root": {
-					"& .MuiInputLabel-asterisk": {
-						color: "error.main",
-					},
-				},
-				"& .MuiOutlinedInput-root": {
-					"& fieldset": {
-						borderColor: getBorderColor(),
-						borderWidth: "1px",
-						transition: "border-color 0.2s ease-in-out",
-					},
-					"&:hover fieldset": {
-						borderColor: getHoverBorderColor(),
-						borderWidth: "1px",
-					},
-					"&.Mui-focused fieldset": {
-						borderColor: isValid === false ? "#f44336" : "primary.main",
-						borderWidth: "2px",
-					},
-				},
-			}}
-		>
-			<InputLabel id={`${id}-label`}>{required ? `${label} *` : label}</InputLabel>
-			<MuiSelect
-				id={id}
-				labelId={`${id}-label`}
-				label={required ? `${label} *` : label}
+		<div>
+			<Label htmlFor={id}>
+				{label}
+				{required && <span>*</span>}
+			</Label>
+			<Select
 				value={value || ""}
-				onChange={handleChange}
-				onBlur={onBlur && (() => onBlur(id, value))}
-				onFocus={onFocus && (() => onFocus(id, value))}
-				disabled={disabled}
-				readOnly={readonly}
-				size="small"
-				displayEmpty={!!placeholder}
+				onValueChange={handleChange}
+				disabled={disabled || readonly}
 			>
-				{placeholder && (
-					<MuiMenuItem value="">
-						<em>{placeholder}</em>
-					</MuiMenuItem>
-				)}
-				{enumOptions.map((option: any) => (
-					<MuiMenuItem key={option.value} value={option.value}>
-						{option.label}
-					</MuiMenuItem>
-				))}
-			</MuiSelect>
-		</FormControl>
+				<SelectTrigger id={id}>
+					<SelectValue placeholder={placeholder || "Select..."} />
+				</SelectTrigger>
+				<SelectContent>
+					{(enumOptions as Array<{ value: string; label: string }>).map((option) => (
+						<SelectItem key={option.value} value={option.value}>
+							{option.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		</div>
 	);
 };
 
 // Custom Field Template
 export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, description, errors, help, hidden }) => {
 	if (hidden) {
-		return <div style={{ display: "none" }}>{children}</div>;
+		return <div>{children}</div>;
 	}
 
 	return (
-		<Box sx={{ mb: 2 }}>
+		<div>
 			{children}
 			{description && (
-				<Box component="span" sx={{ mt: 0.5, display: "block", opacity: 0.7, fontSize: "0.875rem" }}>
+				<span>
 					{description}
-				</Box>
+				</span>
 			)}
 			{errors && (
-				<Box component="span" sx={{ mt: 0.5, display: "block", color: "error.main", fontSize: "0.875rem" }}>
+				<span>
 					{errors}
-				</Box>
+				</span>
 			)}
 			{help && (
-				<Box component="span" sx={{ mt: 0.5, display: "block", opacity: 0.7, fontSize: "0.875rem" }}>
+				<span>
 					{help}
-				</Box>
+				</span>
 			)}
-		</Box>
+		</div>
 	);
 };
 
 // Custom Object Field Template for nested objects
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = ({ title, description, properties }) => {
 	return (
-		<Box sx={{ mb: 3 }}>
+		<div>
 			{title && (
-				<Typography variant="heading" size="lg" sx={{ mb: 2 }}>
-					{title}
-				</Typography>
+				<h3>{title}</h3>
 			)}
 			{description && (
-				<Typography variant="subheading" sx={{ mb: 2 }}>
-					{description}
-				</Typography>
+				<p>{description}</p>
 			)}
-			<Box
-				sx={{
-					display: "grid",
-					gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-					gap: 2,
-				}}
-			>
+			<div>
 				{properties.map((prop) => (
 					<div key={prop.name}>{prop.content}</div>
 				))}
-			</Box>
-		</Box>
+			</div>
+		</div>
 	);
 };
 
@@ -515,15 +405,17 @@ export const SubmitButton: React.FC<SubmitButtonProps> = () => {
 };
 
 // Helper to convert Kratos schema to RJSF schema
-export const convertKratosSchemaToRJSF = (kratosSchema: any) => {
-	const schemaObj = kratosSchema as any;
+export const convertKratosSchemaToRJSF = (kratosSchema: unknown) => {
+	const schemaObj = kratosSchema as Record<string, unknown>;
+	const properties = schemaObj?.properties as Record<string, unknown> | undefined;
+	const traits = properties?.traits as Record<string, unknown> | undefined;
 
-	if (schemaObj?.properties?.traits) {
+	if (traits) {
 		return {
 			title: "Identity Traits",
 			type: "object",
-			properties: schemaObj.properties.traits.properties,
-			required: schemaObj.properties.traits.required || [],
+			properties: (traits as Record<string, unknown>).properties,
+			required: (traits as Record<string, unknown>).required || [],
 		};
 	}
 
@@ -535,12 +427,13 @@ export const convertKratosSchemaToRJSF = (kratosSchema: any) => {
 };
 
 // Create UI Schema for better form layout
-export const createUISchema = (schema: any) => {
-	const uiSchema: any = {};
+export const createUISchema = (schema: Record<string, unknown>) => {
+	const uiSchema: Record<string, unknown> = {};
+	const schemaProperties = (schema.properties || {}) as Record<string, Record<string, unknown>>;
 
 	// Customize specific field types
-	Object.keys(schema.properties || {}).forEach((key) => {
-		const property = (schema.properties as any)[key];
+	Object.keys(schemaProperties).forEach((key) => {
+		const property = schemaProperties[key];
 
 		if (property.format === "email") {
 			uiSchema[key] = {

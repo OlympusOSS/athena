@@ -1,52 +1,20 @@
-import { Link } from "@mui/material";
-import type React from "react";
-import { Box, Typography } from "@/components/ui";
+"use client";
 
-const Footer: React.FC = () => {
+export function Footer() {
 	return (
-		<Box
-			component="footer"
-			sx={{
-				py: 2,
-				px: 3,
-				mt: "auto",
-				borderTop: 1,
-				borderColor: "divider",
-				backgroundColor: "background.paper",
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-			}}
-		>
-			<Typography
-				variant="body"
-				size="sm"
-				sx={{
-					color: "text.secondary",
-					display: "flex",
-					alignItems: "center",
-					gap: 0.5,
-				}}
-			>
+		<footer>
+			<p>
 				Built by{" "}
-				<Link
+				<a
 					href="https://github.com/dhia-gharsallaoui"
 					target="_blank"
 					rel="noopener noreferrer"
-					color="primary"
-					sx={{
-						textDecoration: "none",
-						fontWeight: "medium",
-						"&:hover": {
-							textDecoration: "underline",
-						},
-					}}
 				>
 					Dhia Gharsallaoui
-				</Link>
-			</Typography>
-		</Box>
+				</a>
+			</p>
+		</footer>
 	);
-};
+}
 
 export default Footer;

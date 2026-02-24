@@ -1,40 +1,27 @@
 "use client";
 
-import {
-	Apps as AppsIcon,
-	ArrowBack as ArrowBackIcon,
-	ContentCopy as CopyIcon,
-	Delete as DeleteIcon,
-	Edit as EditIcon,
-	MoreVert as MoreVertIcon,
-	Security as SecurityIcon,
-} from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { use, useMemo, useState } from "react";
-import { StatusBadge } from "@/components";
-import { ErrorState, LoadingState } from "@/components/feedback";
+import { use, useMemo, useRef, useState } from "react";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
 import { ActionBar, ProtectedPage } from "@/components/layout";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Card, CardContent, CardHeader, CardTitle } from "@olympus/canvas";
 import {
-	Alert,
-	Box,
-	Button,
-	Card,
-	CardContent,
-	Chip,
 	Dialog,
-	DialogActions,
 	DialogContent,
-	Grid,
-	IconButton,
-	List,
-	ListItem,
-	ListItemText,
-	Menu,
-	MenuItem,
-	Skeleton,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import {
 	Tooltip,
-	Typography,
-} from "@/components/ui";
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import {
 	getClientType,
 	getGrantTypeDisplayName,
@@ -51,7 +38,9 @@ interface Props {
 export default function OAuth2ClientDetailPage({ params }: Props) {
 	const resolvedParams = use(params);
 	const router = useRouter();
-	const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+	const menuButtonRef = useRef<HTMLButtonElement>(null);
 	const { copy, copiedField } = useCopyToClipboard();
 	const { isOpen: deleteDialogOpen, open: openDeleteDialog, close: closeDeleteDialog } = useDialog();
 	const { formatDateTime } = useFormatters();
@@ -63,11 +52,14 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 	const clientType = useMemo(() => (client ? getClientType(client) : null), [client]);
 
 	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-		setMenuAnchor(event.currentTarget);
+		const rect = event.currentTarget.getBoundingClientRect();
+		setMenuPosition({ top: rect.bottom + 4, left: rect.left - 120 });
+		setMenuOpen(true);
 	};
 
 	const handleMenuClose = () => {
-		setMenuAnchor(null);
+		setMenuOpen(false);
+		setMenuPosition(null);
 	};
 
 	const handleEdit = () => {
@@ -101,399 +93,473 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 	if (error) {
 		return (
 			<ProtectedPage>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<ErrorState message={`Failed to load client: ${error.message}`} variant="page" />
-				</Box>
+				</div>
 			</ProtectedPage>
 		);
 	}
 
 	return (
 		<ProtectedPage>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				{/* Header */}
-				<Box
-					sx={{
-						mb: 3,
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "flex-start",
-					}}
-				>
-					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-						<IconButton onClick={() => router.back()} aria-label="Go back">
-							<ArrowBackIcon />
-						</IconButton>
-						<AppsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-						<Box>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
+							<Icon name="arrow-left" />
+						</Button>
+						<Icon name="grid" />
+						<div className="space-y-1">
 							{isLoading ? (
 								<LoadingState variant="inline" />
 							) : (
 								<>
-									<Typography variant="heading" level="h1">
+									<h1 className="text-2xl font-bold text-foreground">
 										{client?.client_name || "Unnamed Client"}
-									</Typography>
-									<Box
-										sx={{
-											display: "flex",
-											alignItems: "center",
-											gap: 1,
-											mt: 1,
-										}}
-									>
-										<Typography variant="code" color="secondary">
+									</h1>
+									<div className="flex items-center gap-2">
+										<code className="text-xs font-mono text-muted-foreground">
 											{client?.client_id}
-										</Typography>
+										</code>
 										{client?.client_id && (
-											<Tooltip content={copiedField === "client_id" ? "Copied!" : "Copy Client ID"}>
-												<IconButton size="small" onClick={() => copyToClipboard(client.client_id!, "client_id")} aria-label="Copy client ID">
-													<CopyIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
+											<TooltipProvider delayDuration={0}>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon"
+															onClick={() => copyToClipboard(client.client_id!, "client_id")}
+															aria-label="Copy client ID"
+														>
+															<Icon name="copy" />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>
+														{copiedField === "client_id" ? "Copied!" : "Copy Client ID"}
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
 										)}
-										{clientType && <StatusBadge status={clientType.toLowerCase() === "public" ? "active" : "inactive"} label={clientType} />}
-									</Box>
+										{clientType && (
+											<StatusBadge
+												status={clientType.toLowerCase() === "public" ? "active" : "inactive"}
+												label={clientType}
+											/>
+										)}
+									</div>
 								</>
 							)}
-						</Box>
-					</Box>
+						</div>
+					</div>
 
 					{!isLoading && client && (
-						<Box sx={{ display: "flex", gap: 1 }}>
-							<Button variant="outlined" onClick={handleEdit}>
-								<EditIcon style={{ marginRight: "0.5rem" }} />
+						<div className="flex items-center gap-2">
+							<Button variant="outline" size="sm" onClick={handleEdit}>
+								<Icon name="edit" />
 								Edit
 							</Button>
-							<IconButton onClick={handleMenuClick} aria-label="More options">
-								<MoreVertIcon />
-							</IconButton>
-						</Box>
+							<Button
+								ref={menuButtonRef}
+								variant="ghost"
+								size="icon"
+								onClick={handleMenuClick}
+								aria-label="More options"
+							>
+								<Icon name="more-vertical" />
+							</Button>
+						</div>
 					)}
-				</Box>
+				</div>
 
-				<Grid container spacing={3}>
-					{/* Basic Information */}
-					<Grid size={{ xs: 12, lg: 8 }}>
-						<Card sx={{ mb: 3 }}>
+				<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+					{/* Main content: 2/3 width */}
+					<div className="space-y-6 lg:col-span-2">
+						{/* Basic Information */}
+						<Card>
+							<CardHeader>
+								<CardTitle>Basic Information</CardTitle>
+							</CardHeader>
 							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Basic Information
-								</Typography>
 								{isLoading ? (
-									<Box>
-										<Skeleton height={60} sx={{ mb: 1 }} />
-										<Skeleton height={40} sx={{ mb: 1 }} />
-										<Skeleton height={40} />
-									</Box>
+									<div className="space-y-4">
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+									</div>
 								) : (
-									<Grid container spacing={2}>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+									<div className="space-y-4">
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Client Name
-											</Typography>
-											<Typography variant="body1">{client?.client_name || "Not specified"}</Typography>
-										</Grid>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+											</p>
+											<p className="text-sm text-foreground">{client?.client_name || "Not specified"}</p>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Owner
-											</Typography>
-											<Typography variant="body1">{client?.owner || "Not specified"}</Typography>
-										</Grid>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+											</p>
+											<p className="text-sm text-foreground">{client?.owner || "Not specified"}</p>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Client URI
-											</Typography>
-											<Typography variant="body1">
+											</p>
+											<p className="text-sm text-foreground">
 												{client?.client_uri ? (
-													<a href={client.client_uri} target="_blank" rel="noopener noreferrer">
+													<a
+														className="text-sm text-primary hover:underline"
+														href={client.client_uri}
+														target="_blank"
+														rel="noopener noreferrer"
+													>
 														{client.client_uri}
 													</a>
 												) : (
 													"Not specified"
 												)}
-											</Typography>
-										</Grid>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+											</p>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Logo URI
-											</Typography>
-											<Typography variant="body1">
+											</p>
+											<p className="text-sm text-foreground">
 												{client?.logo_uri ? (
-													<a href={client.logo_uri} target="_blank" rel="noopener noreferrer">
+													<a
+														className="text-sm text-primary hover:underline"
+														href={client.logo_uri}
+														target="_blank"
+														rel="noopener noreferrer"
+													>
 														{client.logo_uri}
 													</a>
 												) : (
 													"Not specified"
 												)}
-											</Typography>
-										</Grid>
-									</Grid>
+											</p>
+										</div>
+									</div>
 								)}
 							</CardContent>
 						</Card>
 
 						{/* OAuth2 Configuration */}
-						<Card sx={{ mb: 3 }}>
+						<Card>
+							<CardHeader>
+								<CardTitle>OAuth2 Configuration</CardTitle>
+							</CardHeader>
 							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									OAuth2 Configuration
-								</Typography>
 								{isLoading ? (
-									<Box>
-										<Skeleton height={80} sx={{ mb: 2 }} />
-										<Skeleton height={80} sx={{ mb: 2 }} />
-										<Skeleton height={60} />
-									</Box>
+									<div className="space-y-4">
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+										<div className="h-4 w-full animate-pulse rounded bg-muted" />
+									</div>
 								) : (
-									<Grid container spacing={3}>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary" gutterBottom>
+									<div className="space-y-4">
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Grant Types
-											</Typography>
-											<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+											</p>
+											<div className="flex flex-wrap gap-1">
 												{client?.grant_types?.map((grantType) => (
-													<Chip key={grantType} label={getGrantTypeDisplayName(grantType)} size="small" variant="outlined" />
-												)) || <Typography variant="body2">None specified</Typography>}
-											</Box>
-										</Grid>
-										<Grid size={{ xs: 12, md: 6 }}>
-											<Typography variant="subtitle2" color="text.secondary" gutterBottom>
+													<Badge key={grantType} variant="outline">
+														{getGrantTypeDisplayName(grantType)}
+													</Badge>
+												)) || (
+													<span className="text-sm text-muted-foreground">None specified</span>
+												)}
+											</div>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Response Types
-											</Typography>
-											<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+											</p>
+											<div className="flex flex-wrap gap-1">
 												{client?.response_types?.map((responseType) => (
-													<Chip
-														key={responseType}
-														label={getResponseTypeDisplayName(responseType)}
-														size="small"
-														variant="outlined"
-														color="secondary"
-													/>
-												)) || <Typography variant="body2">None specified</Typography>}
-											</Box>
-										</Grid>
-										<Grid size={{ xs: 12 }}>
-											<Typography variant="subtitle2" color="text.secondary" gutterBottom>
+													<Badge key={responseType} variant="secondary">
+														{getResponseTypeDisplayName(responseType)}
+													</Badge>
+												)) || (
+													<span className="text-sm text-muted-foreground">None specified</span>
+												)}
+											</div>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Scopes
-											</Typography>
-											<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+											</p>
+											<div className="flex flex-wrap gap-1">
 												{client?.scope ? (
 													client.scope
 														.split(" ")
 														.filter((s) => s.trim())
-														.map((scope) => <Chip key={scope} label={scope} size="small" color="primary" variant="outlined" />)
+														.map((scope) => (
+															<Badge key={scope} variant="outline">
+																{scope}
+															</Badge>
+														))
 												) : (
-													<Typography variant="body2">None specified</Typography>
+													<span className="text-sm text-muted-foreground">None specified</span>
 												)}
-											</Box>
-										</Grid>
-									</Grid>
+											</div>
+										</div>
+									</div>
 								)}
 							</CardContent>
 						</Card>
 
 						{/* Redirect URIs */}
-						<Card sx={{ mb: 3 }}>
+						<Card>
+							<CardHeader>
+								<CardTitle>Redirect URIs</CardTitle>
+							</CardHeader>
 							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Redirect URIs
-								</Typography>
 								{isLoading ? (
-									<Skeleton height={120} />
+									<div className="h-4 w-full animate-pulse rounded bg-muted" />
 								) : client?.redirect_uris?.length ? (
-									<List dense>
+									<ul className="space-y-2">
 										{client.redirect_uris.map((uri, index) => (
-											<ListItem
+											<li
 												key={index}
-												secondaryAction={
-													<Tooltip title={copiedField === `redirect_${index}` ? "Copied!" : "Copy URI"}>
-														<IconButton size="small" onClick={() => copyToClipboard(uri, `redirect_${index}`)}>
-															<CopyIcon fontSize="small" />
-														</IconButton>
-													</Tooltip>
-												}
+												className="flex items-center gap-2 rounded-md border border-border px-3 py-2"
 											>
-												<ListItemText primary={uri} />
-											</ListItem>
+												<code className="flex-1 font-mono text-sm text-foreground">{uri}</code>
+												<TooltipProvider delayDuration={0}>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() => copyToClipboard(uri, `redirect_${index}`)}
+															>
+																<Icon name="copy" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>
+															{copiedField === `redirect_${index}` ? "Copied!" : "Copy URI"}
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</li>
 										))}
-									</List>
+									</ul>
 								) : (
-									<Typography variant="body2" color="text.secondary">
-										No redirect URIs configured
-									</Typography>
+									<p className="text-sm text-muted-foreground">No redirect URIs configured</p>
 								)}
 							</CardContent>
 						</Card>
-					</Grid>
+					</div>
 
-					{/* Sidebar */}
-					<Grid size={{ xs: 12, lg: 4 }}>
+					{/* Sidebar: 1/3 width */}
+					<div className="space-y-6">
 						{/* Client Credentials */}
 						{client?.client_secret && (
-							<Card sx={{ mb: 3 }}>
-								<CardContent>
-									<Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-										<SecurityIcon />
+							<Card>
+								<CardHeader>
+									<CardTitle>
+										<Icon name="shield-check" />
 										Client Credentials
-									</Typography>
-									<Box sx={{ mb: 2 }}>
-										<Typography variant="subtitle2" color="text.secondary">
-											Client ID
-										</Typography>
-										<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-											<Typography variant="body2" sx={{ fontFamily: "monospace", wordBreak: "break-all" }}>
-												{client.client_id}
-											</Typography>
-											<Tooltip title={copiedField === "client_id_sidebar" ? "Copied!" : "Copy"}>
-												<IconButton size="small" onClick={() => copyToClipboard(client.client_id!, "client_id_sidebar")}>
-													<CopyIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									</Box>
-									<Box>
-										<Typography variant="subtitle2" color="text.secondary">
-											Client Secret
-										</Typography>
-										<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-											<Typography variant="body2" sx={{ fontFamily: "monospace" }}>
-												{"•".repeat(32)}
-											</Typography>
-											<Tooltip title="Client secret is hidden for security">
-												<IconButton size="small" disabled>
-													<CopyIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-										<Typography variant="caption" color="text.secondary">
-											Secret cannot be displayed for security reasons
-										</Typography>
-									</Box>
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-3">
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
+												Client ID
+											</p>
+											<div className="flex items-center gap-2">
+												<code className="rounded bg-muted px-2 py-1 font-mono text-sm">{client.client_id}</code>
+												<TooltipProvider delayDuration={0}>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() => copyToClipboard(client.client_id!, "client_id_sidebar")}
+															>
+																<Icon name="copy" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>
+															{copiedField === "client_id_sidebar" ? "Copied!" : "Copy"}
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
+												Client Secret
+											</p>
+											<div className="flex items-center gap-2">
+												<span className="font-mono text-sm text-muted-foreground">{"*".repeat(32)}</span>
+												<TooltipProvider delayDuration={0}>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button variant="ghost" size="icon" disabled>
+																<Icon name="copy" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>Client secret is hidden for security</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+											<p className="text-xs text-muted-foreground">
+												Secret cannot be displayed for security reasons
+											</p>
+										</div>
+									</div>
 								</CardContent>
 							</Card>
 						)}
 
 						{/* Advanced Settings */}
-						<Card sx={{ mb: 3 }}>
+						<Card>
+							<CardHeader>
+								<CardTitle>Advanced Settings</CardTitle>
+							</CardHeader>
 							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Advanced Settings
-								</Typography>
 								{isLoading ? (
-									<Skeleton height={200} />
+									<div className="h-4 w-full animate-pulse rounded bg-muted" />
 								) : (
-									<Box>
-										<Box sx={{ mb: 2 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+									<div className="space-y-4">
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Subject Type
-											</Typography>
-											<Typography variant="body2">{client?.subject_type || "public"}</Typography>
-										</Box>
-										<Box sx={{ mb: 2 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+											</p>
+											<p className="text-sm text-foreground">{client?.subject_type || "public"}</p>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Token Endpoint Auth Method
-											</Typography>
-											<Typography variant="body2">{client?.token_endpoint_auth_method || "client_secret_basic"}</Typography>
-										</Box>
+											</p>
+											<p className="text-sm text-foreground">
+												{client?.token_endpoint_auth_method || "client_secret_basic"}
+											</p>
+										</div>
 										{client?.userinfo_signed_response_alg && (
-											<Box sx={{ mb: 2 }}>
-												<Typography variant="subtitle2" color="text.secondary">
+											<div className="space-y-1">
+												<p className="text-sm font-medium text-muted-foreground">
 													UserInfo Signed Response Algorithm
-												</Typography>
-												<Typography variant="body2">{client.userinfo_signed_response_alg}</Typography>
-											</Box>
+												</p>
+												<p className="text-sm text-foreground">{client.userinfo_signed_response_alg}</p>
+											</div>
 										)}
-									</Box>
+									</div>
 								)}
 							</CardContent>
 						</Card>
 
 						{/* Metadata */}
 						<Card>
+							<CardHeader>
+								<CardTitle>Metadata</CardTitle>
+							</CardHeader>
 							<CardContent>
-								<Typography variant="h6" gutterBottom>
-									Metadata
-								</Typography>
 								{isLoading ? (
-									<Skeleton height={120} />
+									<div className="h-4 w-full animate-pulse rounded bg-muted" />
 								) : (
-									<Box>
-										<Box sx={{ mb: 2 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+									<div className="space-y-4">
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Created
-											</Typography>
-											<Typography variant="body2">{formatTimestamp(client?.created_at)}</Typography>
-										</Box>
-										<Box sx={{ mb: 2 }}>
-											<Typography variant="subtitle2" color="text.secondary">
+											</p>
+											<p className="text-sm text-foreground">{formatTimestamp(client?.created_at)}</p>
+										</div>
+										<div className="space-y-1">
+											<p className="text-sm font-medium text-muted-foreground">
 												Last Updated
-											</Typography>
-											<Typography variant="body2">{formatTimestamp(client?.updated_at)}</Typography>
-										</Box>
-										{client?.audience?.length && (
-											<Box>
-												<Typography variant="subtitle2" color="text.secondary" gutterBottom>
+											</p>
+											<p className="text-sm text-foreground">{formatTimestamp(client?.updated_at)}</p>
+										</div>
+										{client?.audience?.length ? (
+											<div className="space-y-1">
+												<p className="text-sm font-medium text-muted-foreground">
 													Audience
-												</Typography>
-												<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+												</p>
+												<div className="flex flex-wrap gap-1">
 													{client.audience.map((aud, index) => (
-														<Chip key={index} label={aud} size="small" variant="outlined" />
+														<Badge key={index} variant="outline">
+															{aud}
+														</Badge>
 													))}
-												</Box>
-											</Box>
-										)}
-									</Box>
+												</div>
+											</div>
+										) : null}
+									</div>
 								)}
 							</CardContent>
 						</Card>
-					</Grid>
-				</Grid>
+					</div>
+				</div>
 
-				{/* Context Menu */}
-				<Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-					<MenuItem onClick={handleEdit}>
-						<EditIcon sx={{ mr: 1 }} fontSize="small" />
-						Edit Client
-					</MenuItem>
-					<MenuItem onClick={handleDeleteClick}>
-						<DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-						Delete Client
-					</MenuItem>
-				</Menu>
+				{/* Context Menu (dropdown) */}
+				{menuOpen && menuPosition && (
+					<>
+						<div className="fixed inset-0 z-40" onClick={handleMenuClose} />
+						<div
+							className="fixed z-50 min-w-[160px] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-md"
+							style={{ top: menuPosition.top, left: menuPosition.left }}
+						>
+							<button
+								type="button"
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent"
+								onClick={handleEdit}
+							>
+								<Icon name="edit" />
+								Edit Client
+							</button>
+							<button
+								type="button"
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
+								onClick={handleDeleteClick}
+							>
+								<Icon name="delete" />
+								Delete Client
+							</button>
+						</div>
+					</>
+				)}
 
 				{/* Delete Confirmation Dialog */}
-				<Dialog open={deleteDialogOpen} onClose={closeDeleteDialog} title="Delete OAuth2 Client">
+				<Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && closeDeleteDialog()}>
 					<DialogContent>
-						<Typography>
-							Are you sure you want to delete the client &quot;
-							{client?.client_name || client?.client_id}&quot;? This action cannot be undone and will invalidate all tokens issued to this client.
-						</Typography>
+						<DialogHeader>
+							<DialogTitle>Delete OAuth2 Client</DialogTitle>
+							<DialogDescription>
+								Are you sure you want to delete the client &quot;
+								{client?.client_name || client?.client_id}&quot;? This action cannot be undone and will
+								invalidate all tokens issued to this client.
+							</DialogDescription>
+						</DialogHeader>
+						<DialogFooter>
+							<ActionBar
+								align="right"
+								primaryAction={{
+									label: deleteClientMutation.isPending ? "Deleting..." : "Delete",
+									onClick: handleDeleteConfirm,
+									disabled: deleteClientMutation.isPending,
+								}}
+								secondaryActions={[
+									{
+										label: "Cancel",
+										onClick: closeDeleteDialog,
+									},
+								]}
+							/>
+						</DialogFooter>
 					</DialogContent>
-					<DialogActions>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: deleteClientMutation.isPending ? "Deleting..." : "Delete",
-								onClick: handleDeleteConfirm,
-								disabled: deleteClientMutation.isPending,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: closeDeleteDialog,
-								},
-							]}
-						/>
-					</DialogActions>
 				</Dialog>
 
 				{/* Error Display */}
 				{deleteClientMutation.error && (
-					<Alert severity="error" sx={{ mt: 2 }}>
+					<div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
 						Failed to delete client: {deleteClientMutation.error.message}
-					</Alert>
+					</div>
 				)}
-			</Box>
+			</div>
 		</ProtectedPage>
 	);
 }

@@ -5,14 +5,18 @@ WORKDIR /app
 # Install system dependencies
 RUN apk --no-cache add curl git
 
-# Copy package files
-COPY package.json bun.lock ./
+# Copy Canvas package first (at /Canvas so file:../Canvas resolves from /app)
+COPY Canvas/package.json /Canvas/package.json
+COPY Canvas/src /Canvas/src
 
-# Install dependencies
+# Copy Athena package files and install dependencies
+COPY Athena/package.json Athena/bun.lock ./
 RUN bun install
 
-# Copy source code
-COPY . .
+# Copy Athena source (exclude node_modules/.next via separate copies)
+COPY Athena/src ./src
+COPY Athena/public ./public
+COPY Athena/next.config.ts Athena/tsconfig.json Athena/tailwind.config.js Athena/postcss.config.mjs Athena/components.json ./
 
 # Expose port
 EXPOSE 3000

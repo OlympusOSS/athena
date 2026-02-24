@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import { SettingsInitializer } from "@/components/SettingsInitializer";
 import { AuthProvider } from "./AuthProvider";
-import { CustomMuiThemeProvider } from "./MuiThemeProvider";
 import { QueryProvider } from "./QueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 
@@ -18,12 +17,10 @@ export default function Providers({ children }: ProvidersProps) {
 	return (
 		<QueryProvider>
 			<ThemeProvider>
-				<CustomMuiThemeProvider>
-					<AuthProvider>
-						<SettingsInitializer />
-						{children}
-					</AuthProvider>
-				</CustomMuiThemeProvider>
+				<AuthProvider>
+					<SettingsInitializer />
+					{children}
+				</AuthProvider>
 			</ThemeProvider>
 		</QueryProvider>
 	);

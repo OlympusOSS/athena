@@ -2,7 +2,9 @@
 
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import type React from "react";
-import { Box, Card, CardContent, Chip, LoadingState, Typography } from "@/components/ui";
+import { LoadingState } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { ScrollArea } from "@olympus/canvas";
 import { extractSchemaFields, formatSchemaForDisplay } from "../utils";
 
 interface SchemaViewerProps {
@@ -13,9 +15,9 @@ interface SchemaViewerProps {
 const SchemaViewer: React.FC<SchemaViewerProps> = ({ schema, loading = false }) => {
 	if (loading) {
 		return (
-			<Card>
+			<div>
 				<LoadingState variant="section" message="Loading schema details..." />
-			</Card>
+			</div>
 		);
 	}
 
@@ -24,53 +26,44 @@ const SchemaViewer: React.FC<SchemaViewerProps> = ({ schema, loading = false }) 
 	const fields = extractSchemaFields(schemaObj);
 
 	return (
-		<Card>
-			<CardContent>
-				<Typography variant="heading" size="lg" gutterBottom>
-					{formattedSchema.displayName}
-				</Typography>
+		<div>
+			<h2>{formattedSchema.displayName}</h2>
 
-				<Typography variant="body" color="text.secondary" component="p" sx={{ mb: 2 }}>
-					{formattedSchema.description}
-				</Typography>
+			<p>
+				{formattedSchema.description}
+			</p>
 
-				<Box sx={{ mb: 2 }}>
-					<Typography variant="label" gutterBottom>
-						Schema ID: {schema.id}
-					</Typography>
-					{formattedSchema.isDefault && <Chip label="Default Schema" variant="gradient" />}
-				</Box>
+			<div>
+				<span>
+					Schema ID: {schema.id}
+				</span>
+				{formattedSchema.isDefault && (
+					<Badge>Default Schema</Badge>
+				)}
+			</div>
 
-				<Box sx={{ mb: 2 }}>
-					<Typography variant="label" gutterBottom>
-						Fields ({formattedSchema.fieldCount}):
-					</Typography>
-					<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-						{fields.map((field) => (
-							<Chip key={field} label={field} variant="tag" />
-						))}
-					</Box>
-				</Box>
+			<div>
+				<span>
+					Fields ({formattedSchema.fieldCount}):
+				</span>
+				<div>
+					{fields.map((field) => (
+						<Badge key={field} variant="secondary">
+							{field}
+						</Badge>
+					))}
+				</div>
+			</div>
 
-				<Typography variant="label" gutterBottom>
+			<div>
+				<span>
 					Schema Definition:
-				</Typography>
-				<Box
-					component="pre"
-					sx={{
-						backgroundColor: "grey.100",
-						p: 2,
-						borderRadius: 1,
-						overflow: "auto",
-						fontSize: "0.875rem",
-						fontFamily: "monospace",
-						maxHeight: 400,
-					}}
-				>
+				</span>
+				<pre>
 					{JSON.stringify(schemaObj, null, 2)}
-				</Box>
-			</CardContent>
-		</Card>
+				</pre>
+			</div>
+		</div>
 	);
 };
 

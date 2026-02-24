@@ -1,6 +1,15 @@
 import type React from "react";
-import { ActionBar } from "@/components/layout";
-import { Alert, Box, Chip, FormDialog, Typography } from "@/components/ui";
+import { Alert, AlertDescription, Icon } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentityCredentials } from "../hooks/useIdentities";
 
@@ -56,78 +65,81 @@ export const CredentialDeleteDialog: React.FC<CredentialDeleteDialogProps> = ({
 	const typeLabel = CREDENTIAL_TYPE_LABELS[credentialType] || credentialType;
 
 	return (
-		<FormDialog
-			open={open}
-			onClose={onClose}
-			title="Delete Credential"
-			titleColor="error.main"
-			disableBackdropClick={deleteCredentialMutation.isPending}
-		>
-			<Box sx={{ mb: 3 }}>
-				<Typography variant="body" gutterBottom>
-					Are you sure you want to delete this credential? This action cannot be undone.
-				</Typography>
-			</Box>
+		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+			<DialogContent
+				onInteractOutside={(e: Event) => { if (deleteCredentialMutation.isPending) e.preventDefault(); }}
+			>
+				<DialogHeader>
+					<DialogTitle>Delete Credential</DialogTitle>
+					<DialogDescription>
+						Confirm deletion of credential
+					</DialogDescription>
+				</DialogHeader>
 
-			{/* Credential Information */}
-			<Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1, mb: 2 }}>
-				<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-					<Typography variant="heading" size="lg">
-						Credential
-					</Typography>
-					<Chip label={typeLabel} variant="tag" />
-				</Box>
+				<div>
+					<p>
+						Are you sure you want to delete this credential? This action cannot be undone.
+					</p>
 
-				{identifier && (
-					<Box sx={{ mt: 1 }}>
-						<Typography variant="label" gutterBottom>
-							Identifier:
-						</Typography>
-						<Typography variant="code" sx={{ display: "block", mt: 0.5 }}>
-							{identifier}
-						</Typography>
-					</Box>
-				)}
-			</Box>
+					{/* Credential Information */}
+					<div>
+						<div>
+							<h4>Credential</h4>
+							<Badge variant="outline">{typeLabel}</Badge>
+						</div>
 
-			<Alert variant="inline" severity="warning" sx={{ mt: 2 }}>
-				<Typography variant="body">
-					<strong>Warning:</strong> Deleting this credential will:
-				</Typography>
-				<Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
-					<li>Permanently remove this {typeLabel.toLowerCase()} credential</li>
-					<li>Prevent the user from authenticating with this method</li>
-					{credentialType === "oidc" && <li>Disconnect the linked social sign-in provider</li>}
-					{credentialType === "totp" && <li>Disable two-factor authentication via authenticator app</li>}
-					{credentialType === "webauthn" && <li>Remove the registered security key</li>}
-					{credentialType === "lookup_secret" && <li>Invalidate all backup codes</li>}
-				</Box>
-			</Alert>
+						{identifier && (
+							<div>
+								<p>Identifier:</p>
+								<code>{identifier}</code>
+							</div>
+						)}
+					</div>
 
-			{deleteCredentialMutation.isError && (
-				<Alert variant="inline" severity="error" sx={{ mt: 2 }}>
-					Failed to delete credential: {(deleteCredentialMutation.error as any)?.message || "Unknown error"}
-				</Alert>
-			)}
+					<Alert variant="destructive">
+						<Icon name="danger" />
+						<AlertDescription>
+							<p>
+								<strong>Warning:</strong> Deleting this credential will:
+							</p>
+							<ul>
+								<li>Permanently remove this {typeLabel.toLowerCase()} credential</li>
+								<li>Prevent the user from authenticating with this method</li>
+								{credentialType === "oidc" && <li>Disconnect the linked social sign-in provider</li>}
+								{credentialType === "totp" && <li>Disable two-factor authentication via authenticator app</li>}
+								{credentialType === "webauthn" && <li>Remove the registered security key</li>}
+								{credentialType === "lookup_secret" && <li>Invalidate all backup codes</li>}
+							</ul>
+						</AlertDescription>
+					</Alert>
 
-			<Box sx={{ mt: 3 }}>
-				<ActionBar
-					align="right"
-					primaryAction={{
-						label: deleteCredentialMutation.isPending ? "Deleting..." : "Delete Credential",
-						onClick: handleDelete,
-						disabled: deleteCredentialMutation.isPending,
-					}}
-					secondaryActions={[
-						{
-							label: "Cancel",
-							onClick: onClose,
-							disabled: deleteCredentialMutation.isPending,
-						},
-					]}
-				/>
-			</Box>
-		</FormDialog>
+					{deleteCredentialMutation.isError && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								Failed to delete credential: {(deleteCredentialMutation.error as Error)?.message || "Unknown error"}
+							</AlertDescription>
+						</Alert>
+					)}
+
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={onClose}
+							disabled={deleteCredentialMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={handleDelete}
+							disabled={deleteCredentialMutation.isPending}
+						>
+							{deleteCredentialMutation.isPending ? "Deleting..." : "Delete Credential"}
+						</Button>
+					</DialogFooter>
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

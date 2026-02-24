@@ -1,23 +1,41 @@
 "use client";
 
-import { Apps, Cloud, Group, HealthAndSafety, Info, Refresh, Schedule, Schema, Security, Settings, VpnKey } from "@mui/icons-material";
-import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
-import { LineChart } from "@mui/x-charts/LineChart";
-import { PieChart } from "@mui/x-charts/PieChart";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
-import { ErrorState, LoadingState, StatCard } from "@/components";
+import {
+	AnimatedAreaChart,
+	AnimatedPieChart,
+	ChartCard,
+	Icon,
+	StatCard,
+	VerificationGauge,
+} from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
 import { PageHeader, ProtectedPage } from "@/components/layout";
-import { Alert, Box, Grid, IconButton, Tooltip, Typography } from "@/components/ui";
-import { ChartCard } from "@/components/ui/ChartCard";
+import { Button } from "@olympus/canvas";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import { useAnalytics } from "@/features/analytics/hooks";
 import { UserRole } from "@/features/auth";
 import { useFormatters } from "@/hooks";
-import { gradientColors, themeColors } from "@/theme";
 import { parseError } from "@/utils/errors";
 
 export default function Dashboard() {
-	const { identity, session, system, hydra, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
+	const {
+		identity,
+		session,
+		system,
+		hydra,
+		isLoading,
+		isError,
+		isHydraAvailable,
+		hydraEnabled,
+		refetchAll,
+	} = useAnalytics();
 	const { formatNumber, formatDuration } = useFormatters();
 	const router = useRouter();
 
@@ -32,7 +50,10 @@ export default function Dashboard() {
 		[session.data?.sessionsByDay],
 	);
 
-	const sessionValues = useMemo(() => session.data?.sessionsByDay?.map((item) => item.count) || [], [session.data?.sessionsByDay]);
+	const sessionValues = useMemo(
+		() => session.data?.sessionsByDay?.map((item) => item.count) || [],
+		[session.data?.sessionsByDay],
+	);
 
 	const identityDays = useMemo(
 		() =>
@@ -45,7 +66,10 @@ export default function Dashboard() {
 		[identity.data?.identitiesByDay],
 	);
 
-	const identityValues = useMemo(() => identity.data?.identitiesByDay?.map((item) => item.count) || [], [identity.data?.identitiesByDay]);
+	const identityValues = useMemo(
+		() => identity.data?.identitiesByDay?.map((item) => item.count) || [],
+		[identity.data?.identitiesByDay],
+	);
 
 	const verificationRate = useMemo(() => {
 		if (!identity.data) return 0;
@@ -54,399 +78,280 @@ export default function Dashboard() {
 	}, [identity.data]);
 
 	if (isLoading) {
-		return <LoadingState variant="page" message="Loading analytics data..." />;
+		return (
+			<LoadingState variant="page" message="Loading analytics data..." />
+		);
 	}
 
 	if (isError) {
-		// Get the first error from any of the analytics queries
-		const firstError = identity.error || session.error || system.error || hydra.error;
+		const firstError =
+			identity.error || session.error || system.error || hydra.error;
 		const parsedError = parseError(firstError);
 
 		return (
 			<ProtectedPage requiredRole={UserRole.VIEWER}>
-				<Box sx={{ p: 3 }}>
-					<ErrorState
-						variant="page"
-						title={parsedError.title}
-						message={parsedError.message}
-						action={
-							parsedError.canRetry
-								? {
-										label: "Retry",
-										onClick: refetchAll,
-										icon: <Refresh />,
-									}
-								: undefined
-						}
-						secondaryAction={
-							parsedError.suggestSettings
-								? {
-										label: "Check Settings",
-										onClick: () => router.push("/settings"),
-										icon: <Settings />,
-									}
-								: undefined
-						}
-					/>
-				</Box>
+				<ErrorState
+					variant="page"
+					title={parsedError.title}
+					message={parsedError.message}
+					action={
+						parsedError.canRetry
+							? {
+									label: "Retry",
+									onClick: refetchAll,
+									icon: <Icon name="refresh" />,
+								}
+							: undefined
+					}
+					secondaryAction={
+						parsedError.suggestSettings
+							? {
+									label: "Check Settings",
+									onClick: () => router.push("/settings"),
+									icon: <Icon name="settings" />,
+								}
+							: undefined
+					}
+				/>
 			</ProtectedPage>
 		);
 	}
 
+	// Prepare chart data
+	const identityChartData = identityDays.map((label, i) => ({
+		label,
+		value: identityValues[i] ?? 0,
+	}));
+
+	const sessionChartData = sessionDays.map((label, i) => ({
+		label,
+		value: sessionValues[i] ?? 0,
+	}));
+
+	const schemasPieData = (identity.data?.identitiesBySchema || []).map(
+		(item) => ({
+			name:
+				item.schema.length > 20
+					? `${item.schema.slice(0, 20)}...`
+					: item.schema,
+			value: item.count,
+		}),
+	);
+
+	const oauthClientTypesPieData = [
+		{ name: "Public", value: hydra.data?.publicClients || 0 },
+		{ name: "Confidential", value: hydra.data?.confidentialClients || 0 },
+	];
+
+	const grantTypesPieData = (hydra.data?.clientsByGrantType || []).map(
+		(item) => ({
+			name:
+				item.grantType.length > 20
+					? `${item.grantType.slice(0, 20)}...`
+					: item.grantType,
+			value: item.count,
+		}),
+	);
+
 	return (
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
-			<Box sx={{ p: 3 }}>
-				<PageHeader
-					title="Analytics Dashboard"
-					subtitle={
-						isHydraAvailable ? "Insights and metrics for your Ory Kratos and Hydra systems" : "Insights and metrics for your Ory Kratos system"
-					}
-					actions={
-						<Tooltip content="Refresh Data">
-							<IconButton onClick={refetchAll} aria-label="Refresh data">
-								<Refresh />
-							</IconButton>
+			<PageHeader
+				title="Analytics Dashboard"
+				subtitle={
+					isHydraAvailable
+						? "Insights and metrics for your Ory Kratos and Hydra systems"
+						: "Insights and metrics for your Ory Kratos system"
+				}
+				actions={
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									variant="outline"
+									size="icon"
+									onClick={refetchAll}
+									aria-label="Refresh data"
+								>
+									<Icon name="refresh" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Refresh Data</TooltipContent>
 						</Tooltip>
-					}
-				/>
+					</TooltipProvider>
+				}
+			/>
 
-				{/* Hydra not available info banner */}
-				{!isHydraAvailable && (
-					<Alert severity="info" icon={<Info />} sx={{ mb: 3 }}>
+			{/* Hydra not available info banner */}
+			{!isHydraAvailable && (
+				<div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+					<Icon name="info" className="h-4 w-4 shrink-0" />
+					<span>
 						{!hydraEnabled
 							? "Hydra integration is disabled. Enable it in Settings to view OAuth2 analytics."
 							: "Hydra is not available. OAuth2 analytics are hidden. Check your Hydra configuration in Settings."}
-					</Alert>
+					</span>
+				</div>
+			)}
+
+			{/* Key Metrics Cards */}
+			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				<StatCard
+					title="Total Users"
+					value={formatNumber(identity.data?.totalIdentities || 0)}
+					subtitle={`+${identity.data?.newIdentitiesLast30Days || 0} in last 30 days`}
+					icon={<Icon name="users" />}
+				/>
+
+				<StatCard
+					title="Active Sessions"
+					value={formatNumber(session.data?.activeSessions || 0)}
+					subtitle={`${session.data?.sessionsLast7Days || 0} in last 7 days`}
+					icon={<Icon name="shield" />}
+				/>
+
+				<StatCard
+					title="Avg Session"
+					value={formatDuration(session.data?.averageSessionDuration || 0)}
+					subtitle="Average duration"
+					icon={<Icon name="time" />}
+				/>
+
+				<StatCard
+					title="Verification Rate"
+					value={`${verificationRate}%`}
+					subtitle="Email verified users"
+					icon={<Icon name="verified" />}
+				/>
+
+				<StatCard
+					title="Identity Schemas"
+					value={formatNumber(system.data?.totalSchemas || 0)}
+					subtitle="Total schemas configured"
+					icon={<Icon name="workflow" />}
+				/>
+
+				<StatCard
+					title="Kratos Health"
+					value={
+						system.data?.systemHealth === "healthy"
+							? "\u2713 Healthy"
+							: system.data?.systemHealth || "Unknown"
+					}
+					subtitle={system.data?.systemHealth || "Unknown"}
+					icon={<Icon name="health" />}
+				/>
+
+				{/* Hydra Metrics */}
+				{isHydraAvailable && (
+					<>
+						<StatCard
+							title="OAuth2 Clients"
+							value={formatNumber(hydra.data?.totalClients || 0)}
+							subtitle={`${hydra.data?.publicClients || 0} public, ${hydra.data?.confidentialClients || 0} confidential`}
+							icon={<Icon name="app" />}
+						/>
+
+						<StatCard
+							title="Grant Types"
+							value={hydra.data?.clientsByGrantType.length || 0}
+							subtitle="Different grant types in use"
+							icon={<Icon name="key-round" />}
+						/>
+
+						<StatCard
+							title="Hydra Health"
+							value={
+								hydra.data?.systemHealth === "healthy"
+									? "\u2713 Healthy"
+									: hydra.data?.systemHealth === "error"
+										? "\u2717 Error"
+										: "Unknown"
+							}
+							subtitle={hydra.data?.systemHealth || "Unknown"}
+							icon={<Icon name="cloud" />}
+						/>
+					</>
 				)}
+			</div>
 
-				{/* Key Metrics Cards */}
-				<Grid container spacing={3} sx={{ mb: 4 }}>
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard
-							title="Total Users"
-							value={formatNumber(identity.data?.totalIdentities || 0)}
-							subtitle={`+${identity.data?.newIdentitiesLast30Days || 0} in last 30 days`}
-							icon={Group}
-							colorVariant="primary"
+			{/* Charts Section */}
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+				{/* User Growth Chart */}
+				<div>
+					<ChartCard title="New User Registrations (Last 30 Days)">
+						<AnimatedAreaChart
+							data={identityChartData}
+							height={350}
+							color="var(--chart-1)"
+							gradientId="identityAreaGradient"
 						/>
-					</Grid>
+					</ChartCard>
+				</div>
 
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard
-							title="Active Sessions"
-							value={formatNumber(session.data?.activeSessions || 0)}
-							subtitle={`${session.data?.sessionsLast7Days || 0} in last 7 days`}
-							icon={Security}
-							colorVariant="secondary"
+				{/* Identity Schema Distribution */}
+				<div>
+					<ChartCard title="Users by Schema">
+						<AnimatedPieChart
+							data={schemasPieData}
+							height={350}
+							innerRadius={40}
+							outerRadius={100}
 						/>
-					</Grid>
+					</ChartCard>
+				</div>
 
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard
-							title="Avg Session"
-							value={formatDuration(session.data?.averageSessionDuration || 0)}
-							subtitle="Average duration"
-							icon={Schedule}
-							colorVariant="success"
+				{/* Session Activity Chart */}
+				<div>
+					<ChartCard title="Session Activity (Last 7 Days)">
+						<AnimatedAreaChart
+							data={sessionChartData}
+							height={350}
+							color="var(--chart-2)"
+							gradientId="sessionAreaGradient"
 						/>
-					</Grid>
+					</ChartCard>
+				</div>
 
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard title="Verification Rate" value={`${verificationRate}%`} subtitle="Email verified users" icon={Schema} colorVariant="error" />
-					</Grid>
-
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard
-							title="Identity Schemas"
-							value={formatNumber(system.data?.totalSchemas || 0)}
-							subtitle="Total schemas configured"
-							icon={Schema}
-							colorVariant="info"
-						/>
-					</Grid>
-
-					<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-						<StatCard
-							title="Kratos Health"
-							value={system.data?.systemHealth === "healthy" ? "✓" : system.data?.systemHealth || "?"}
-							subtitle={system.data?.systemHealth || "Unknown"}
-							icon={HealthAndSafety}
-							colorVariant="success"
-						/>
-					</Grid>
-
-					{/* Hydra Metrics - only shown when Hydra is available */}
-					{isHydraAvailable && (
-						<>
-							<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-								<StatCard
-									title="OAuth2 Clients"
-									value={formatNumber(hydra.data?.totalClients || 0)}
-									subtitle={`${hydra.data?.publicClients || 0} public, ${hydra.data?.confidentialClients || 0} confidential`}
-									icon={Apps}
-									colorVariant="warning"
-								/>
-							</Grid>
-
-							<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-								<StatCard
-									title="Grant Types"
-									value={hydra.data?.clientsByGrantType.length || 0}
-									subtitle="Different grant types in use"
-									icon={VpnKey}
-									colorVariant="purple"
-								/>
-							</Grid>
-
-							<Grid size={{ xs: 12, sm: 6, md: 4 }}>
-								<StatCard
-									title="Hydra Health"
-									value={hydra.data?.systemHealth === "healthy" ? "✓" : hydra.data?.systemHealth === "error" ? "✗" : "?"}
-									subtitle={hydra.data?.systemHealth || "Unknown"}
-									icon={Cloud}
-									colorVariant="blue"
-								/>
-							</Grid>
-						</>
-					)}
-				</Grid>
-
-				{/* Charts Section */}
-				<Grid container spacing={3}>
-					{/* User Growth Chart */}
-					<Grid size={{ xs: 12, lg: 8 }}>
-						<ChartCard title="New User Registrations (Last 30 Days)">
-							<LineChart
-								xAxis={[
-									{
-										data: identityDays,
-										scaleType: "point",
-										tickSize: 0,
-									},
-								]}
-								series={[
-									{
-										data: identityValues,
-										color: themeColors.info,
-										area: true,
-										curve: "monotoneX",
-									},
-								]}
-								height={350}
-								margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
-								grid={{ horizontal: true, vertical: false }}
-								sx={{
-									"& .MuiLineElement-root": {
-										strokeWidth: 3,
-									},
-									"& .MuiAreaElement-root": {
-										fillOpacity: 0.1,
-									},
-								}}
+				{/* Verification Status */}
+				<div>
+					<ChartCard title="Email Verification Rate">
+						<div className="flex items-center justify-center py-4">
+							<VerificationGauge
+								value={verificationRate}
+								size={280}
+								label={`${identity.data?.verificationStatus.verified || 0} verified of ${(identity.data?.verificationStatus.verified || 0) + (identity.data?.verificationStatus.unverified || 0)} total users`}
 							/>
-						</ChartCard>
-					</Grid>
+						</div>
+					</ChartCard>
+				</div>
 
-					{/* Identity Schema Distribution */}
-					<Grid size={{ xs: 12, lg: 4 }}>
-						<ChartCard title="Users by Schema">
-							<PieChart
-								series={[
-									{
-										data:
-											identity.data?.identitiesBySchema.map((item, index) => ({
-												id: index,
-												label: item.schema.length > 20 ? `${item.schema.slice(0, 20)}...` : item.schema,
-												value: item.count,
-											})) || [],
-										innerRadius: 40,
-										outerRadius: 100,
-										paddingAngle: 3,
-										cornerRadius: 4,
-										highlightScope: { fade: "global", highlight: "item" },
-										valueFormatter: (value, { dataIndex }) => {
-											const schema = identity.data?.identitiesBySchema[dataIndex]?.schema || "";
-											return `${schema}: ${value.value}`;
-										},
-									},
-								]}
-								height={350}
-								slotProps={{
-									legend: {
-										position: { vertical: "bottom", horizontal: "center" },
-									},
-								}}
-							/>
-						</ChartCard>
-					</Grid>
+				{/* OAuth2 Charts */}
+				{isHydraAvailable && (
+					<>
+						<div>
+							<ChartCard title="OAuth2 Client Types">
+								<AnimatedPieChart
+									data={oauthClientTypesPieData}
+									height={350}
+									innerRadius={40}
+									outerRadius={100}
+								/>
+							</ChartCard>
+						</div>
 
-					{/* Session Activity Chart */}
-					<Grid size={{ xs: 12, lg: 8 }}>
-						<ChartCard title="Session Activity (Last 7 Days)">
-							<LineChart
-								xAxis={[
-									{
-										data: sessionDays,
-										scaleType: "point",
-										tickSize: 0,
-									},
-								]}
-								yAxis={[
-									{
-										min: 0,
-									},
-								]}
-								series={[
-									{
-										data: sessionValues,
-										color: themeColors.success,
-										curve: "monotoneX",
-									},
-								]}
-								height={350}
-								margin={{ top: 20, right: 30, bottom: 60, left: 60 }}
-								grid={{ horizontal: true, vertical: false }}
-								sx={{
-									"& .MuiLineElement-root": {
-										strokeWidth: 3,
-									},
-								}}
-							/>
-						</ChartCard>
-					</Grid>
-
-					{/* Verification Status */}
-					<Grid size={{ xs: 12, lg: 4 }}>
-						<ChartCard title="Email Verification Rate">
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "center",
-									alignItems: "center",
-									height: 350,
-									py: 2,
-								}}
-							>
-								<Gauge
-									value={verificationRate}
-									startAngle={-110}
-									endAngle={110}
-									width={280}
-									height={280}
-									cornerRadius="50%"
-									text={({ value }) => `${value}%`}
-									sx={(theme) => ({
-										[`& .${gaugeClasses.valueText}`]: {
-											fontSize: 56,
-											fontWeight: 700,
-											fill: gradientColors.primary,
-										},
-										[`& .${gaugeClasses.valueArc}`]: {
-											fill: "url(#gradient)",
-										},
-										[`& .${gaugeClasses.referenceArc}`]: {
-											fill: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)",
-										},
-									})}
-								>
-									<defs>
-										<linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-											<stop offset="0%" stopColor={gradientColors.primary} />
-											<stop offset="100%" stopColor={gradientColors.secondary} />
-										</linearGradient>
-									</defs>
-								</Gauge>
-								<Box sx={{ mt: 2, textAlign: "center" }}>
-									<Typography variant="body" color="text.secondary">
-										{identity.data?.verificationStatus.verified || 0} verified of{" "}
-										{(identity.data?.verificationStatus.verified || 0) + (identity.data?.verificationStatus.unverified || 0)} total users
-									</Typography>
-								</Box>
-							</Box>
-						</ChartCard>
-					</Grid>
-
-					{/* OAuth2 Charts - only shown when Hydra is available */}
-					{isHydraAvailable && (
-						<>
-							{/* OAuth2 Client Types Distribution */}
-							<Grid size={{ xs: 12, lg: 4 }}>
-								<ChartCard title="OAuth2 Client Types">
-									<PieChart
-										series={[
-											{
-												data: [
-													{
-														id: 0,
-														label: "Public",
-														value: hydra.data?.publicClients || 0,
-														color: "#2196f3",
-													},
-													{
-														id: 1,
-														label: "Confidential",
-														value: hydra.data?.confidentialClients || 0,
-														color: "#ff9800",
-													},
-												],
-												innerRadius: 40,
-												outerRadius: 100,
-												paddingAngle: 3,
-												cornerRadius: 4,
-												highlightScope: { fade: "global", highlight: "item" },
-												valueFormatter: (value, { dataIndex }) => {
-													const labels = ["Public", "Confidential"];
-													return `${labels[dataIndex]}: ${value.value}`;
-												},
-											},
-										]}
-										height={350}
-										slotProps={{
-											legend: {
-												position: { vertical: "bottom", horizontal: "center" },
-											},
-										}}
-									/>
-								</ChartCard>
-							</Grid>
-
-							{/* Grant Types Distribution */}
-							<Grid size={{ xs: 12, lg: 8 }}>
-								<ChartCard title="OAuth2 Grant Types Usage">
-									<PieChart
-										series={[
-											{
-												data:
-													hydra.data?.clientsByGrantType.map((item, index) => ({
-														id: index,
-														label: item.grantType.length > 20 ? `${item.grantType.slice(0, 20)}...` : item.grantType,
-														value: item.count,
-													})) || [],
-												innerRadius: 60,
-												outerRadius: 120,
-												paddingAngle: 2,
-												cornerRadius: 4,
-												highlightScope: { fade: "global", highlight: "item" },
-												valueFormatter: (value, { dataIndex }) => {
-													const grantType = hydra.data?.clientsByGrantType[dataIndex]?.grantType || "";
-													return `${grantType}: ${value.value}`;
-												},
-											},
-										]}
-										height={350}
-										slotProps={{
-											legend: {
-												position: { vertical: "bottom", horizontal: "center" },
-											},
-										}}
-									/>
-								</ChartCard>
-							</Grid>
-						</>
-					)}
-				</Grid>
-			</Box>
+						<div>
+							<ChartCard title="OAuth2 Grant Types Usage">
+								<AnimatedPieChart
+									data={grantTypesPieData}
+									height={350}
+									innerRadius={60}
+									outerRadius={120}
+								/>
+							</ChartCard>
+						</div>
+					</>
+				)}
+			</div>
 		</ProtectedPage>
 	);
 }

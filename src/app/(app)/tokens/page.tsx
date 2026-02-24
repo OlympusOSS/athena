@@ -1,44 +1,38 @@
 "use client";
 
-import {
-	Cancel as CancelIcon,
-	CheckCircle,
-	CheckCircle as CheckCircleIcon,
-	Delete as DeleteIcon,
-	Error as ErrorIcon,
-	ExpandMore as ExpandMoreIcon,
-	Receipt as ReceiptIcon,
-	Schedule as ScheduleIcon,
-	Search as SearchIcon,
-	Security as SecurityIcon,
-	Token as TokenIcon,
-	Visibility as ViewIcon,
-	Warning as WarningIcon,
-} from "@mui/icons-material";
-import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import { useState } from "react";
-import { EmptyState, ErrorState } from "@/components/feedback";
-import { ActionBar, AdminLayout, PageHeader } from "@/components/layout";
-import { PageTabs } from "@/components/navigation";
+import { Icon, StatCard } from "@olympus/canvas";
+import { EmptyState, ErrorState } from "@olympus/canvas";
+import { ActionBar, AdminLayout, PageHeader, PageTabs } from "@/components/layout";
 import {
 	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Alert,
-	Box,
-	Button,
-	Card,
-	Chip,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@olympus/canvas";
+import { Alert, AlertDescription } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Card } from "@olympus/canvas";
+import {
 	Dialog,
-	DialogActions,
 	DialogContent,
-	Grid,
-	IconButton,
-	TextField,
-	Typography,
-} from "@/components/ui";
-import { MetricCard } from "@/components/ui/MetricCard";
-import type { IntrospectTokenFormData, TokenFormErrors } from "@/features/oauth2-tokens";
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import { Input } from "@olympus/canvas";
+import { Label } from "@olympus/canvas";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@olympus/canvas";
+import type { IntrospectTokenFormData, OAuth2TokenDetails, TokenFormErrors } from "@/features/oauth2-tokens";
+import type { IntrospectedOAuth2Token } from "@/services/hydra";
 import {
 	enhanceTokenDetails,
 	getDefaultIntrospectTokenFormData,
@@ -48,13 +42,19 @@ import {
 	useTokenIntrospectionManager,
 	validateIntrospectTokenForm,
 } from "@/features/oauth2-tokens";
-import { gradientColors, themeColors } from "@/theme";
+
+// Type for items returned by the token introspection manager
+type IntrospectedTokenListItem = IntrospectedOAuth2Token & {
+	key: string;
+	tokenPreview: string;
+	introspectedAt: string;
+};
 
 export default function OAuth2TokensPage() {
 	const [activeTab, setActiveTab] = useState(0);
 	const [introspectFormData, setIntrospectFormData] = useState<IntrospectTokenFormData>(getDefaultIntrospectTokenFormData());
 	const [formErrors, setFormErrors] = useState<TokenFormErrors>({});
-	const [selectedToken, setSelectedToken] = useState<any>(null);
+	const [selectedToken, setSelectedToken] = useState<OAuth2TokenDetails | null>(null);
 	const [viewDialogOpen, setViewDialogOpen] = useState(false);
 	const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
 	const [revokeTokenValue, setRevokeTokenValue] = useState("");
@@ -89,12 +89,12 @@ export default function OAuth2TokensPage() {
 		}
 	};
 
-	const handleViewToken = (token: any) => {
+	const handleViewToken = (token: IntrospectedTokenListItem) => {
 		setSelectedToken(enhanceTokenDetails(token));
 		setViewDialogOpen(true);
 	};
 
-	const handleRevokeClick = (token: any) => {
+	const handleRevokeClick = (token: IntrospectedTokenListItem) => {
 		setRevokeTokenValue(token.tokenPreview || "");
 		setRevokeDialogOpen(true);
 	};
@@ -107,7 +107,7 @@ export default function OAuth2TokensPage() {
 			setRevokeDialogOpen(false);
 			setRevokeTokenValue("");
 			// Optionally remove from introspected tokens
-			const tokenToRemove = introspectedTokens.find((t) => t.tokenPreview === revokeTokenValue);
+			const tokenToRemove = introspectedTokens.find((t: IntrospectedTokenListItem) => t.tokenPreview === revokeTokenValue);
 			if (tokenToRemove) {
 				removeTokenIntrospection(tokenToRemove.key);
 			}
@@ -116,126 +116,27 @@ export default function OAuth2TokensPage() {
 		}
 	};
 
-	// Token table columns
-	const tokenColumns: GridColDef[] = [
-		{
-			field: "tokenPreview",
-			headerName: "Token",
-			flex: 1,
-			minWidth: 150,
-			renderCell: (params: GridRenderCellParams) => (
-				<Typography variant="body2" sx={{ fontFamily: "monospace" }}>
-					{params.value}
-				</Typography>
-			),
-		},
-		{
-			field: "sub",
-			headerName: "Subject",
-			flex: 1,
-			minWidth: 200,
-		},
-		{
-			field: "client_id",
-			headerName: "Client ID",
-			flex: 1,
-			minWidth: 200,
-		},
-		{
-			field: "scope",
-			headerName: "Scopes",
-			flex: 1,
-			minWidth: 200,
-			renderCell: (params: GridRenderCellParams) => {
-				if (!params.value) return null;
-				const scopes = params.value.split(" ").slice(0, 2);
-				const remainingCount = params.value.split(" ").length - 2;
-
-				return (
-					<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-						{scopes.map((scope: string) => (
-							<Chip key={scope} label={scope} variant="tag" size="small" />
-						))}
-						{remainingCount > 0 && <Chip label={`+${remainingCount}`} variant="tag" size="small" />}
-					</Box>
-				);
-			},
-		},
-		{
-			field: "active",
-			headerName: "Status",
-			width: 120,
-			renderCell: (params: GridRenderCellParams) => {
-				const statusInfo = getTokenStatusInfo(params.row);
-				const _IconComponent = statusInfo.status === "active" ? CheckCircleIcon : CancelIcon;
-
-				return <Chip label={statusInfo.displayName} variant="status" size="small" />;
-			},
-		},
-		{
-			field: "exp",
-			headerName: "Expires",
-			width: 150,
-			renderCell: (params: GridRenderCellParams) => {
-				if (!params.value) return "Never";
-				const expiryDate = new Date(params.value * 1000);
-				const now = new Date();
-				const isExpired = expiryDate < now;
-
-				return (
-					<Typography variant="caption" color={isExpired ? "error" : "text.secondary"}>
-						{expiryDate.toLocaleDateString()}
-					</Typography>
-				);
-			},
-		},
-		{
-			field: "actions",
-			headerName: "Actions",
-			width: 120,
-			sortable: false,
-			renderCell: (params: GridRenderCellParams) => (
-				<Box>
-					<IconButton size="small" onClick={() => handleViewToken(params.row)} title="View Details">
-						<ViewIcon />
-					</IconButton>
-					<IconButton size="small" onClick={() => handleRevokeClick(params.row)} title="Revoke Token" color="error">
-						<DeleteIcon />
-					</IconButton>
-				</Box>
-			),
-		},
-	];
-
 	return (
 		<AdminLayout>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				<PageHeader
 					title="OAuth2 Access Tokens"
 					subtitle="Introspect and manage OAuth2 access tokens"
-					icon={<TokenIcon sx={{ fontSize: 32, color: "white" }} />}
+					icon={<Icon name="key-round" />}
 					actions={
-						<Button variant="outlined" onClick={clearAllIntrospections} disabled={introspectedTokens.length === 0}>
+						<Button variant="outline" onClick={clearAllIntrospections} disabled={introspectedTokens.length === 0}>
 							Clear All
 						</Button>
 					}
 				/>
 
 				{/* Stats Cards */}
-				<Grid container spacing={3} sx={{ mb: 3 }}>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<MetricCard title="Introspected Tokens" value={tokenStats?.totalTokens || 0} icon={ReceiptIcon} color={gradientColors.primary} />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<MetricCard title="Active Tokens" value={tokenStats?.activeTokens || 0} icon={CheckCircle} color={themeColors.success} />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<MetricCard title="Expired Tokens" value={tokenStats?.expiredTokens || 0} icon={ErrorIcon} color={themeColors.error} />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<MetricCard title="Expiring in 24h" value={tokenStats?.tokensExpiringIn24h || 0} icon={ScheduleIcon} color={themeColors.warning} />
-					</Grid>
-				</Grid>
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					<StatCard title="Introspected Tokens" value={tokenStats?.totalTokens || 0} icon={<Icon name="receipt" />} colorVariant="primary" />
+					<StatCard title="Active Tokens" value={tokenStats?.activeTokens || 0} icon={<Icon name="success" />} colorVariant="success" />
+					<StatCard title="Expired Tokens" value={tokenStats?.expiredTokens || 0} icon={<Icon name="error" />} colorVariant="error" />
+					<StatCard title="Expiring in 24h" value={tokenStats?.tokensExpiringIn24h || 0} icon={<Icon name="time" />} colorVariant="warning" />
+				</div>
 
 				{/* Tabs */}
 				<Card>
@@ -252,12 +153,14 @@ export default function OAuth2TokensPage() {
 					/>
 
 					{activeTab === 0 && (
-						<Box sx={{ p: 3 }}>
+						<div className="p-6">
 							<form onSubmit={handleIntrospectSubmit}>
-								<Grid container spacing={3}>
-									<Grid size={{ xs: 12 }}>
-										<TextField
-											label="Access Token"
+								<div className="space-y-6">
+									<div className="space-y-2">
+										<Label htmlFor="token-input">Access Token</Label>
+										<textarea
+											id="token-input"
+											className="min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 											value={introspectFormData.token}
 											onChange={(e) =>
 												setIntrospectFormData((prev) => ({
@@ -265,17 +168,19 @@ export default function OAuth2TokensPage() {
 													token: e.target.value,
 												}))
 											}
-											error={!!formErrors.token}
-											helperText={formErrors.token || "Paste the token you want to introspect"}
-											multiline
-											rows={4}
 											placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 											required
 										/>
-									</Grid>
-									<Grid size={{ xs: 12, md: 6 }}>
-										<TextField
-											label="Scope (Optional)"
+										{formErrors.token ? (
+											<p className="text-sm text-destructive">{formErrors.token}</p>
+										) : (
+											<p className="text-sm text-muted-foreground">Paste the token you want to introspect</p>
+										)}
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="scope-input">Scope (Optional)</Label>
+										<Input
+											id="scope-input"
 											value={introspectFormData.scope}
 											onChange={(e) =>
 												setIntrospectFormData((prev) => ({
@@ -283,231 +188,289 @@ export default function OAuth2TokensPage() {
 													scope: e.target.value,
 												}))
 											}
-											helperText="Optional scope to check against the token"
 											placeholder="openid profile email"
 										/>
-									</Grid>
-									<Grid size={{ xs: 12 }}>
-										<Box sx={{ display: "flex", gap: 2 }}>
-											<Button type="submit" variant="primary" disabled={isIntrospecting} style={{ minWidth: "150px" }}>
-												<SearchIcon style={{ marginRight: "0.5rem" }} />
-												{isIntrospecting ? "Introspecting..." : "Introspect Token"}
-											</Button>
-											<Button variant="outlined" onClick={() => setIntrospectFormData(getDefaultIntrospectTokenFormData())}>
-												Clear
-											</Button>
-										</Box>
-									</Grid>
-								</Grid>
+										<p className="text-sm text-muted-foreground">Optional scope to check against the token</p>
+									</div>
+									<div className="flex items-center gap-2">
+										<Button type="submit" disabled={isIntrospecting}>
+											{isIntrospecting ? (
+												<Icon name="loading" />
+											) : (
+												<Icon name="search" />
+											)}
+											{isIntrospecting ? "Introspecting..." : "Introspect Token"}
+										</Button>
+										<Button variant="outline" type="button" onClick={() => setIntrospectFormData(getDefaultIntrospectTokenFormData())}>
+											Clear
+										</Button>
+									</div>
+								</div>
 							</form>
 
 							{/* Error Display */}
 							{introspectionError && <ErrorState message={`Failed to introspect token: ${introspectionError.message}`} variant="inline" />}
-						</Box>
+						</div>
 					)}
 
 					{activeTab === 1 && (
-						<Box sx={{ p: 3 }}>
+						<div className="p-6">
 							{introspectedTokens.length === 0 ? (
 								<EmptyState
-									icon={TokenIcon}
+									icon={<Icon name="key-round" />}
 									title="No tokens introspected yet"
 									description='Use the "Introspect Token" tab to analyze OAuth2 tokens'
 								/>
 							) : (
-								<DataGrid
-									rows={introspectedTokens}
-									columns={tokenColumns}
-									autoHeight
-									disableRowSelectionOnClick
-									getRowId={(row) => row.key}
-									sx={{
-										border: "none",
-										"& .MuiDataGrid-row:hover": {
-											backgroundColor: "action.hover",
-										},
-									}}
-									initialState={{
-										pagination: {
-											paginationModel: { pageSize: 25 },
-										},
-									}}
-									pageSizeOptions={[10, 25, 50]}
-								/>
+								<div className="overflow-auto rounded-md border">
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>Token</TableHead>
+												<TableHead>Subject</TableHead>
+												<TableHead>Client ID</TableHead>
+												<TableHead>Scopes</TableHead>
+												<TableHead>Status</TableHead>
+												<TableHead>Expires</TableHead>
+												<TableHead>Actions</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{introspectedTokens.map((token: IntrospectedTokenListItem) => {
+												const statusInfo = getTokenStatusInfo(token);
+												const expValue = token.exp;
+												const expiryDate = expValue ? new Date(expValue * 1000) : null;
+												const isExpired = expiryDate ? expiryDate < new Date() : false;
+
+												return (
+													<TableRow key={token.key}>
+														<TableCell>
+															<code>{token.tokenPreview}</code>
+														</TableCell>
+														<TableCell>{token.sub || "N/A"}</TableCell>
+														<TableCell>{token.client_id || "N/A"}</TableCell>
+														<TableCell>
+															{token.scope ? (
+																<div className="flex flex-wrap gap-1">
+																	{token.scope.split(" ").slice(0, 2).map((scope: string) => (
+																		<Badge key={scope} variant="secondary">
+																			{scope}
+																		</Badge>
+																	))}
+																	{token.scope.split(" ").length > 2 && (
+																		<Badge variant="secondary">
+																			+{token.scope.split(" ").length - 2}
+																		</Badge>
+																	)}
+																</div>
+															) : null}
+														</TableCell>
+														<TableCell>
+															<Badge variant={statusInfo.status === "active" ? "default" : "destructive"}>
+																{statusInfo.displayName}
+															</Badge>
+														</TableCell>
+														<TableCell>
+															{expiryDate ? (
+																<span className="text-sm text-muted-foreground">
+																	{expiryDate.toLocaleDateString()}
+																</span>
+															) : (
+																"Never"
+															)}
+														</TableCell>
+														<TableCell>
+															<div className="flex items-center gap-1">
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	onClick={() => handleViewToken(token)}
+																	title="View Details"
+																>
+																	<Icon name="view" />
+																</Button>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	onClick={() => handleRevokeClick(token)}
+																	title="Revoke Token"
+																>
+																	<Icon name="delete" />
+																</Button>
+															</div>
+														</TableCell>
+													</TableRow>
+												);
+											})}
+										</TableBody>
+									</Table>
+								</div>
 							)}
-						</Box>
+						</div>
 					)}
 				</Card>
 
 				{/* Token Details Dialog */}
-				<Dialog open={viewDialogOpen} onClose={() => setViewDialogOpen(false)} title="Token Details" maxWidth="md">
+				<Dialog open={viewDialogOpen} onOpenChange={(open) => !open && setViewDialogOpen(false)}>
 					<DialogContent>
-						<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-							<SecurityIcon />
-							<Typography variant="heading" level="h2">
+						<DialogHeader>
+							<DialogTitle className="flex items-center gap-2">
+								<Icon name="shield" />
 								Token Details
-							</Typography>
-						</Box>
+							</DialogTitle>
+						</DialogHeader>
 						{selectedToken && (
-							<Box>
+							<div className="space-y-4">
 								{/* Status Banner */}
-								<Alert severity={selectedToken.statusInfo?.isActive ? "success" : "error"} style={{ marginBottom: "1.5rem" }}>
+								<Alert variant={selectedToken.statusInfo?.isActive ? "default" : "destructive"}>
 									{selectedToken.statusInfo?.isActive ? (
-										<CheckCircleIcon style={{ marginRight: "0.5rem" }} />
+										<Icon name="success" />
 									) : (
-										<WarningIcon style={{ marginRight: "0.5rem" }} />
+										<Icon name="x-circle" />
 									)}
-									<Typography variant="body">
+									<AlertDescription>
 										Token is {selectedToken.statusInfo?.isActive ? "active" : "inactive/expired"}
-										{selectedToken.statusInfo?.timeToExpiry && <> • Expires in {selectedToken.statusInfo.timeToExpiry}</>}
-									</Typography>
+										{selectedToken.statusInfo?.timeToExpiry && (
+											<> &bull; Expires in {selectedToken.statusInfo.timeToExpiry}</>
+										)}
+									</AlertDescription>
 								</Alert>
 
-								<Grid container spacing={3}>
+								<Accordion type="multiple" defaultValue={["basic"]}>
 									{/* Basic Information */}
-									<Grid size={{ xs: 12 }}>
-										<Accordion defaultExpanded>
-											<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-												<Typography variant="heading" level="h3">
-													Basic Information
-												</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="body" color="secondary">
-															Subject
-														</Typography>
-														<Typography variant="body">{selectedToken.sub || "N/A"}</Typography>
-													</Grid>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="body" color="secondary">
-															Client ID
-														</Typography>
-														<Typography variant="body">{selectedToken.client_id || "N/A"}</Typography>
-													</Grid>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="body" color="secondary">
-															Token Type
-														</Typography>
-														<Typography variant="body">{selectedToken.tokenTypeFormatted || "N/A"}</Typography>
-													</Grid>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="body" color="secondary">
-															Token Use
-														</Typography>
-														<Typography variant="body">{selectedToken.token_use || "N/A"}</Typography>
-													</Grid>
-												</Grid>
-											</AccordionDetails>
-										</Accordion>
-									</Grid>
+									<AccordionItem value="basic">
+										<AccordionTrigger>
+											Basic Information
+										</AccordionTrigger>
+										<AccordionContent>
+											<div className="grid gap-3">
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Subject</p>
+													<p className="text-sm text-foreground">{selectedToken.sub || "N/A"}</p>
+												</div>
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Client ID</p>
+													<p className="text-sm text-foreground">{selectedToken.client_id || "N/A"}</p>
+												</div>
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Token Type</p>
+													<p className="text-sm text-foreground">{selectedToken.tokenTypeFormatted || "N/A"}</p>
+												</div>
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Token Use</p>
+													<p className="text-sm text-foreground">{selectedToken.token_use || "N/A"}</p>
+												</div>
+											</div>
+										</AccordionContent>
+									</AccordionItem>
 
 									{/* Timestamps */}
-									<Grid size={{ xs: 12 }}>
-										<Accordion>
-											<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-												<Typography variant="h6">Timestamps</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												<Grid container spacing={2}>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="subtitle2" color="text.secondary">
-															Issued At
-														</Typography>
-														<Typography variant="body1">{selectedToken.issuedAtFormatted || "N/A"}</Typography>
-													</Grid>
-													<Grid size={{ xs: 12, md: 6 }}>
-														<Typography variant="subtitle2" color="text.secondary">
-															Expires At
-														</Typography>
-														<Typography variant="body1">{selectedToken.expiresAtFormatted || "Never"}</Typography>
-													</Grid>
-													{selectedToken.nbf && (
-														<Grid size={{ xs: 12, md: 6 }}>
-															<Typography variant="subtitle2" color="text.secondary">
-																Not Before
-															</Typography>
-															<Typography variant="body1">{new Date(selectedToken.nbf * 1000).toLocaleString()}</Typography>
-														</Grid>
-													)}
-												</Grid>
-											</AccordionDetails>
-										</Accordion>
-									</Grid>
+									<AccordionItem value="timestamps">
+										<AccordionTrigger>
+											Timestamps
+										</AccordionTrigger>
+										<AccordionContent>
+											<div className="grid gap-3">
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Issued At</p>
+													<p className="text-sm text-foreground">{selectedToken.issuedAtFormatted || "N/A"}</p>
+												</div>
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Expires At</p>
+													<p className="text-sm text-foreground">{selectedToken.expiresAtFormatted || "Never"}</p>
+												</div>
+												{selectedToken.nbf && (
+													<div className="space-y-1">
+														<p className="text-sm font-medium text-muted-foreground">Not Before</p>
+														<p className="text-sm text-foreground">{new Date(selectedToken.nbf * 1000).toLocaleString()}</p>
+													</div>
+												)}
+											</div>
+										</AccordionContent>
+									</AccordionItem>
 
 									{/* Scopes and Audience */}
-									<Grid size={{ xs: 12 }}>
-										<Accordion>
-											<AccordionSummary expandIcon={<ExpandMoreIcon />}>
-												<Typography variant="h6">Scopes & Audience</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												<Box sx={{ mb: 2 }}>
-													<Typography variant="subtitle2" color="text.secondary" gutterBottom>
-														Scopes
-													</Typography>
-													<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+									<AccordionItem value="scopes">
+										<AccordionTrigger>
+											Scopes &amp; Audience
+										</AccordionTrigger>
+										<AccordionContent>
+											<div className="grid gap-3">
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Scopes</p>
+													<div className="flex flex-wrap gap-1">
 														{selectedToken.formattedScopes?.map((scope: string) => (
-															<Chip key={scope} label={scope} size="small" color="primary" variant="outlined" />
-														)) || <Typography variant="body2">None</Typography>}
-													</Box>
-												</Box>
-												<Box>
-													<Typography variant="subtitle2" color="text.secondary" gutterBottom>
-														Audience
-													</Typography>
-													<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+															<Badge key={scope} variant="outline">
+																{scope}
+															</Badge>
+														)) || <span className="text-sm text-muted-foreground">None</span>}
+													</div>
+												</div>
+												<div className="space-y-1">
+													<p className="text-sm font-medium text-muted-foreground">Audience</p>
+													<div className="flex flex-wrap gap-1">
 														{selectedToken.formattedAudience?.map((aud: string) => (
-															<Chip key={aud} label={aud} size="small" color="secondary" variant="outlined" />
-														)) || <Typography variant="body2">None</Typography>}
-													</Box>
-												</Box>
-											</AccordionDetails>
-										</Accordion>
-									</Grid>
-								</Grid>
-							</Box>
+															<Badge key={aud} variant="secondary">
+																{aud}
+															</Badge>
+														)) || <span className="text-sm text-muted-foreground">None</span>}
+													</div>
+												</div>
+											</div>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</div>
 						)}
+						<DialogFooter>
+							<Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
+						</DialogFooter>
 					</DialogContent>
-					<DialogActions>
-						<Button onClick={() => setViewDialogOpen(false)}>Close</Button>
-					</DialogActions>
 				</Dialog>
 
 				{/* Revoke Token Dialog */}
-				<Dialog open={revokeDialogOpen} onClose={() => setRevokeDialogOpen(false)} title="Revoke Token">
-					<Typography variant="body" style={{ marginBottom: "1rem" }}>
-						Are you sure you want to revoke this token? This action cannot be undone and will immediately invalidate the token.
-					</Typography>
-					<Typography variant="code" color="secondary">
-						{revokeTokenValue}
-					</Typography>
-					<DialogActions>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: revokeTokenMutation.isPending ? "Revoking..." : "Revoke Token",
-								onClick: handleRevokeConfirm,
-								disabled: revokeTokenMutation.isPending,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: () => setRevokeDialogOpen(false),
-								},
-							]}
-						/>
-					</DialogActions>
+				<Dialog open={revokeDialogOpen} onOpenChange={(open) => !open && setRevokeDialogOpen(false)}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Revoke Token</DialogTitle>
+						</DialogHeader>
+						<div className="space-y-4">
+							<p className="text-sm text-muted-foreground">
+								Are you sure you want to revoke this token? This action cannot be undone and will immediately invalidate the token.
+							</p>
+							<code className="block rounded-md bg-muted px-3 py-2 font-mono text-sm">
+								{revokeTokenValue}
+							</code>
+						</div>
+						<DialogFooter>
+							<ActionBar
+								align="right"
+								primaryAction={{
+									label: revokeTokenMutation.isPending ? "Revoking..." : "Revoke Token",
+									onClick: handleRevokeConfirm,
+									disabled: revokeTokenMutation.isPending,
+								}}
+								secondaryActions={[
+									{
+										label: "Cancel",
+										onClick: () => setRevokeDialogOpen(false),
+									},
+								]}
+							/>
+						</DialogFooter>
+					</DialogContent>
 				</Dialog>
 
 				{/* Revoke Error Display */}
 				{revokeTokenMutation.error && (
-					<Alert severity="error" style={{ marginTop: "1rem" }}>
-						Failed to revoke token: {revokeTokenMutation.error.message}
+					<Alert variant="destructive">
+						<Icon name="error" />
+						<AlertDescription>
+							Failed to revoke token: {revokeTokenMutation.error.message}
+						</AlertDescription>
 					</Alert>
 				)}
-			</Box>
+			</div>
 		</AdminLayout>
 	);
 }
