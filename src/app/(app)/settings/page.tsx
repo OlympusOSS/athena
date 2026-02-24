@@ -1,24 +1,58 @@
 "use client";
 
-import { Settings as SettingsIcon } from "@mui/icons-material";
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Icon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, cn } from "@olympus/canvas";
 import { PageHeader, ProtectedPage } from "@/components/layout";
-import { Alert, Container, Grid, Snackbar } from "@/components/ui";
 import {
+	useDefaultClientId,
 	useHydraEnabled,
 	useHydraEndpoints,
 	useIsOryNetwork,
 	useIsValidUrl,
 	useKratosEndpoints,
 	useResetSettings,
+	useSetDefaultClientId,
 	useSetHydraEnabled,
 	useSetHydraEndpoints,
 	useSetIsOryNetwork,
 	useSetKratosEndpoints,
 } from "@/features/settings/hooks/useSettings";
+import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import { useTheme } from "@/providers/ThemeProvider";
-import { AppearanceSection, ConnectionModeSection, HydraIntegrationSection, ResetSection, ServiceConfigSection } from "./components";
+import { ServiceConfigSection } from "./components";
 import { useServiceSettingsForm } from "./hooks";
+
+/* ── Inline helper: a single row in the General settings card ── */
+function SettingRow({
+	icon,
+	label,
+	description,
+	badge,
+	children,
+	last = false,
+}: {
+	icon: string;
+	label: string;
+	description: string;
+	badge?: ReactNode;
+	children: ReactNode;
+	last?: boolean;
+}) {
+	return (
+		<div className={cn("flex items-center justify-between py-4", !last && "border-b border-border")}>
+			<div className="space-y-0.5 pr-6">
+				<div className="flex items-center gap-2">
+					<Icon name={icon} className="h-4 w-4 text-muted-foreground" />
+					<span className="text-sm font-medium text-foreground">{label}</span>
+					{badge}
+				</div>
+				<p className="text-[13px] text-muted-foreground">{description}</p>
+			</div>
+			{children}
+		</div>
+	);
+}
 
 export default function SettingsPage() {
 	const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -33,8 +67,13 @@ export default function SettingsPage() {
 	const setKratosEndpoints = useSetKratosEndpoints();
 	const hydraEndpoints = useHydraEndpoints();
 	const setHydraEndpoints = useSetHydraEndpoints();
+	const defaultClientId = useDefaultClientId();
+	const setDefaultClientId = useSetDefaultClientId();
 	const resetSettings = useResetSettings();
 	const isValidUrl = useIsValidUrl();
+
+	// OAuth2 clients for default client dropdown
+	const { data: allClientsData } = useAllOAuth2Clients({ enabled: hydraEnabled });
 
 	// Success callback for all save operations
 	const showSuccess = () => setShowSuccessMessage(true);
@@ -75,34 +114,131 @@ export default function SettingsPage() {
 		showSuccess();
 	};
 
-	const handleResetAll = async () => {
-		await resetSettings();
+	const handleDefaultClientChange = (value: string) => {
+		setDefaultClientId(value === "none" ? "" : value);
 		showSuccess();
 	};
+
+	const [isResetting, setIsResetting] = useState(false);
+	const handleResetAll = async () => {
+		setIsResetting(true);
+		try {
+			await resetSettings();
+			showSuccess();
+		} finally {
+			setIsResetting(false);
+		}
+	};
+
+	// Auto-hide success message
+	useEffect(() => {
+		if (showSuccessMessage) {
+			const timer = setTimeout(() => setShowSuccessMessage(false), 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [showSuccessMessage]);
 
 	return (
 		<ProtectedPage>
 			<PageHeader
 				title="Settings"
 				subtitle="Configure application preferences and API endpoints"
-				icon={<SettingsIcon sx={{ fontSize: 32, color: "white" }} />}
+				icon={<Icon name="settings" />}
 			/>
 
-			<Container maxWidth="lg">
-				<Grid container spacing={3}>
-					<Grid size={{ xs: 12 }}>
-						<AppearanceSection currentTheme={currentTheme} onThemeChange={handleThemeChange} />
-					</Grid>
+			<div className="space-y-6">
+				{/* ── General Settings ── */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-base">General</CardTitle>
+					</CardHeader>
+					<CardContent className="pt-0">
+						<SettingRow
+							icon="sun"
+							label="Dark mode"
+							description="Toggle between light and dark theme"
+						>
+							<Switch
+								checked={currentTheme === "dark"}
+								onCheckedChange={handleThemeChange}
+							/>
+						</SettingRow>
 
-					<Grid size={{ xs: 12 }}>
-						<ConnectionModeSection isOryNetwork={isOryNetwork} onOryNetworkChange={handleOryNetworkChange} />
-					</Grid>
+						<SettingRow
+							icon="cloud"
+							label="Ory Network"
+							description={
+								isOryNetwork
+									? "Connected to Ory Network. Health checks are skipped."
+									: "Self-hosted mode. Health checks are enabled."
+							}
+							badge={
+								<Badge variant={isOryNetwork ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+									{isOryNetwork ? "Cloud" : "Self-Hosted"}
+								</Badge>
+							}
+						>
+							<Switch
+								checked={isOryNetwork}
+								onCheckedChange={handleOryNetworkChange}
+							/>
+						</SettingRow>
 
-					<Grid size={{ xs: 12 }}>
-						<HydraIntegrationSection hydraEnabled={hydraEnabled} onHydraEnabledChange={handleHydraEnabledChange} />
-					</Grid>
+						<SettingRow
+							icon="grid"
+							label="Hydra integration"
+							description={
+								hydraEnabled
+									? "OAuth2 client management and analytics are available."
+									: "Enable to manage OAuth2 clients and view analytics."
+							}
+							badge={
+								<Badge variant={hydraEnabled ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+									{hydraEnabled ? "Enabled" : "Disabled"}
+								</Badge>
+							}
+							last={!hydraEnabled}
+						>
+							<Switch
+								checked={hydraEnabled}
+								onCheckedChange={handleHydraEnabledChange}
+							/>
+						</SettingRow>
 
-					<Grid size={{ xs: 12 }}>
+						{hydraEnabled && (
+							<SettingRow
+								icon="key"
+								label="Default client"
+								description="OAuth2 client used when users navigate directly to the login page."
+								last
+							>
+								<Select
+									value={defaultClientId || "none"}
+									onValueChange={handleDefaultClientChange}
+								>
+									<SelectTrigger className="w-[220px]">
+										<SelectValue placeholder="Select a client…" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">None</SelectItem>
+										{allClientsData?.clients?.map((client) => (
+											<SelectItem key={client.client_id} value={client.client_id!}>
+												{client.client_name || client.client_id}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</SettingRow>
+						)}
+					</CardContent>
+				</Card>
+
+				{/* ── API Endpoints ── */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-base">API Endpoints</CardTitle>
+					</CardHeader>
+					<CardContent className="pt-0">
 						<ServiceConfigSection
 							serviceName="Kratos"
 							form={kratosForm.form}
@@ -115,11 +251,10 @@ export default function SettingsPage() {
 							validateUrl={validateUrl}
 							isEditingApiKey={kratosForm.isEditingApiKey}
 							onApiKeyEditStart={kratosForm.startEditingApiKey}
+							showDivider={hydraEnabled}
 						/>
-					</Grid>
 
-					{hydraEnabled && (
-						<Grid size={{ xs: 12 }}>
+						{hydraEnabled && (
 							<ServiceConfigSection
 								serviceName="Hydra"
 								form={hydraForm.form}
@@ -133,25 +268,49 @@ export default function SettingsPage() {
 								isEditingApiKey={hydraForm.isEditingApiKey}
 								onApiKeyEditStart={hydraForm.startEditingApiKey}
 							/>
-						</Grid>
-					)}
+						)}
+					</CardContent>
+				</Card>
 
-					<Grid size={{ xs: 12 }}>
-						<ResetSection onReset={handleResetAll} />
-					</Grid>
-				</Grid>
-			</Container>
+				{/* ── Danger Zone ── */}
+				<div className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+					<div className="flex items-center gap-3">
+						<Icon name="warning" className="h-4 w-4 text-destructive" />
+						<div>
+							<p className="text-sm font-medium text-destructive">Reset all settings</p>
+							<p className="text-xs text-muted-foreground">Clears all endpoint configurations and API keys. Cannot be undone.</p>
+						</div>
+					</div>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleResetAll}
+						disabled={isResetting}
+						className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+					>
+						<Icon name="reset" className="mr-1 h-3.5 w-3.5" />
+						{isResetting ? "Resetting..." : "Reset"}
+					</Button>
+				</div>
+			</div>
 
-			<Snackbar
-				open={showSuccessMessage}
-				autoHideDuration={3000}
-				onClose={() => setShowSuccessMessage(false)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-			>
-				<Alert variant="toast" onClose={() => setShowSuccessMessage(false)} severity="success" sx={{ width: "100%" }}>
+			{/* Success toast */}
+			<div className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showSuccessMessage ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none")}>
+				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
+					<svg
+						className="h-5 w-5 text-success"
+						fill="currentColor"
+						viewBox="0 0 20 20"
+					>
+						<path
+							fillRule="evenodd"
+							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+							clipRule="evenodd"
+						/>
+					</svg>
 					Settings saved successfully!
-				</Alert>
-			</Snackbar>
+				</div>
+			</div>
 		</ProtectedPage>
 	);
 }

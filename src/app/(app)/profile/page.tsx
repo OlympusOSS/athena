@@ -1,10 +1,12 @@
 "use client";
 
-import { Cancel, Edit, Lock, Person, Save } from "@mui/icons-material";
-import { useState } from "react";
-import { FieldDisplay } from "@/components/display";
+import { useEffect, useState } from "react";
+import { FieldDisplay, Icon } from "@olympus/canvas";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
-import { Alert, Avatar, Box, Chip, Container, Grid, Paper, Snackbar, TextField, Typography } from "@/components/ui";
+import { Badge } from "@olympus/canvas";
+import { Input } from "@olympus/canvas";
+import { Label } from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { useUser } from "@/features/auth/hooks/useAuth";
 
@@ -13,7 +15,15 @@ export default function ProfilePage() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [displayName, setDisplayName] = useState(user?.displayName || "");
 	const [email, setEmail] = useState(user?.email || "");
-	const [showSnackbar, setShowSnackbar] = useState(false);
+	const [showToast, setShowToast] = useState(false);
+
+	// Auto-hide toast after 6 seconds
+	useEffect(() => {
+		if (showToast) {
+			const timer = setTimeout(() => setShowToast(false), 6000);
+			return () => clearTimeout(timer);
+		}
+	}, [showToast]);
 
 	if (!user) {
 		return null; // Protected by AdminLayout
@@ -33,21 +43,13 @@ export default function ProfilePage() {
 		// In a real application, this would update the user profile
 		// For now, we'll just show a success message
 		setIsEditing(false);
-		setShowSnackbar(true);
+		setShowToast(true);
 	};
 
 	return (
 		<ProtectedPage>
-			<Container maxWidth="md">
-				<Paper
-					elevation={0}
-					sx={{
-						p: 4,
-						borderRadius: 3,
-						border: "1px solid",
-						borderColor: "divider",
-					}}
-				>
+			<div className="space-y-6">
+				<div className="space-y-6">
 					<PageHeader
 						title="User Profile"
 						actions={
@@ -55,7 +57,7 @@ export default function ProfilePage() {
 								<ActionBar
 									primaryAction={{
 										label: "Edit Profile",
-										icon: <Edit />,
+										icon: <Icon name="edit" />,
 										onClick: handleEdit,
 									}}
 								/>
@@ -63,15 +65,15 @@ export default function ProfilePage() {
 								<ActionBar
 									primaryAction={{
 										label: "Save",
-										icon: <Save />,
+										icon: <Icon name="save" />,
 										onClick: handleSave,
 									}}
 									secondaryActions={[
 										{
 											label: "Cancel",
-											icon: <Cancel />,
+											icon: <Icon name="close" />,
 											onClick: handleCancel,
-											variant: "outlined",
+											variant: "outline",
 										},
 									]}
 								/>
@@ -79,109 +81,97 @@ export default function ProfilePage() {
 						}
 					/>
 
-					<Grid container spacing={4}>
-						<Grid size={{ xs: 12, md: 4 }}>
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "center",
-								}}
-							>
-								<Avatar
-									sx={{
-										width: 120,
-										height: 120,
-										fontSize: "3rem",
-										bgcolor: user.role === UserRole.ADMIN ? "primary.main" : "secondary.main",
-										mb: 2,
-									}}
-								>
+					<div className="grid gap-6 lg:grid-cols-3">
+						<div>
+							<div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-card p-6">
+								<div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-3xl font-bold text-primary-foreground">
 									{user.displayName.charAt(0)}
-								</Avatar>
+								</div>
 
-								<Chip variant={user.role === UserRole.ADMIN ? "gradient" : "role"} label={user.role} sx={{ mb: 1 }} />
+								<Badge
+									variant={user.role === UserRole.ADMIN ? "default" : "secondary"}
+								>
+									{user.role}
+								</Badge>
 
-								<Typography variant="label">Account created: March 1, 2025</Typography>
-							</Box>
-						</Grid>
+								<span className="text-xs text-muted-foreground">Account created: March 1, 2025</span>
+							</div>
+						</div>
 
-						<Grid size={{ xs: 12, md: 8 }}>
+						<div className="space-y-6 lg:col-span-2">
 							<SectionCard
 								title={
 									<FlexBox align="center" gap={1}>
-										<Person />
-										<Typography variant="heading" size="lg">
-											Personal Information
-										</Typography>
+										<Icon name="user" />
+										<span>Personal Information</span>
 									</FlexBox>
 								}
-								sx={{ mb: 3 }}
 							>
-								<Grid container spacing={2}>
-									<Grid size={{ xs: 12 }}>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<div className="space-y-2">
 										{isEditing ? (
-											<>
-												<Typography variant="label" sx={{ mb: 1, display: "block" }}>
+											<div className="space-y-2">
+												<Label>
 													Display Name
-												</Typography>
-												<TextField fullWidth value={displayName} onChange={(e) => setDisplayName(e.target.value)} size="small" />
-											</>
+												</Label>
+												<Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+											</div>
 										) : (
 											<FieldDisplay label="Display Name" value={user.displayName} />
 										)}
-									</Grid>
+									</div>
 
-									<Grid size={{ xs: 12 }}>
+									<div className="space-y-2">
 										{isEditing ? (
-											<>
-												<Typography variant="label" sx={{ mb: 1, display: "block" }}>
+											<div className="space-y-2">
+												<Label>
 													Email Address
-												</Typography>
-												<TextField fullWidth value={email} onChange={(e) => setEmail(e.target.value)} size="small" />
-											</>
+												</Label>
+												<Input value={email} onChange={(e) => setEmail(e.target.value)} />
+											</div>
 										) : (
 											<FieldDisplay label="Email Address" value={user.email} />
 										)}
-									</Grid>
-								</Grid>
+									</div>
+								</div>
 							</SectionCard>
 
 							<SectionCard
 								title={
 									<FlexBox align="center" gap={1}>
-										<Lock />
-										<Typography variant="heading" size="lg">
-											Account Information
-										</Typography>
+										<Icon name="lock" />
+										<span>Account Information</span>
 									</FlexBox>
 								}
 							>
-								<Grid container spacing={2}>
-									<Grid size={{ xs: 12 }}>
-										<FieldDisplay label="Username" value={user.username} />
-									</Grid>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<div className="space-y-2">
+										<FieldDisplay label="Email" value={user.email} />
+									</div>
 
-									<Grid size={{ xs: 12 }}>
-										<FieldDisplay label="Role" value={user.role} valueType="chip" chipVariant="role" />
-									</Grid>
-								</Grid>
+									<div className="space-y-2">
+										<FieldDisplay label="Role" value={user.role} valueType="chip" />
+									</div>
+								</div>
 							</SectionCard>
-						</Grid>
-					</Grid>
-				</Paper>
-			</Container>
+						</div>
+					</div>
+				</div>
+			</div>
 
-			<Snackbar
-				open={showSnackbar}
-				autoHideDuration={6000}
-				onClose={() => setShowSnackbar(false)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-			>
-				<Alert variant="toast" onClose={() => setShowSnackbar(false)} severity="success" sx={{ width: "100%" }}>
-					Profile updated successfully!
-				</Alert>
-			</Snackbar>
+			{/* Success Toast */}
+			<div className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0")}>
+				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
+					<span className="text-sm font-medium text-foreground">Profile updated successfully!</span>
+					<button
+						type="button"
+						onClick={() => setShowToast(false)}
+						className="ml-2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
+					>
+						<Icon name="close" />
+					</button>
+				</div>
+			</div>
 		</ProtectedPage>
 	);
 }

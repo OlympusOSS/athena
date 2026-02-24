@@ -1,7 +1,13 @@
-import { AccessTime, Warning } from "@mui/icons-material";
 import React, { useMemo } from "react";
-import { StatusBadge } from "@/components";
-import { Box, DataTable, type DataTableColumn, Tooltip, Typography } from "@/components/ui";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { DataTable, type DataTableColumn } from "@olympus/canvas";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 
 interface SessionsTableProps {
@@ -49,17 +55,16 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					minWidth: 200,
 					maxWidth: 250,
 					renderCell: (value: string) => (
-						<Tooltip content={value}>
-							<Typography
-								variant="code"
-								sx={{
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-								}}
-							>
-								{value.substring(0, 8)}...
-							</Typography>
-						</Tooltip>
+						<TooltipProvider delayDuration={0}>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<code>
+										{value.substring(0, 8)}...
+									</code>
+								</TooltipTrigger>
+								<TooltipContent>{value}</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					),
 				},
 				{
@@ -68,16 +73,9 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					minWidth: 200,
 					maxWidth: 250,
 					renderCell: (_: any, session: any) => (
-						<Typography
-							variant="body"
-							sx={{
-								fontWeight: 500,
-								overflow: "hidden",
-								textOverflow: "ellipsis",
-							}}
-						>
+						<span>
 							{getIdentityDisplay(session)}
-						</Typography>
+						</span>
 					),
 				},
 				{
@@ -92,12 +90,12 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					minWidth: 180,
 					renderCell: (value: string) =>
 						value ? (
-							<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-								<AccessTime fontSize="small" color="action" />
-								<Typography variant="body">{formatDate(value)}</Typography>
-							</Box>
+							<div>
+								<Icon name="time" />
+								<span>{formatDate(value)}</span>
+							</div>
 						) : (
-							"N/A"
+							<span>N/A</span>
 						),
 				},
 				{
@@ -105,18 +103,18 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					headerName: "Expires",
 					minWidth: 160,
 					renderCell: (value: string) => {
-						if (!value) return "N/A";
+						if (!value) return <span>N/A</span>;
 
 						const timeRemaining = getTimeRemaining(value);
 						const isExpiringSoon = timeRemaining?.includes("m remaining");
 
 						return (
-							<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-								{isExpiringSoon && <Warning fontSize="small" color="warning" />}
-								<Typography variant="body" color={isExpiringSoon ? "warning.main" : "text.primary"} fontWeight={isExpiringSoon ? 500 : 400}>
+							<div>
+								{isExpiringSoon && <Icon name="danger" />}
+								<span>
 									{timeRemaining}
-								</Typography>
-							</Box>
+								</span>
+							</div>
 						);
 					},
 				},

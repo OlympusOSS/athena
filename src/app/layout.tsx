@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import Providers from "@/providers/Providers";
-import ThemeRegistry from "@/providers/ThemeRegistry";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -33,13 +31,9 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={inter.className}>
-			<body suppressHydrationWarning={true}>
-				<AppRouterCacheProvider options={{ enableCssLayer: true }}>
-					<ThemeRegistry>
-						<Providers>{children}</Providers>
-					</ThemeRegistry>
-				</AppRouterCacheProvider>
+		<html lang="en" className={inter.className} suppressHydrationWarning>
+			<body className="min-h-screen bg-background font-sans antialiased">
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);

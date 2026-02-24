@@ -1,7 +1,16 @@
 import type { Identity } from "@ory/kratos-client";
 import type React from "react";
-import { ActionBar } from "@/components/layout";
-import { Alert, Box, Chip, FormDialog, Typography } from "@/components/ui";
+import { Alert, AlertDescription, Icon } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentity } from "../hooks/useIdentities";
 
@@ -29,79 +38,88 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 
 	if (!identity) return null;
 
-	const traits = identity.traits as any;
+	const traits = identity.traits as Record<string, unknown>;
+	const name = traits?.name as Record<string, string> | undefined;
 	const displayName =
-		traits?.name?.first && traits?.name?.last ? `${traits.name.first} ${traits.name.last}` : traits?.username || traits?.email || "Unknown User";
+		name?.first && name?.last ? `${name.first} ${name.last}` : (traits?.username as string) || (traits?.email as string) || "Unknown User";
 
 	return (
-		<FormDialog open={open} onClose={onClose} title="Delete Identity" titleColor="error.main" disableBackdropClick={deleteIdentityMutation.isPending}>
-			<Box sx={{ mb: 3 }}>
-				<Typography variant="body" gutterBottom>
-					Are you sure you want to delete this identity? This action cannot be undone.
-				</Typography>
-			</Box>
+		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+			<DialogContent
+				onInteractOutside={(e: Event) => { if (deleteIdentityMutation.isPending) e.preventDefault(); }}
+			>
+				<DialogHeader>
+					<DialogTitle>Delete Identity</DialogTitle>
+					<DialogDescription>
+						Confirm deletion of identity
+					</DialogDescription>
+				</DialogHeader>
 
-			{/* Identity Information */}
-			<Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1, mb: 2 }}>
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						mb: 1,
-					}}
-				>
-					<Typography variant="heading" size="lg">
-						{displayName}
-					</Typography>
-					<Chip label={identity.schema_id} variant="tag" />
-				</Box>
+				<div>
+					<p>
+						Are you sure you want to delete this identity? This action cannot be undone.
+					</p>
 
-				<Typography variant="code" sx={{ mb: 1 }}>
-					ID: {identity.id}
-				</Typography>
+					{/* Identity Information */}
+					<div>
+						<div>
+							<h4>{displayName}</h4>
+							<Badge variant="outline">{identity.schema_id}</Badge>
+						</div>
 
-				{traits?.email && <Typography variant="label">Email: {traits.email}</Typography>}
+						<code>ID: {identity.id}</code>
 
-				{traits?.username && <Typography variant="label">Username: {traits.username}</Typography>}
-			</Box>
+						{(traits?.email as string) && (
+							<p>Email: {traits.email as string}</p>
+						)}
 
-			<Alert variant="inline" severity="warning" sx={{ mt: 2 }}>
-				<Typography variant="body">
-					<strong>Warning:</strong> Deleting this identity will:
-				</Typography>
-				<Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
-					<li>Permanently remove all identity data</li>
-					<li>Revoke all active sessions</li>
-					<li>Remove all verifiable addresses</li>
-					<li>Delete all recovery addresses</li>
-				</Box>
-			</Alert>
+						{(traits?.username as string) && (
+							<p>Username: {traits.username as string}</p>
+						)}
+					</div>
 
-			{deleteIdentityMutation.isError && (
-				<Alert variant="inline" severity="error" sx={{ mt: 2 }}>
-					Failed to delete identity: {(deleteIdentityMutation.error as any)?.message || "Unknown error"}
-				</Alert>
-			)}
+					<Alert variant="destructive">
+						<Icon name="danger" />
+						<AlertDescription>
+							<p>
+								<strong>Warning:</strong> Deleting this identity will:
+							</p>
+							<ul>
+								<li>Permanently remove all identity data</li>
+								<li>Revoke all active sessions</li>
+								<li>Remove all verifiable addresses</li>
+								<li>Delete all recovery addresses</li>
+							</ul>
+						</AlertDescription>
+					</Alert>
 
-			<Box sx={{ mt: 3 }}>
-				<ActionBar
-					align="right"
-					primaryAction={{
-						label: deleteIdentityMutation.isPending ? "Deleting..." : "Delete Identity",
-						onClick: handleDelete,
-						disabled: deleteIdentityMutation.isPending,
-					}}
-					secondaryActions={[
-						{
-							label: "Cancel",
-							onClick: onClose,
-							disabled: deleteIdentityMutation.isPending,
-						},
-					]}
-				/>
-			</Box>
-		</FormDialog>
+					{deleteIdentityMutation.isError && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								Failed to delete identity: {(deleteIdentityMutation.error as Error)?.message || "Unknown error"}
+							</AlertDescription>
+						</Alert>
+					)}
+
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={onClose}
+							disabled={deleteIdentityMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={handleDelete}
+							disabled={deleteIdentityMutation.isPending}
+						>
+							{deleteIdentityMutation.isPending ? "Deleting..." : "Delete Identity"}
+						</Button>
+					</DialogFooter>
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

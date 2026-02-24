@@ -1,27 +1,30 @@
 "use client";
 
-import {
-	Add as AddIcon,
-	Apps as AppsIcon,
-	CloudOff as CloudOffIcon,
-	Delete as DeleteIcon,
-	Edit as EditIcon,
-	Group,
-	Lock as LockIcon,
-	MoreVert as MoreVertIcon,
-	Public as PublicIcon,
-	Settings as SettingsIcon,
-	Visibility as ViewIcon,
-	VpnKey as VpnKeyIcon,
-} from "@mui/icons-material";
-import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { ErrorState, StatCard } from "@/components";
-import { SearchBar } from "@/components/forms";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Icon, StatCard } from "@olympus/canvas";
+import { DataTable, SearchBar } from "@olympus/canvas";
+import type { DataTableColumn } from "@olympus/canvas";
+import { EmptyState, ErrorState } from "@olympus/canvas";
 import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
-import { Box, Card, Chip, Dialog, DialogActions, DialogContent, EmptyState, Grid, IconButton, Menu, MenuItem, Typography } from "@/components/ui";
-import { formatClientId, getClientType, transformOAuth2ClientForTable, useAllOAuth2Clients, useDeleteOAuth2Client } from "@/features/oauth2-clients";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Card } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import {
+	formatClientId,
+	getClientType,
+	transformOAuth2ClientForTable,
+	useAllOAuth2Clients,
+	useDeleteOAuth2Client,
+} from "@/features/oauth2-clients";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
 import { useDialog } from "@/hooks";
 import type { OAuth2Client } from "@/services/hydra";
@@ -30,9 +33,11 @@ export default function OAuth2ClientsPage() {
 	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedClient, setSelectedClient] = useState<string | null>(null);
-	const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
 	const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 	const { isOpen: deleteDialogOpen, open: openDeleteDialog, close: closeDeleteDialog } = useDialog();
+	const menuRef = useRef<HTMLDivElement>(null);
 
 	// Check if Hydra is enabled
 	const hydraEnabled = useHydraEnabled();
@@ -58,32 +63,44 @@ export default function OAuth2ClientsPage() {
 	);
 
 	// Handle menu actions
-	const handleMenuClick = (event: React.MouseEvent<HTMLElement>, clientId: string) => {
+	const handleMenuClick = useCallback((event: React.MouseEvent<HTMLElement>, clientId: string) => {
 		event.stopPropagation();
+		const rect = event.currentTarget.getBoundingClientRect();
 		setSelectedClient(clientId);
-		setMenuAnchor(event.currentTarget);
-	};
+		setMenuPosition({ top: rect.bottom + 4, left: rect.left - 120 });
+		setMenuOpen(true);
+	}, []);
 
-	const handleMenuClose = () => {
-		setMenuAnchor(null);
+	const handleMenuClose = useCallback(() => {
+		setMenuOpen(false);
 		setSelectedClient(null);
-	};
+		setMenuPosition(null);
+	}, []);
 
-	const handleView = (clientId: string) => {
-		router.push(`/clients/${clientId}`);
-		handleMenuClose();
-	};
+	const handleView = useCallback(
+		(clientId: string) => {
+			router.push(`/clients/${clientId}`);
+			handleMenuClose();
+		},
+		[router, handleMenuClose],
+	);
 
-	const handleEdit = (clientId: string) => {
-		router.push(`/clients/${clientId}/edit`);
-		handleMenuClose();
-	};
+	const handleEdit = useCallback(
+		(clientId: string) => {
+			router.push(`/clients/${clientId}/edit`);
+			handleMenuClose();
+		},
+		[router, handleMenuClose],
+	);
 
-	const handleDeleteClick = (clientId: string) => {
-		setClientToDelete(clientId);
-		openDeleteDialog();
-		handleMenuClose();
-	};
+	const handleDeleteClick = useCallback(
+		(clientId: string) => {
+			setClientToDelete(clientId);
+			openDeleteDialog();
+			handleMenuClose();
+		},
+		[openDeleteDialog, handleMenuClose],
+	);
 
 	const handleDeleteConfirm = async () => {
 		if (!clientToDelete) return;
@@ -103,21 +120,18 @@ export default function OAuth2ClientsPage() {
 	};
 
 	// Table columns
-	const columns: GridColDef[] = [
+	const columns: DataTableColumn[] = [
 		{
 			field: "displayName",
 			headerName: "Client Name",
 			flex: 1,
 			minWidth: 200,
-			renderCell: (params: GridRenderCellParams) => (
-				<Box>
-					<Typography variant="body" sx={{ fontWeight: 500 }}>
-						{params.value}
-					</Typography>
-					<Typography variant="code" sx={{ fontSize: "0.75rem" }}>
-						{formatClientId(params.row.id)}
-					</Typography>
-				</Box>
+			renderCell: (value: string, row: any) => (
+				<div className="space-y-0.5">
+					<span className="font-medium text-foreground">{value}</span>
+					<br />
+					<code className="text-xs font-mono text-muted-foreground">{formatClientId(row.id)}</code>
+				</div>
 			),
 		},
 		{
@@ -125,13 +139,19 @@ export default function OAuth2ClientsPage() {
 			headerName: "Grant Types",
 			flex: 1,
 			minWidth: 250,
-			renderCell: (params: GridRenderCellParams) => (
-				<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-					{params.value?.slice(0, 2).map((grantType: string) => (
-						<Chip key={grantType} variant="tag" label={grantType.replace("_", " ")} />
+			renderCell: (value: string[]) => (
+				<div className="flex flex-wrap gap-1">
+					{value?.slice(0, 2).map((grantType: string) => (
+						<Badge key={grantType} variant="secondary">
+							{grantType.replace("_", " ")}
+						</Badge>
 					))}
-					{params.value?.length > 2 && <Chip variant="gradient" label={`+${params.value.length - 2}`} />}
-				</Box>
+					{value?.length > 2 && (
+						<Badge variant="outline">
+							+{value.length - 2}
+						</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -139,39 +159,49 @@ export default function OAuth2ClientsPage() {
 			headerName: "Scopes",
 			flex: 1,
 			minWidth: 200,
-			renderCell: (params: GridRenderCellParams) => (
-				<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-					{params.value?.slice(0, 3).map((scope: string) => (
-						<Chip key={scope} variant="role" label={scope} />
+			renderCell: (value: string[]) => (
+				<div className="flex flex-wrap gap-1">
+					{value?.slice(0, 3).map((scope: string) => (
+						<Badge key={scope} variant="outline">
+							{scope}
+						</Badge>
 					))}
-					{params.value?.length > 3 && <Chip variant="gradient" label={`+${params.value.length - 3}`} />}
-				</Box>
+					{value?.length > 3 && (
+						<Badge variant="outline">
+							+{value.length - 3}
+						</Badge>
+					)}
+				</div>
 			),
 		},
 		{
 			field: "client_secret",
 			headerName: "Type",
 			width: 120,
-			renderCell: (params: GridRenderCellParams) => {
-				const clientType = getClientType(params.row as OAuth2Client);
-				return <Chip variant={clientType === "confidential" ? "gradient" : "tag"} label={clientType} />;
+			renderCell: (_value: any, row: any) => {
+				const clientType = getClientType(row as OAuth2Client);
+				return (
+					<Badge variant={clientType === "confidential" ? "default" : "secondary"}>
+						{clientType}
+					</Badge>
+				);
 			},
 		},
 		{
 			field: "createdDate",
 			headerName: "Created",
 			width: 120,
-			renderCell: (params: GridRenderCellParams) => <Typography variant="label">{params.value || "Unknown"}</Typography>,
+			renderCell: (value: string) => <span>{value || "Unknown"}</span>,
 		},
 		{
 			field: "actions",
 			headerName: "Actions",
 			width: 80,
 			sortable: false,
-			renderCell: (params: GridRenderCellParams) => (
-				<IconButton size="small" onClick={(event) => handleMenuClick(event, params.row.id)}>
-					<MoreVertIcon />
-				</IconButton>
+			renderCell: (_value: any, row: any) => (
+				<Button variant="ghost" size="icon" onClick={(event) => handleMenuClick(event, row.id)}>
+					<Icon name="more-vertical" />
+				</Button>
 			),
 		},
 	];
@@ -180,41 +210,41 @@ export default function OAuth2ClientsPage() {
 	if (!hydraEnabled) {
 		return (
 			<ProtectedPage>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<PageHeader
 						title="OAuth2 Clients"
 						subtitle="Manage OAuth2 client applications and their configurations"
-						icon={<AppsIcon sx={{ fontSize: 32, color: "white" }} />}
+						icon={<Icon name="grid" />}
 					/>
-					<Card variant="bordered" sx={{ mt: 3 }}>
+					<Card>
 						<EmptyState
-							icon={CloudOffIcon}
+							icon={<Icon name="cloud-off" />}
 							title="Hydra Integration Disabled"
 							description="Hydra integration is currently disabled. Enable it in Settings to manage OAuth2 clients."
 							action={{
 								label: "Go to Settings",
 								onClick: () => router.push("/settings"),
-								icon: <SettingsIcon />,
+								icon: <Icon name="settings" />,
 							}}
 						/>
 					</Card>
-				</Box>
+				</div>
 			</ProtectedPage>
 		);
 	}
 
 	return (
 		<ProtectedPage>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				<PageHeader
 					title="OAuth2 Clients"
 					subtitle="Manage OAuth2 client applications and their configurations"
-					icon={<AppsIcon sx={{ fontSize: 32, color: "white" }} />}
+					icon={<Icon name="grid" />}
 					actions={
 						<ActionBar
 							primaryAction={{
 								label: "Create Client",
-								icon: <AddIcon />,
+								icon: <Icon name="add" />,
 								onClick: () => router.push("/clients/create"),
 							}}
 						/>
@@ -222,113 +252,121 @@ export default function OAuth2ClientsPage() {
 				/>
 
 				{/* Stats Cards */}
-				<Grid container spacing={3} sx={{ mb: 3 }}>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<StatCard title="Total Clients" value={clientsData?.totalCount || 0} icon={Group} colorVariant="primary" />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<StatCard title="Public Clients" value={clients.filter((c) => !c.client_secret).length} icon={PublicIcon} colorVariant="blue" />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<StatCard title="Confidential Clients" value={clients.filter((c) => !!c.client_secret).length} icon={LockIcon} colorVariant="purple" />
-					</Grid>
-					<Grid size={{ xs: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title="Auth Code Flow"
-							value={clients.filter((c) => c.grant_types?.includes("authorization_code")).length}
-							icon={VpnKeyIcon}
-							colorVariant="success"
-						/>
-					</Grid>
-				</Grid>
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					<StatCard title="Total Clients" value={clientsData?.totalCount || 0} icon={<Icon name="users" />} colorVariant="primary" />
+					<StatCard
+						title="Public Clients"
+						value={clients.filter((c) => !c.client_secret).length}
+						icon={<Icon name="globe" />}
+						colorVariant="blue"
+					/>
+					<StatCard
+						title="Confidential Clients"
+						value={clients.filter((c) => !!c.client_secret).length}
+						icon={<Icon name="lock" />}
+						colorVariant="purple"
+					/>
+					<StatCard
+						title="Auth Code Flow"
+						value={clients.filter((c) => c.grant_types?.includes("authorization_code")).length}
+						icon={<Icon name="key-round" />}
+						colorVariant="success"
+					/>
+				</div>
 
 				{/* Search */}
-				<SectionCard sx={{ mb: 3 }}>
+				<SectionCard>
 					<SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search clients by name, ID, or owner..." />
 				</SectionCard>
 
 				{/* Error Display */}
 				{error && (
-					<Box sx={{ mb: 3 }}>
-						<ErrorState variant="inline" message={`Failed to load OAuth2 clients: ${error.message}`} />
-					</Box>
+					<ErrorState variant="inline" message={`Failed to load OAuth2 clients: ${error.message}`} />
 				)}
 
-				{/* Data Grid */}
-				<Card variant="bordered">
-					<DataGrid
-						rows={filteredRows}
+				{/* Data Table */}
+				<Card>
+					<DataTable
+						data={filteredRows}
 						columns={columns}
+						keyField="id"
 						loading={isLoading}
-						autoHeight
-						disableRowSelectionOnClick
-						onRowClick={(params) => router.push(`/clients/${params.row.id}`)}
-						sx={{
-							border: "none",
-							"& .MuiDataGrid-columnHeaders": {
-								background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
-								borderBottom: "2px solid rgba(102, 126, 234, 0.2)",
-								fontWeight: 700,
-							},
-							"& .MuiDataGrid-row": {
-								transition: "all 0.2s ease",
-								"&:hover": {
-									backgroundColor: "rgba(102, 126, 234, 0.08)",
-									cursor: "pointer",
-									transform: "scale(1.001)",
-								},
-							},
-							"& .MuiDataGrid-cell": {
-								borderColor: "rgba(102, 126, 234, 0.08)",
-							},
-						}}
-						initialState={{
-							pagination: {
-								paginationModel: { pageSize: 25 },
-							},
-						}}
+						searchable={false}
+						onRowClick={(row) => router.push(`/clients/${row.id}`)}
+						pagination
+						pageSize={25}
 						pageSizeOptions={[10, 25, 50, 100]}
 					/>
 				</Card>
 
-				{/* Context Menu */}
-				<Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-					<MenuItem icon={<ViewIcon fontSize="small" />} onClick={() => selectedClient && handleView(selectedClient)}>
-						View Details
-					</MenuItem>
-					<MenuItem icon={<EditIcon fontSize="small" />} onClick={() => selectedClient && handleEdit(selectedClient)}>
-						Edit Client
-					</MenuItem>
-					<MenuItem icon={<DeleteIcon fontSize="small" />} onClick={() => selectedClient && handleDeleteClick(selectedClient)}>
-						Delete Client
-					</MenuItem>
-				</Menu>
+				{/* Context Menu (dropdown) */}
+				{menuOpen && menuPosition && (
+					<>
+						{/* Backdrop to close the menu */}
+						<div className="fixed inset-0 z-40" onClick={handleMenuClose} />
+						<div
+							ref={menuRef}
+							className="fixed z-50 min-w-[160px] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-md"
+							style={{ top: menuPosition.top, left: menuPosition.left }}
+						>
+							<button
+								type="button"
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+								onClick={() => selectedClient && handleView(selectedClient)}
+							>
+								<Icon name="view" />
+								View Details
+							</button>
+							<button
+								type="button"
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+								onClick={() => selectedClient && handleEdit(selectedClient)}
+							>
+								<Icon name="edit" />
+								Edit Client
+							</button>
+							<button
+								type="button"
+								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
+								onClick={() => selectedClient && handleDeleteClick(selectedClient)}
+							>
+								<Icon name="delete" />
+								Delete Client
+							</button>
+						</div>
+					</>
+				)}
 
 				{/* Delete Confirmation Dialog */}
-				<Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} title="Delete OAuth2 Client">
+				<Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && handleDeleteCancel()}>
 					<DialogContent>
-						<Typography variant="body">Are you sure you want to delete this OAuth2 client? This action cannot be undone.</Typography>
+						<DialogHeader>
+							<DialogTitle>Delete OAuth2 Client</DialogTitle>
+							<DialogDescription>
+								Are you sure you want to delete this OAuth2 client? This action cannot be undone.
+							</DialogDescription>
+						</DialogHeader>
+						<DialogFooter>
+							<ActionBar
+								align="right"
+								primaryAction={{
+									label: "Delete",
+									onClick: handleDeleteConfirm,
+									loading: deleteClientMutation.isPending,
+									disabled: deleteClientMutation.isPending,
+								}}
+								secondaryActions={[
+									{
+										label: "Cancel",
+										onClick: handleDeleteCancel,
+										variant: "outline",
+									},
+								]}
+							/>
+						</DialogFooter>
 					</DialogContent>
-					<DialogActions>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: "Delete",
-								onClick: handleDeleteConfirm,
-								loading: deleteClientMutation.isPending,
-								disabled: deleteClientMutation.isPending,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: handleDeleteCancel,
-									variant: "outlined",
-								},
-							]}
-						/>
-					</DialogActions>
 				</Dialog>
-			</Box>
+			</div>
 		</ProtectedPage>
 	);
 }

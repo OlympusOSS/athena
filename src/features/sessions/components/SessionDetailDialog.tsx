@@ -1,26 +1,24 @@
-import { Close, Devices, ExpandMore, Info, Person, Security } from "@mui/icons-material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { StatusBadge } from "@/components";
-import { ErrorState, LoadingState } from "@/components/feedback";
-import { ActionBar } from "@/components/layout";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
 import {
 	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Alert,
-	Box,
-	Card,
-	CardContent,
-	Chip,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	Grid,
-	IconButton,
-	Typography,
-} from "@/components/ui";
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@olympus/canvas";
+import { ScrollArea } from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 import { disableSession, extendSession, getSession } from "../../../services/kratos/endpoints/sessions";
 
@@ -94,7 +92,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 		extendMutation.mutate();
 	};
 
-	const getTimeRemaining = (expiresAt: string) => {
+	const getTimeRemaining = (expiresAt: string): string | null => {
 		if (!expiresAt) return null;
 
 		const now = new Date();
@@ -112,7 +110,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 		return `${minutes}m remaining`;
 	};
 
-	const getIdentityDisplay = (identity: any) => {
+	const getIdentityDisplay = (identity: any): string => {
 		if (!identity) return "Unknown";
 		const traits = identity.traits;
 		if (!traits) return identity.id;
@@ -121,7 +119,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 
 	if (isLoading) {
 		return (
-			<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
 					<LoadingState variant="section" />
 				</DialogContent>
@@ -131,18 +129,11 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 
 	if (fetchError || !session) {
 		return (
-			<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-				<DialogTitle>
-					<Box display="flex" alignItems="center" justifyContent="space-between">
-						<Typography variant="heading" size="lg">
-							Session Details
-						</Typography>
-						<IconButton onClick={onClose} variant="action" size="small">
-							<Close />
-						</IconButton>
-					</Box>
-				</DialogTitle>
+			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Session Details</DialogTitle>
+					</DialogHeader>
 					<ErrorState variant="inline" message={`Failed to load session details: ${fetchError?.message || "Unknown error"}`} />
 				</DialogContent>
 			</Dialog>
@@ -154,262 +145,215 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 	const isExpiringSoon = timeRemaining?.includes("m remaining");
 
 	return (
-		<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-			<DialogTitle>
-				<Box display="flex" alignItems="center" justifyContent="space-between">
-					<Typography variant="heading" size="lg">
-						Session Details
-					</Typography>
-					<IconButton onClick={onClose} variant="action" size="small">
-						<Close />
-					</IconButton>
-				</Box>
-			</DialogTitle>
+		<Dialog open={open} onOpenChange={() => onClose()}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Session Details</DialogTitle>
+				</DialogHeader>
 
-			<DialogContent dividers>
-				{error && (
-					<Alert variant="inline" severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-						{error}
-					</Alert>
-				)}
+				<ScrollArea>
+					<div>
+						{error && (
+							<div>
+								<span>{error}</span>
+								<button type="button" onClick={() => setError(null)}>
+									<Icon name="close" />
+								</button>
+							</div>
+						)}
 
-				<Grid container spacing={3}>
-					{/* Basic Session Info */}
-					<Grid size={{ xs: 12 }}>
-						<Card>
-							<CardContent>
-								<Box display="flex" alignItems="center" gap={1} mb={2}>
-									<Info color="primary" />
-									<Typography variant="heading" size="lg">
-										Basic Information
-									</Typography>
-								</Box>
+						{/* Basic Session Info */}
+						<div>
+							<div>
+								<Icon name="info" />
+								<h3>Basic Information</h3>
+							</div>
 
-								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Session ID
-										</Typography>
-										<Typography variant="code" sx={{ wordBreak: "break-all" }}>
-											{session.id}
-										</Typography>
-									</Grid>
+							<div>
+								<div>
+									<span>
+										Session ID
+									</span>
+									<code>
+										{session.id}
+									</code>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Status
-										</Typography>
+								<div>
+									<span>
+										Status
+									</span>
+									<div>
 										<StatusBadge status={session.active ? "active" : "inactive"} label={session.active ? "Active" : "Inactive"} showIcon />
-									</Grid>
+									</div>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Authenticated At
-										</Typography>
-										<Typography variant="body">{session.authenticated_at ? formatDate(session.authenticated_at) : "N/A"}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Authenticated At
+									</span>
+									<p>{session.authenticated_at ? formatDate(session.authenticated_at) : "N/A"}</p>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Issued At
-										</Typography>
-										<Typography variant="body">{session.issued_at ? formatDate(session.issued_at) : "N/A"}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Issued At
+									</span>
+									<p>{session.issued_at ? formatDate(session.issued_at) : "N/A"}</p>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Expires At
-										</Typography>
-										<Typography variant="body" color={isExpired ? "error.main" : isExpiringSoon ? "warning.main" : "text.primary"}>
-											{session.expires_at ? formatDate(session.expires_at) : "N/A"}
-										</Typography>
-										{timeRemaining && (
-											<Typography variant="label" display="block" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
-												{timeRemaining}
-											</Typography>
-										)}
-									</Grid>
-
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Assurance Level
-										</Typography>
-										<Typography variant="body">{session.authenticator_assurance_level || "N/A"}</Typography>
-									</Grid>
-								</Grid>
-							</CardContent>
-						</Card>
-					</Grid>
-
-					{/* Identity Information */}
-					{session.identity && (
-						<Grid size={{ xs: 12 }}>
-							<Card>
-								<CardContent>
-									<Box display="flex" alignItems="center" gap={1} mb={2}>
-										<Person color="primary" />
-										<Typography variant="heading" size="lg">
-											Identity Information
-										</Typography>
-									</Box>
-
-									<Grid container spacing={2}>
-										<Grid size={{ xs: 12, sm: 6 }}>
-											<Typography variant="label" color="text.secondary">
-												Identity ID
-											</Typography>
-											<Typography variant="code" sx={{ wordBreak: "break-all" }}>
-												{session.identity.id}
-											</Typography>
-										</Grid>
-
-										<Grid size={{ xs: 12, sm: 6 }}>
-											<Typography variant="label" color="text.secondary">
-												Display Name
-											</Typography>
-											<Typography variant="body">{getIdentityDisplay(session.identity)}</Typography>
-										</Grid>
-
-										<Grid size={{ xs: 12, sm: 6 }}>
-											<Typography variant="label" color="text.secondary">
-												State
-											</Typography>
-											<Chip label={session.identity.state} variant="tag" />
-										</Grid>
-
-										<Grid size={{ xs: 12, sm: 6 }}>
-											<Typography variant="label" color="text.secondary">
-												Schema ID
-											</Typography>
-											<Typography variant="body">{session.identity.schema_id || "N/A"}</Typography>
-										</Grid>
-									</Grid>
-
-									{session.identity.traits && (
-										<Accordion sx={{ mt: 2 }}>
-											<AccordionSummary expandIcon={<ExpandMore />}>
-												<Typography variant="label">Identity Traits</Typography>
-											</AccordionSummary>
-											<AccordionDetails>
-												<Box
-													component="pre"
-													sx={{
-														backgroundColor: "grey.100",
-														p: 2,
-														borderRadius: 1,
-														fontSize: "0.875rem",
-														overflow: "auto",
-													}}
-												>
-													{JSON.stringify(session.identity.traits, null, 2)}
-												</Box>
-											</AccordionDetails>
-										</Accordion>
+								<div>
+									<span>
+										Expires At
+									</span>
+									<p>
+										{session.expires_at ? formatDate(session.expires_at) : "N/A"}
+									</p>
+									{timeRemaining && (
+										<span>
+											{timeRemaining}
+										</span>
 									)}
-								</CardContent>
-							</Card>
-						</Grid>
-					)}
+								</div>
 
-					{/* Authentication Methods */}
-					{session.authentication_methods && session.authentication_methods.length > 0 && (
-						<Grid size={{ xs: 12 }}>
-							<Card>
-								<CardContent>
-									<Box display="flex" alignItems="center" gap={1} mb={2}>
-										<Security color="primary" />
-										<Typography variant="heading" size="lg">
-											Authentication Methods
-										</Typography>
-									</Box>
+								<div>
+									<span>
+										Assurance Level
+									</span>
+									<p>{session.authenticator_assurance_level || "N/A"}</p>
+								</div>
+							</div>
+						</div>
 
-									<Accordion>
-										<AccordionSummary expandIcon={<ExpandMore />}>
-											<Typography variant="label">{session.authentication_methods.length} method(s) used</Typography>
-										</AccordionSummary>
-										<AccordionDetails>
-											<Box
-												component="pre"
-												sx={{
-													backgroundColor: "grey.100",
-													p: 2,
-													borderRadius: 1,
-													fontSize: "0.875rem",
-													overflow: "auto",
-												}}
-											>
+						{/* Identity Information */}
+						{session.identity && (
+							<div>
+								<div>
+									<Icon name="user" />
+									<h3>Identity Information</h3>
+								</div>
+
+								<div>
+									<div>
+										<span>
+											Identity ID
+										</span>
+										<code>
+											{session.identity.id}
+										</code>
+									</div>
+
+									<div>
+										<span>
+											Display Name
+										</span>
+										<p>{getIdentityDisplay(session.identity)}</p>
+									</div>
+
+									<div>
+										<span>
+											State
+										</span>
+										<div>
+											<Badge variant="secondary">{session.identity.state}</Badge>
+										</div>
+									</div>
+
+									<div>
+										<span>
+											Schema ID
+										</span>
+										<p>{session.identity.schema_id || "N/A"}</p>
+									</div>
+								</div>
+
+								{session.identity.traits && (
+									<Accordion type="single" collapsible>
+										<AccordionItem value="traits">
+											<AccordionTrigger>
+												<span>Identity Traits</span>
+											</AccordionTrigger>
+											<AccordionContent>
+												<pre>
+													{JSON.stringify(session.identity.traits, null, 2)}
+												</pre>
+											</AccordionContent>
+										</AccordionItem>
+									</Accordion>
+								)}
+							</div>
+						)}
+
+						{/* Authentication Methods */}
+						{session.authentication_methods && session.authentication_methods.length > 0 && (
+							<div>
+								<div>
+									<Icon name="shield" />
+									<h3>Authentication Methods</h3>
+								</div>
+
+								<Accordion type="single" collapsible>
+									<AccordionItem value="auth-methods">
+										<AccordionTrigger>
+											<span>{session.authentication_methods.length} method(s) used</span>
+										</AccordionTrigger>
+										<AccordionContent>
+											<pre>
 												{JSON.stringify(session.authentication_methods, null, 2)}
-											</Box>
-										</AccordionDetails>
-									</Accordion>
-								</CardContent>
-							</Card>
-						</Grid>
-					)}
+											</pre>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</div>
+						)}
 
-					{/* Devices */}
-					{session.devices && session.devices.length > 0 && (
-						<Grid size={{ xs: 12 }}>
-							<Card>
-								<CardContent>
-									<Box display="flex" alignItems="center" gap={1} mb={2}>
-										<Devices color="primary" />
-										<Typography variant="heading" size="lg">
-											Devices
-										</Typography>
-									</Box>
+						{/* Devices */}
+						{session.devices && session.devices.length > 0 && (
+							<div>
+								<div>
+									<Icon name="monitor" />
+									<h3>Devices</h3>
+								</div>
 
-									<Accordion>
-										<AccordionSummary expandIcon={<ExpandMore />}>
-											<Typography variant="label">{session.devices.length} device(s) registered</Typography>
-										</AccordionSummary>
-										<AccordionDetails>
-											<Box
-												component="pre"
-												sx={{
-													backgroundColor: "grey.100",
-													p: 2,
-													borderRadius: 1,
-													fontSize: "0.875rem",
-													overflow: "auto",
-												}}
-											>
+								<Accordion type="single" collapsible>
+									<AccordionItem value="devices">
+										<AccordionTrigger>
+											<span>{session.devices.length} device(s) registered</span>
+										</AccordionTrigger>
+										<AccordionContent>
+											<pre>
 												{JSON.stringify(session.devices, null, 2)}
-											</Box>
-										</AccordionDetails>
-									</Accordion>
-								</CardContent>
-							</Card>
-						</Grid>
-					)}
-				</Grid>
-			</DialogContent>
+											</pre>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</div>
+						)}
+					</div>
+				</ScrollArea>
 
-			<DialogActions>
-				<ActionBar
-					align="right"
-					primaryAction={{
-						label: actionLoading === "delete" ? "Revoking..." : "Revoke Session",
-						onClick: handleRevokeSession,
-						disabled: actionLoading === "delete",
-					}}
-					secondaryActions={[
-						...(session.active && !isExpired
-							? [
-									{
-										label: actionLoading === "extend" ? "Extending..." : "Extend Session",
-										onClick: handleExtendSession,
-										disabled: actionLoading === "extend",
-									},
-								]
-							: []),
-						{
-							label: "Close",
-							onClick: onClose,
-						},
-					]}
-				/>
-			</DialogActions>
+				<DialogFooter>
+					<Button variant="outline" onClick={onClose}>
+						Close
+					</Button>
+					{session.active && !isExpired && (
+						<Button
+							variant="outline"
+							onClick={handleExtendSession}
+							disabled={actionLoading === "extend"}
+						>
+							{actionLoading === "extend" ? "Extending..." : "Extend Session"}
+						</Button>
+					)}
+					<Button
+						variant="destructive"
+						onClick={handleRevokeSession}
+						disabled={actionLoading === "delete"}
+					>
+						{actionLoading === "delete" ? "Revoking..." : "Revoke Session"}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
 		</Dialog>
 	);
 });

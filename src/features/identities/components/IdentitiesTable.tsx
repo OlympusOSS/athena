@@ -1,12 +1,16 @@
-import { Block, CheckCircle, Clear, DeleteOutline, ExitToApp } from "@mui/icons-material";
 import type { Identity } from "@ory/kratos-client";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ErrorState, LoadingState } from "@/components/feedback";
-import { Box, Button, Chip, DataTable, type DataTableColumn, IconButton, Tooltip, Typography } from "@/components/ui";
+import { DataTable, type DataTableColumn, Icon } from "@olympus/canvas";
+import { StatusBadge } from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useIdentities, useIdentitiesSearch } from "@/features/identities/hooks";
 import { useSchemas } from "@/features/schemas/hooks";
 import { formatDate } from "@/lib/date-utils";
+import { cn } from "@olympus/canvas";
 import { BulkOperationDialog } from "./BulkOperationDialog";
 
 type BulkOpType = "delete" | "deleteSessions" | "activate" | "deactivate";
@@ -149,67 +153,65 @@ const IdentitiesTable: React.FC = React.memo(() => {
 				minWidth: 180,
 				maxWidth: 200,
 				renderCell: (value: string) => (
-					<Tooltip title={value}>
-						<Typography
-							variant="code"
-							sx={{
-								overflow: "hidden",
-								textOverflow: "ellipsis",
-							}}
-						>
-							{value.substring(0, 8)}...
-						</Typography>
-					</Tooltip>
+					<TooltipProvider delayDuration={0}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<code>
+									{value.substring(0, 8)}...
+								</code>
+							</TooltipTrigger>
+							<TooltipContent>{value}</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 				),
 			},
 			{
 				field: "identifier",
 				headerName: "Identifier",
 				minWidth: 220,
-				renderCell: (_: any, identity: Identity) => (
-					<Typography
-						variant="body"
-						sx={{
-							fontWeight: 500,
-							overflow: "hidden",
-							textOverflow: "ellipsis",
-						}}
-					>
+				renderCell: (_: unknown, identity: Identity) => (
+					<span>
 						{getIdentifier(identity)}
-					</Typography>
+					</span>
 				),
 			},
 			{
 				field: "schema_id",
 				headerName: "Schema",
 				minWidth: 140,
-				renderCell: (_: any, identity: Identity) => <Chip variant="gradient" label={getSchemaName(identity)} />,
+				renderCell: (_: unknown, identity: Identity) => (
+					<Badge variant="secondary">{getSchemaName(identity)}</Badge>
+				),
 			},
 			{
 				field: "state",
 				headerName: "State",
 				minWidth: 100,
 				renderCell: (value: string) => (
-					<Chip variant="status" status={value === "active" ? "active" : "inactive"} label={value === "active" ? "Active" : "Inactive"} />
+					<StatusBadge
+						status={value === "active" ? "active" : "inactive"}
+						label={value === "active" ? "Active" : "Inactive"}
+						size="small"
+					/>
 				),
 			},
 			{
 				field: "created_at",
 				headerName: "Created",
 				minWidth: 180,
-				renderCell: (value: string) => <Typography variant="body">{formatDate(value)}</Typography>,
+				renderCell: (value: string) => <span>{formatDate(value)}</span>,
 			},
 			{
 				field: "updated_at",
 				headerName: "Updated",
 				minWidth: 180,
-				renderCell: (value: string) => <Typography variant="body">{formatDate(value)}</Typography>,
+				renderCell: (value: string) => <span>{formatDate(value)}</span>,
 			},
 		],
 		[getSchemaName, getIdentifier],
 	);
 
-	const handleRowClick = (row: any) => {
+	const handleRowClick = (row: Record<string, unknown>) => {
 		router.push(`/identities/${row.id}`);
 	};
 
@@ -237,47 +239,45 @@ const IdentitiesTable: React.FC = React.memo(() => {
 		return (
 			<ErrorState
 				variant="page"
-				message={(error as any)?.message || "Unable to fetch identities. Please check your connection and try again."}
+				message={(error as Error)?.message || "Unable to fetch identities. Please check your connection and try again."}
 				action={{ label: "Retry", onClick: () => refetch() }}
 			/>
 		);
 	}
 
 	return (
-		<Box>
+		<div>
 			{/* Bulk action toolbar */}
 			{selectedIds.size > 0 && (
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						gap: 1,
-						mb: 2,
-						p: 1.5,
-						bgcolor: "action.selected",
-						borderRadius: 2,
-						flexWrap: "wrap",
-					}}
-				>
-					<Chip label={`${selectedIds.size} selected`} variant="tag" />
-					<Button variant="danger" size="small" startIcon={<DeleteOutline />} onClick={() => setBulkOperation("delete")}>
+				<div>
+					<Badge variant="outline">{selectedIds.size} selected</Badge>
+					<Button variant="destructive" size="sm" onClick={() => setBulkOperation("delete")}>
+						<Icon name="delete" />
 						Delete
 					</Button>
-					<Button variant="outlined" size="small" startIcon={<ExitToApp />} onClick={() => setBulkOperation("deleteSessions")}>
+					<Button variant="outline" size="sm" onClick={() => setBulkOperation("deleteSessions")}>
+						<Icon name="logout" />
 						Delete Sessions
 					</Button>
-					<Button variant="outlined" size="small" startIcon={<CheckCircle />} onClick={() => setBulkOperation("activate")}>
+					<Button variant="outline" size="sm" onClick={() => setBulkOperation("activate")}>
+						<Icon name="success" />
 						Activate
 					</Button>
-					<Button variant="outlined" size="small" startIcon={<Block />} onClick={() => setBulkOperation("deactivate")}>
+					<Button variant="outline" size="sm" onClick={() => setBulkOperation("deactivate")}>
+						<Icon name="blocked" />
 						Deactivate
 					</Button>
-					<Tooltip title="Clear selection">
-						<IconButton size="small" onClick={() => setSelectedIds(new Set())}>
-							<Clear />
-						</IconButton>
-					</Tooltip>
-				</Box>
+					<TooltipProvider delayDuration={0}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button variant="ghost" size="icon" onClick={() => setSelectedIds(new Set())}>
+									<Icon name="close" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Clear selection</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</div>
 			)}
 
 			<DataTable
@@ -297,17 +297,16 @@ const IdentitiesTable: React.FC = React.memo(() => {
 				onAdd={handleCreateNew}
 				addButtonText="Create New"
 				emptyMessage="No identities found"
-				maxHeight={600}
 			/>
 
 			{/* Pagination info */}
-			<Box sx={{ mt: 2, textAlign: "center" }}>
-				<Typography variant="subheading">
+			<div>
+				<p>
 					{searchTerm.trim()
 						? `Found ${displayedIdentities.length} matches${shouldUseSearchResults ? " (from multi-page search)" : " (from current page)"}`
 						: `Showing ${displayedIdentities.length} identities${hasMore ? " (more available)" : ""}`}
-				</Typography>
-			</Box>
+				</p>
+			</div>
 
 			{/* Bulk operation dialog */}
 			{bulkOperation && (
@@ -320,7 +319,7 @@ const IdentitiesTable: React.FC = React.memo(() => {
 					onSuccess={handleBulkSuccess}
 				/>
 			)}
-		</Box>
+		</div>
 	);
 });
 

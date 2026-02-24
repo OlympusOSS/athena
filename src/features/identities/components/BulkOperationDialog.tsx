@@ -1,10 +1,18 @@
-import { LinearProgress } from "@mui/material";
 import type { Identity } from "@ory/kratos-client";
 import { useQueryClient } from "@tanstack/react-query";
 import type React from "react";
 import { useCallback, useState } from "react";
-import { ActionBar } from "@/components/layout";
-import { Alert, Box, FormDialog, Typography } from "@/components/ui";
+import { Alert, AlertDescription, Icon } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import { deleteIdentity, patchIdentity } from "@/services/kratos/endpoints/identities";
 import { deleteIdentitySessions } from "@/services/kratos/endpoints/sessions";
 
@@ -48,11 +56,12 @@ const OPERATION_CONFIG: Record<BulkOperationType, { title: string; warning: stri
 };
 
 function getDisplayName(identity: Identity): string {
-	const traits = identity.traits as any;
+	const traits = identity.traits as Record<string, unknown>;
+	const name = traits?.name as Record<string, string> | undefined;
 	return (
-		(traits?.name?.first && traits?.name?.last ? `${traits.name.first} ${traits.name.last}` : null) ||
-		traits?.email ||
-		traits?.username ||
+		(name?.first && name?.last ? `${name.first} ${name.last}` : null) ||
+		(traits?.email as string) ||
+		(traits?.username as string) ||
 		`${identity.id.substring(0, 8)}...`
 	);
 }
@@ -131,10 +140,10 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 			try {
 				await executeOperation(operationType, id);
 				successCount++;
-			} catch (err: any) {
+			} catch (err: unknown) {
 				errorList.push({
 					id,
-					message: err?.message || "Unknown error",
+					message: (err as Error)?.message || "Unknown error",
 				});
 			}
 			setProgress(((i + 1) / total) * 100);
@@ -161,125 +170,130 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 	}, [resetState, onClose]);
 
 	return (
-		<FormDialog
-			open={open}
-			onClose={handleClose}
-			title={config.title}
-			titleColor={operationType === "delete" ? "error.main" : undefined}
-			disableBackdropClick={phase === "processing"}
-		>
-			{phase === "confirm" && (
-				<>
-					<Alert variant="inline" severity={operationType === "activate" ? "info" : "warning"} sx={{ mb: 2 }}>
+		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
+			<DialogContent onInteractOutside={(e: Event) => { if (phase === "processing") e.preventDefault(); }}>
+				<DialogHeader>
+					<DialogTitle>
+						{config.title}
+					</DialogTitle>
+					<DialogDescription>
 						{config.warning}
-					</Alert>
+					</DialogDescription>
+				</DialogHeader>
 
-					<Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1, mb: 2 }}>
-						<Typography variant="label" gutterBottom>
-							{identityIds.length} {identityIds.length === 1 ? "identity" : "identities"} selected:
-						</Typography>
-						<Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
-							{shown.map((identity) => (
-								<li key={identity.id}>
-									<Typography variant="body">
-										{getDisplayName(identity)}{" "}
-										<Typography component="span" variant="code">
-											{identity.id.substring(0, 8)}...
-										</Typography>
-									</Typography>
-								</li>
-							))}
-							{remaining > 0 && (
-								<li>
-									<Typography variant="body" color="text.secondary">
-										+{remaining} more
-									</Typography>
-								</li>
+				{phase === "confirm" && (
+					<div>
+						<Alert variant={operationType === "activate" ? "default" : "destructive"}>
+							{operationType === "activate" ? (
+								<Icon name="info" />
+							) : (
+								<Icon name="danger" />
 							)}
-						</Box>
-					</Box>
-
-					<Box sx={{ mt: 3 }}>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: config.confirmLabel,
-								onClick: handleConfirm,
-							}}
-							secondaryActions={[
-								{
-									label: "Cancel",
-									onClick: handleClose,
-								},
-							]}
-						/>
-					</Box>
-				</>
-			)}
-
-			{phase === "processing" && (
-				<Box sx={{ py: 2 }}>
-					<Typography variant="body" gutterBottom>
-						{config.processingLabel}{" "}
-						{progress < 100
-							? `${Math.round(progress / (100 / identityIds.length))} of ${identityIds.length}`
-							: `${identityIds.length} of ${identityIds.length}`}
-						...
-					</Typography>
-					<LinearProgress variant="determinate" value={progress} sx={{ mt: 2, mb: 1 }} />
-					<Typography variant="subheading" color="text.secondary">
-						{Math.round(progress)}% complete
-					</Typography>
-				</Box>
-			)}
-
-			{phase === "complete" && (
-				<>
-					{errors.length === 0 ? (
-						<Alert variant="inline" severity="success" sx={{ mb: 2 }}>
-							Successfully processed {succeeded} {succeeded === 1 ? "identity" : "identities"}.
+							<AlertDescription>{config.warning}</AlertDescription>
 						</Alert>
-					) : (
-						<>
-							<Alert variant="inline" severity="warning" sx={{ mb: 2 }}>
-								{succeeded} succeeded, {errors.length} failed.
-							</Alert>
-							<Box sx={{ mt: 1 }}>
-								<Typography
-									variant="body"
-									sx={{ cursor: "pointer", textDecoration: "underline", color: "primary.main" }}
-									onClick={() => setShowErrors((v) => !v)}
-								>
-									{showErrors ? "Hide errors" : "Show errors"}
-								</Typography>
-								{showErrors && (
-									<Box sx={{ mt: 1, p: 2, bgcolor: "grey.50", borderRadius: 1, maxHeight: 200, overflow: "auto" }}>
-										{errors.map((err) => (
-											<Typography key={err.id} variant="body" sx={{ mb: 0.5 }}>
-												<Typography component="span" variant="code">
-													{err.id.substring(0, 8)}...
-												</Typography>{" "}
-												— {err.message}
-											</Typography>
-										))}
-									</Box>
-								)}
-							</Box>
-						</>
-					)}
 
-					<Box sx={{ mt: 3 }}>
-						<ActionBar
-							align="right"
-							primaryAction={{
-								label: "Close",
-								onClick: handleDone,
-							}}
-						/>
-					</Box>
-				</>
-			)}
-		</FormDialog>
+						<div>
+							<p>
+								{identityIds.length} {identityIds.length === 1 ? "identity" : "identities"} selected:
+							</p>
+							<ul>
+								{shown.map((identity) => (
+									<li key={identity.id}>
+										{getDisplayName(identity)}{" "}
+										<code>
+											{identity.id.substring(0, 8)}...
+										</code>
+									</li>
+								))}
+								{remaining > 0 && (
+									<li>
+										+{remaining} more
+									</li>
+								)}
+							</ul>
+						</div>
+
+						<DialogFooter>
+							<Button variant="outline" onClick={handleClose}>
+								Cancel
+							</Button>
+							<Button
+								variant={operationType === "delete" ? "destructive" : "default"}
+								onClick={handleConfirm}
+							>
+								{config.confirmLabel}
+							</Button>
+						</DialogFooter>
+					</div>
+				)}
+
+				{phase === "processing" && (
+					<div>
+						<p>
+							{config.processingLabel}{" "}
+							{progress < 100
+								? `${Math.round(progress / (100 / identityIds.length))} of ${identityIds.length}`
+								: `${identityIds.length} of ${identityIds.length}`}
+							...
+						</p>
+						<div>
+							<div
+								style={{ width: `${progress}%` }}
+							/>
+						</div>
+						<p>
+							{Math.round(progress)}% complete
+						</p>
+					</div>
+				)}
+
+				{phase === "complete" && (
+					<div>
+						{errors.length === 0 ? (
+							<Alert>
+								<Icon name="success" />
+								<AlertDescription>
+									Successfully processed {succeeded} {succeeded === 1 ? "identity" : "identities"}.
+								</AlertDescription>
+							</Alert>
+						) : (
+							<>
+								<Alert variant="destructive">
+									<Icon name="danger" />
+									<AlertDescription>
+										{succeeded} succeeded, {errors.length} failed.
+									</AlertDescription>
+								</Alert>
+								<div>
+									<button
+										type="button"
+										onClick={() => setShowErrors((v) => !v)}
+									>
+										{showErrors ? "Hide errors" : "Show errors"}
+									</button>
+									{showErrors && (
+										<div>
+											{errors.map((err) => (
+												<p key={err.id}>
+													<code>
+														{err.id.substring(0, 8)}...
+													</code>{" "}
+													&mdash; {err.message}
+												</p>
+											))}
+										</div>
+									)}
+								</div>
+							</>
+						)}
+
+						<DialogFooter>
+							<Button onClick={handleDone}>Close</Button>
+						</DialogFooter>
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
 	);
 };
 

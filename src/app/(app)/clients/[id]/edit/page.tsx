@@ -1,11 +1,10 @@
 "use client";
 
-import { Apps as AppsIcon, ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
-import { ErrorState, LoadingState } from "@/components/feedback";
+import { ErrorState, Icon, LoadingState } from "@olympus/canvas";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Box, IconButton, Typography } from "@/components/ui";
+import { Button } from "@olympus/canvas";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
 import {
 	OAuth2ClientForm,
@@ -53,9 +52,9 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 	if (error) {
 		return (
 			<AdminLayout>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<ErrorState message={`Failed to load client: ${error.message}`} variant="page" />
-				</Box>
+				</div>
 			</AdminLayout>
 		);
 	}
@@ -63,31 +62,27 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 	if (isLoading || !initialFormData) {
 		return (
 			<AdminLayout>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<LoadingState variant="page" />
-				</Box>
+				</div>
 			</AdminLayout>
 		);
 	}
 
 	return (
 		<AdminLayout>
-			<Box sx={{ p: 3 }}>
+			<div className="space-y-6">
 				{/* Header */}
-				<Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-					<IconButton onClick={() => router.back()}>
-						<ArrowBackIcon />
-					</IconButton>
-					<AppsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-					<Box>
-						<Typography variant="h4" component="h1" fontWeight="bold">
-							Edit OAuth2 Client
-						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							Update client configuration
-						</Typography>
-					</Box>
-				</Box>
+				<div className="flex items-center gap-3">
+					<Button variant="ghost" size="icon" onClick={() => router.back()}>
+						<Icon name="arrow-left" />
+					</Button>
+					<Icon name="grid" />
+					<div className="space-y-1">
+						<h1 className="text-2xl font-bold text-foreground">Edit OAuth2 Client</h1>
+						<p className="text-sm text-muted-foreground">Update client configuration</p>
+					</div>
+				</div>
 
 				<OAuth2ClientForm
 					initialData={initialFormData}
@@ -97,7 +92,7 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 					error={updateClientMutation.error}
 					onCancel={() => router.back()}
 				/>
-			</Box>
+			</div>
 		</AdminLayout>
 	);
 }

@@ -28,13 +28,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		// Apply theme to document
+		// Apply theme to document — use "dark" class for Tailwind dark mode
 		const root = document.documentElement;
 
 		if (theme === "dark") {
-			root.classList.add("dark-theme");
+			root.classList.add("dark");
 		} else {
-			root.classList.remove("dark-theme");
+			root.classList.remove("dark");
 		}
 
 		// Save theme preference

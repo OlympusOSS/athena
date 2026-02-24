@@ -1,20 +1,14 @@
-import { Cancel, Save } from "@mui/icons-material";
-import Form from "@rjsf/mui";
+import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
-import React, { useState } from "react";
-import { Alert, Box, Button, Card, FormControl, InputLabel, MenuItem, Select, Spinner, Tooltip, Typography } from "@/components/ui";
-
-// Add custom format for tel to avoid validation warnings
-validator.ajv.addFormat("tel", {
-	type: "string",
-	validate: (data: string) => {
-		// Basic phone number validation - allow any string that could be a phone number
-		return typeof data === "string" && data.length > 0;
-	},
-});
-
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { Alert, AlertDescription, Icon } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Label } from "@olympus/canvas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
+import { Skeleton } from "@olympus/canvas";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { useCreateIdentity } from "../hooks/useIdentities";
 import {
@@ -28,6 +22,15 @@ import {
 	TextWidget,
 } from "./shared-form-widgets";
 
+// Add custom format for tel to avoid validation warnings
+validator.ajv.addFormat("tel", {
+	type: "string",
+	validate: (data: string) => {
+		// Basic phone number validation - allow any string that could be a phone number
+		return typeof data === "string" && data.length > 0;
+	},
+});
+
 interface CreateIdentityFormProps {
 	onSuccess?: () => void;
 	onCancel?: () => void;
@@ -39,8 +42,8 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 	const { data: schemas, isLoading: schemasLoading } = useSchemas();
 
 	const [selectedSchemaId, setSelectedSchemaId] = useState<string>("");
-	const [formData, setFormData] = useState<any>({});
-	const [formSchema, setFormSchema] = useState<any | null>(null);
+	const [formData, setFormData] = useState<Record<string, unknown>>({});
+	const [formSchema, setFormSchema] = useState<Record<string, unknown> | null>(null);
 
 	// Custom widgets for better form experience
 	const widgets = React.useMemo(
@@ -54,7 +57,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 		[],
 	);
 
-	// Custom templates for Material-UI styling
+	// Custom templates for styling
 	const templates = React.useMemo(
 		() => ({
 			FieldTemplate: FieldTemplate,
@@ -79,9 +82,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 		}
 	};
 
-	const handleSubmit = async (data: any) => {
-		const { formData: submitData } = data;
-
+	const handleSubmit = async (submitData: Record<string, unknown>) => {
 		try {
 			await createIdentityMutation.mutateAsync({
 				schemaId: selectedSchemaId,
@@ -102,73 +103,70 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 
 	if (schemasLoading) {
 		return (
-			<Box display="flex" justifyContent="center" alignItems="center" height="400px">
-				<Spinner variant="ring" size="large" />
-			</Box>
+			<div>
+				<Icon name="loading" />
+			</div>
 		);
 	}
 
 	return (
-		<Card
-			variant="bordered"
-			sx={{
-				p: 4,
-				maxWidth: 800,
-				mx: "auto",
-			}}
-		>
-			<Typography variant="gradient" size="2xl" gutterBottom>
+		<div>
+			<h2>
 				Create New Identity
-			</Typography>
+			</h2>
 
-			<Typography variant="subheading" sx={{ mb: 3 }}>
+			<p>
 				Create a new user identity in your Kratos instance. Select a schema to see the required fields.
-			</Typography>
+			</p>
 
 			{createIdentityMutation.isError && (
-				<Alert variant="inline" severity="error" sx={{ mb: 3 }}>
-					Failed to create identity: {(createIdentityMutation.error as any)?.message || "Unknown error"}
+				<Alert variant="destructive">
+					<AlertDescription>
+						Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}
+					</AlertDescription>
 				</Alert>
 			)}
 
-			<Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-				<FormControl fullWidth required>
-					<InputLabel>Identity Schema</InputLabel>
+			<div>
+				<div>
+					<Label htmlFor="identity-schema">
+						Identity Schema <span>*</span>
+					</Label>
 					<Select
 						value={selectedSchemaId}
-						label="Identity Schema"
-						onChange={(e) => handleSchemaChange(e.target.value as string)}
+						onValueChange={handleSchemaChange}
 						disabled={createIdentityMutation.isPending}
 					>
-						{schemas?.map((schema: IdentitySchemaContainer) => (
-							<MenuItem key={schema.id} value={schema.id}>
-								<Tooltip title={`Schema ID: ${schema.id}`} placement="right">
-									<span style={{ display: "block", width: "100%" }}>{(schema.schema as any)?.title || schema.id}</span>
-								</Tooltip>
-							</MenuItem>
-						))}
+						<SelectTrigger id="identity-schema">
+							<SelectValue placeholder="Select a schema..." />
+						</SelectTrigger>
+						<SelectContent>
+							{schemas?.map((schema: IdentitySchemaContainer) => (
+								<TooltipProvider key={schema.id} delayDuration={0}>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<SelectItem value={schema.id || ""}>
+												{(schema.schema as Record<string, unknown>)?.title as string || schema.id}
+											</SelectItem>
+										</TooltipTrigger>
+										<TooltipContent side="right">
+											Schema ID: {schema.id}
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							))}
+						</SelectContent>
 					</Select>
-				</FormControl>
+				</div>
 
 				{selectedSchemaId && formSchema && (
-					<Box
-						sx={{
-							"& .rjsf": {
-								"& .field-string": { mb: 0 },
-								"& .field-object": { mb: 0 },
-								"& .form-group": { mb: 0 },
-								"& .control-label": { display: "none" },
-								"& .field-description": { display: "none" },
-								"& .help-block": { display: "none" },
-							},
-						}}
-					>
+					<div>
 						<Form
 							schema={formSchema}
 							uiSchema={createUISchema(formSchema)}
 							formData={formData}
-							onChange={({ formData }) => setFormData(formData)}
-							onSubmit={handleSubmit}
+							onChange={(data: IChangeEvent) => { if (data.formData) setFormData(data.formData); }}
+							onSubmit={(data: IChangeEvent) => { if (data.formData) handleSubmit(data.formData as Record<string, unknown>); }}
 							validator={validator}
 							customValidate={(_, errors) => {
 								// Allow submission even with empty optional fields
@@ -179,47 +177,49 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							disabled={createIdentityMutation.isPending}
 							showErrorList={false}
 							noHtml5Validate
-							className="rjsf"
-							onError={(errors) => {
+							onError={(errors: unknown[]) => {
 								console.error("Form validation errors:", errors);
 							}}
 						>
-							<Box
-								sx={{
-									display: "flex",
-									gap: 2,
-									justifyContent: "flex-end",
-									mt: 3,
-								}}
-							>
-								<Button variant="outlined" startIcon={<Cancel />} onClick={handleCancel} disabled={createIdentityMutation.isPending} type="button">
+							<div>
+								<Button
+									variant="outline"
+									onClick={handleCancel}
+									disabled={createIdentityMutation.isPending}
+									type="button"
+								>
+									<Icon name="close" />
 									Cancel
 								</Button>
 								<Button
 									type="submit"
-									variant="primary"
-									startIcon={createIdentityMutation.isPending ? <Spinner variant="inline" size="small" /> : <Save />}
 									disabled={createIdentityMutation.isPending || !selectedSchemaId}
 								>
+									{createIdentityMutation.isPending ? (
+										<Icon name="loading" />
+									) : (
+										<Icon name="save" />
+									)}
 									{createIdentityMutation.isPending ? "Creating..." : "Create Identity"}
 								</Button>
-							</Box>
+							</div>
 						</Form>
-					</Box>
+					</div>
 				)}
 
 				{selectedSchemaId && !formSchema && (
-					<Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", mt: 3 }}>
-						<Button variant="outlined" startIcon={<Cancel />} onClick={handleCancel} disabled={createIdentityMutation.isPending}>
+					<div>
+						<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending}>
+							<Icon name="close" />
 							Cancel
 						</Button>
-						<Button variant="primary" disabled>
+						<Button disabled>
 							No form fields available
 						</Button>
-					</Box>
+					</div>
 				)}
-			</Box>
-		</Card>
+			</div>
+		</div>
 	);
 };
 

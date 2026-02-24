@@ -1,8 +1,18 @@
 "use client";
 
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { useState } from "react";
-import { Alert, Box, Button, Card, CardContent, Chip, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@/components/ui";
+import { Badge, Icon } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import { Input } from "@olympus/canvas";
+import { Label } from "@olympus/canvas";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import type { OAuth2ClientFormData, OAuth2ClientFormErrors } from "../types";
 import { OAUTH2_GRANT_TYPES, OAUTH2_RESPONSE_TYPES, OAUTH2_SUBJECT_TYPES, OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS } from "../types";
 import { validateOAuth2ClientForm } from "../utils";
@@ -30,7 +40,7 @@ export function OAuth2ClientForm({
 	const [newContact, setNewContact] = useState("");
 	const [newAudience, setNewAudience] = useState("");
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		// Validate form
@@ -44,11 +54,19 @@ export function OAuth2ClientForm({
 		await onSubmit(formData);
 	};
 
-	const handleChange = (field: keyof OAuth2ClientFormData) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any) => {
-		const value = event.target ? event.target.value : event;
+	const handleChange = (field: keyof OAuth2ClientFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
 		setFormData((prev) => ({ ...prev, [field]: value }));
 
 		// Clear error for this field
+		if (errors[field as keyof OAuth2ClientFormErrors]) {
+			setErrors((prev) => ({ ...prev, [field]: undefined }));
+		}
+	};
+
+	const handleSelectChange = (field: keyof OAuth2ClientFormData) => (value: string) => {
+		setFormData((prev) => ({ ...prev, [field]: value }));
+
 		if (errors[field as keyof OAuth2ClientFormErrors]) {
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
@@ -59,6 +77,14 @@ export function OAuth2ClientForm({
 		if (errors[field as keyof OAuth2ClientFormErrors]) {
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
+	};
+
+	const toggleArrayItem = (field: keyof OAuth2ClientFormData, item: string) => {
+		const currentValues = (formData[field] as string[]) || [];
+		const newValues = currentValues.includes(item)
+			? currentValues.filter((v) => v !== item)
+			: [...currentValues, item];
+		handleArrayChange(field, newValues);
 	};
 
 	const addRedirectUri = () => {
@@ -96,331 +122,340 @@ export function OAuth2ClientForm({
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<Grid container spacing={3}>
+			<div>
 				{/* Basic Information */}
-				<Grid size={{ xs: 12 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								Basic Information
-							</Typography>
-							<Grid container spacing={2}>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Client Name"
-										value={formData.client_name}
-										onChange={handleChange("client_name")}
-										error={!!errors.client_name}
-										helperText={errors.client_name}
-										required
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Owner"
-										value={formData.owner}
-										onChange={handleChange("owner")}
-										helperText="Optional: Organization or user that owns this client"
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Client URI"
-										value={formData.client_uri}
-										onChange={handleChange("client_uri")}
-										error={!!errors.client_uri}
-										helperText={errors.client_uri || "URL of the client's homepage"}
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Logo URI"
-										value={formData.logo_uri}
-										onChange={handleChange("logo_uri")}
-										error={!!errors.logo_uri}
-										helperText={errors.logo_uri || "URL of the client's logo image"}
-									/>
-								</Grid>
-							</Grid>
-						</CardContent>
-					</Card>
-				</Grid>
+				<div>
+					<h3>Basic Information</h3>
+					<div>
+						<div>
+							<Label htmlFor="client_name">
+								Client Name <span>*</span>
+							</Label>
+							<Input
+								id="client_name"
+								value={formData.client_name}
+								onChange={handleChange("client_name")}
+							/>
+							{errors.client_name && (
+								<p>{errors.client_name}</p>
+							)}
+						</div>
+						<div>
+							<Label htmlFor="owner">Owner</Label>
+							<Input
+								id="owner"
+								value={formData.owner}
+								onChange={handleChange("owner")}
+							/>
+							<p>Optional: Organization or user that owns this client</p>
+						</div>
+						<div>
+							<Label htmlFor="client_uri">Client URI</Label>
+							<Input
+								id="client_uri"
+								value={formData.client_uri}
+								onChange={handleChange("client_uri")}
+							/>
+							<p>
+								{errors.client_uri ? (
+									<span>{errors.client_uri}</span>
+								) : (
+									"URL of the client's homepage"
+								)}
+							</p>
+						</div>
+						<div>
+							<Label htmlFor="logo_uri">Logo URI</Label>
+							<Input
+								id="logo_uri"
+								value={formData.logo_uri}
+								onChange={handleChange("logo_uri")}
+							/>
+							<p>
+								{errors.logo_uri ? (
+									<span>{errors.logo_uri}</span>
+								) : (
+									"URL of the client's logo image"
+								)}
+							</p>
+						</div>
+					</div>
+				</div>
 
 				{/* OAuth2 Configuration */}
-				<Grid size={{ xs: 12 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								OAuth2 Configuration
-							</Typography>
-							<Grid container spacing={2}>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<FormControl fullWidth error={!!errors.grant_types}>
-										<InputLabel>Grant Types</InputLabel>
-										<Select
-											multiple
-											value={formData.grant_types}
-											onChange={(e) => handleArrayChange("grant_types", e.target.value as string[])}
-											renderValue={(selected) => (
-												<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-													{(selected as string[]).map((value: string) => (
-														<Chip key={value} label={value.replace("_", " ")} size="small" />
-													))}
-												</Box>
-											)}
+				<div>
+					<h3>OAuth2 Configuration</h3>
+					<div>
+						{/* Grant Types - multi-select as toggleable badges */}
+						<div>
+							<Label>Grant Types</Label>
+							<div>
+								{OAUTH2_GRANT_TYPES.map((grantType) => {
+									const isSelected = formData.grant_types.includes(grantType);
+									return (
+										<button
+											key={grantType}
+											type="button"
+											onClick={() => toggleArrayItem("grant_types", grantType)}
 										>
-											{OAUTH2_GRANT_TYPES.map((grantType) => (
-												<MenuItem key={grantType} value={grantType}>
-													{grantType.replace("_", " ")}
-												</MenuItem>
-											))}
-										</Select>
-										{errors.grant_types && (
-											<Typography variant="caption" color="error">
-												{errors.grant_types}
-											</Typography>
-										)}
-									</FormControl>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<FormControl fullWidth error={!!errors.response_types}>
-										<InputLabel>Response Types</InputLabel>
-										<Select
-											multiple
-											value={formData.response_types}
-											onChange={(e) => handleArrayChange("response_types", e.target.value as string[])}
-											renderValue={(selected) => (
-												<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-													{(selected as string[]).map((value: string) => (
-														<Chip key={value} label={value} size="small" />
-													))}
-												</Box>
-											)}
+											{grantType.replace(/_/g, " ")}
+										</button>
+									);
+								})}
+							</div>
+							{errors.grant_types && (
+								<p>{errors.grant_types}</p>
+							)}
+						</div>
+
+						{/* Response Types - multi-select as toggleable badges */}
+						<div>
+							<Label>Response Types</Label>
+							<div>
+								{OAUTH2_RESPONSE_TYPES.map((responseType) => {
+									const isSelected = formData.response_types.includes(responseType);
+									return (
+										<button
+											key={responseType}
+											type="button"
+											onClick={() => toggleArrayItem("response_types", responseType)}
 										>
-											{OAUTH2_RESPONSE_TYPES.map((responseType) => (
-												<MenuItem key={responseType} value={responseType}>
-													{responseType}
-												</MenuItem>
-											))}
-										</Select>
-										{errors.response_types && (
-											<Typography variant="caption" color="error">
-												{errors.response_types}
-											</Typography>
-										)}
-									</FormControl>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Scope"
-										value={formData.scope}
-										onChange={handleChange("scope")}
-										helperText="Space-separated list of scopes"
-										placeholder="openid profile email"
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<FormControl fullWidth>
-										<InputLabel>Subject Type</InputLabel>
-										<Select value={formData.subject_type} onChange={handleChange("subject_type")}>
-											{OAUTH2_SUBJECT_TYPES.map((type) => (
-												<MenuItem key={type} value={type}>
-													{type}
-												</MenuItem>
-											))}
-										</Select>
-									</FormControl>
-								</Grid>
-							</Grid>
-						</CardContent>
-					</Card>
-				</Grid>
+											{responseType}
+										</button>
+									);
+								})}
+							</div>
+							{errors.response_types && (
+								<p>{errors.response_types}</p>
+							)}
+						</div>
+
+						<div>
+							<Label htmlFor="scope">Scope</Label>
+							<Input
+								id="scope"
+								value={formData.scope}
+								onChange={handleChange("scope")}
+								placeholder="openid profile email"
+							/>
+							<p>Space-separated list of scopes</p>
+						</div>
+
+						<div>
+							<Label htmlFor="subject_type">Subject Type</Label>
+							<Select
+								value={formData.subject_type}
+								onValueChange={handleSelectChange("subject_type")}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select subject type" />
+								</SelectTrigger>
+								<SelectContent>
+									{OAUTH2_SUBJECT_TYPES.map((type) => (
+										<SelectItem key={type} value={type}>
+											{type}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				</div>
 
 				{/* Redirect URIs */}
-				<Grid size={{ xs: 12 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								Redirect URIs
-							</Typography>
-							<Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-								<TextField
-									fullWidth
-									label="Add Redirect URI"
-									value={newRedirectUri}
-									onChange={(e) => setNewRedirectUri(e.target.value)}
-									placeholder="https://example.com/callback"
-									onKeyPress={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addRedirectUri();
-										}
-									}}
-								/>
-								<Button variant="outlined" onClick={addRedirectUri} startIcon={<AddIcon />}>
-									Add
-								</Button>
-							</Box>
-							{errors.redirect_uris && (
-								<Alert severity="error" sx={{ mb: 2 }}>
-									{errors.redirect_uris}
-								</Alert>
-							)}
-							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-								{formData.redirect_uris.map((uri, index) => (
-									<Chip key={index} label={uri} onDelete={() => removeRedirectUri(index)} deleteIcon={<DeleteIcon />} />
-								))}
-							</Box>
-						</CardContent>
-					</Card>
-				</Grid>
+				<div>
+					<h3>Redirect URIs</h3>
+					<div>
+						<Input
+							value={newRedirectUri}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewRedirectUri(e.target.value)}
+							placeholder="https://example.com/callback"
+							onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+								if (e.key === "Enter") {
+									e.preventDefault();
+									addRedirectUri();
+								}
+							}}
+						/>
+						<Button type="button" variant="outline" onClick={addRedirectUri}>
+							<Icon name="add" />
+							Add
+						</Button>
+					</div>
+					{errors.redirect_uris && (
+						<div>
+							{errors.redirect_uris}
+						</div>
+					)}
+					<div>
+						{formData.redirect_uris.map((uri, index) => (
+							<Badge key={index} variant="secondary">
+								{uri}
+								<button
+									type="button"
+									onClick={() => removeRedirectUri(index)}
+								>
+									<Icon name="close" />
+								</button>
+							</Badge>
+						))}
+					</div>
+				</div>
 
 				{/* Advanced Configuration */}
-				<Grid size={{ xs: 12 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								Advanced Configuration
-							</Typography>
-							<Grid container spacing={2}>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<FormControl fullWidth>
-										<InputLabel>Token Endpoint Auth Method</InputLabel>
-										<Select value={formData.token_endpoint_auth_method} onChange={handleChange("token_endpoint_auth_method")}>
-											{OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS.map((method) => (
-												<MenuItem key={method} value={method}>
-													{method.replace("_", " ")}
-												</MenuItem>
-											))}
-										</Select>
-									</FormControl>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="UserInfo Signed Response Algorithm"
-										value={formData.userinfo_signed_response_alg}
-										onChange={handleChange("userinfo_signed_response_alg")}
-										placeholder="RS256"
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Policy URI"
-										value={formData.policy_uri}
-										onChange={handleChange("policy_uri")}
-										error={!!errors.policy_uri}
-										helperText={errors.policy_uri || "URL of privacy policy"}
-									/>
-								</Grid>
-								<Grid size={{ xs: 12, md: 6 }}>
-									<TextField
-										fullWidth
-										label="Terms of Service URI"
-										value={formData.tos_uri}
-										onChange={handleChange("tos_uri")}
-										error={!!errors.tos_uri}
-										helperText={errors.tos_uri || "URL of terms of service"}
-									/>
-								</Grid>
-							</Grid>
-						</CardContent>
-					</Card>
-				</Grid>
+				<div>
+					<h3>Advanced Configuration</h3>
+					<div>
+						<div>
+							<Label htmlFor="token_endpoint_auth_method">Token Endpoint Auth Method</Label>
+							<Select
+								value={formData.token_endpoint_auth_method}
+								onValueChange={handleSelectChange("token_endpoint_auth_method")}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select auth method" />
+								</SelectTrigger>
+								<SelectContent>
+									{OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS.map((method) => (
+										<SelectItem key={method} value={method}>
+											{method.replace(/_/g, " ")}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div>
+							<Label htmlFor="userinfo_signed_response_alg">UserInfo Signed Response Algorithm</Label>
+							<Input
+								id="userinfo_signed_response_alg"
+								value={formData.userinfo_signed_response_alg}
+								onChange={handleChange("userinfo_signed_response_alg")}
+								placeholder="RS256"
+							/>
+						</div>
+						<div>
+							<Label htmlFor="policy_uri">Policy URI</Label>
+							<Input
+								id="policy_uri"
+								value={formData.policy_uri}
+								onChange={handleChange("policy_uri")}
+							/>
+							<p>
+								{errors.policy_uri ? (
+									<span>{errors.policy_uri}</span>
+								) : (
+									"URL of privacy policy"
+								)}
+							</p>
+						</div>
+						<div>
+							<Label htmlFor="tos_uri">Terms of Service URI</Label>
+							<Input
+								id="tos_uri"
+								value={formData.tos_uri}
+								onChange={handleChange("tos_uri")}
+							/>
+							<p>
+								{errors.tos_uri ? (
+									<span>{errors.tos_uri}</span>
+								) : (
+									"URL of terms of service"
+								)}
+							</p>
+						</div>
+					</div>
+				</div>
 
 				{/* Contacts and Audience */}
-				<Grid size={{ xs: 12, md: 6 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								Contact Information
-							</Typography>
-							<Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-								<TextField
-									fullWidth
-									label="Add Contact Email"
-									value={newContact}
-									onChange={(e) => setNewContact(e.target.value)}
-									placeholder="admin@example.com"
-									onKeyPress={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addContact();
-										}
-									}}
-								/>
-								<Button variant="outlined" onClick={addContact} startIcon={<AddIcon />}>
-									Add
-								</Button>
-							</Box>
-							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-								{(formData.contacts || []).map((contact, index) => (
-									<Chip key={index} label={contact} onDelete={() => removeContact(index)} deleteIcon={<DeleteIcon />} />
-								))}
-							</Box>
-						</CardContent>
-					</Card>
-				</Grid>
+				<div>
+					<div>
+						<h3>Contact Information</h3>
+						<div>
+							<Input
+								value={newContact}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewContact(e.target.value)}
+								placeholder="admin@example.com"
+								onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										addContact();
+									}
+								}}
+							/>
+							<Button type="button" variant="outline" onClick={addContact}>
+								<Icon name="add" />
+								Add
+							</Button>
+						</div>
+						<div>
+							{(formData.contacts || []).map((contact, index) => (
+								<Badge key={index} variant="secondary">
+									{contact}
+									<button
+										type="button"
+										onClick={() => removeContact(index)}
+									>
+										<Icon name="close" />
+									</button>
+								</Badge>
+							))}
+						</div>
+					</div>
 
-				<Grid size={{ xs: 12, md: 6 }}>
-					<Card elevation={0} sx={{ border: 1, borderColor: "divider" }}>
-						<CardContent>
-							<Typography variant="h6" gutterBottom>
-								Audience
-							</Typography>
-							<Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-								<TextField
-									fullWidth
-									label="Add Audience"
-									value={newAudience}
-									onChange={(e) => setNewAudience(e.target.value)}
-									placeholder="https://api.example.com"
-									onKeyPress={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addAudience();
-										}
-									}}
-								/>
-								<Button variant="outlined" onClick={addAudience} startIcon={<AddIcon />}>
-									Add
-								</Button>
-							</Box>
-							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-								{(formData.audience || []).map((aud, index) => (
-									<Chip key={index} label={aud} onDelete={() => removeAudience(index)} deleteIcon={<DeleteIcon />} />
-								))}
-							</Box>
-						</CardContent>
-					</Card>
-				</Grid>
+					<div>
+						<h3>Audience</h3>
+						<div>
+							<Input
+								value={newAudience}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewAudience(e.target.value)}
+								placeholder="https://api.example.com"
+								onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										addAudience();
+									}
+								}}
+							/>
+							<Button type="button" variant="outline" onClick={addAudience}>
+								<Icon name="add" />
+								Add
+							</Button>
+						</div>
+						<div>
+							{(formData.audience || []).map((aud, index) => (
+								<Badge key={index} variant="secondary">
+									{aud}
+									<button
+										type="button"
+										onClick={() => removeAudience(index)}
+									>
+										<Icon name="close" />
+									</button>
+								</Badge>
+							))}
+						</div>
+					</div>
+				</div>
 
 				{/* Submit Actions */}
-				<Grid size={{ xs: 12 }}>
-					<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-						{onCancel && (
-							<Button variant="outlined" onClick={onCancel} disabled={isSubmitting}>
-								Cancel
-							</Button>
-						)}
-						<Button type="submit" variant="primary" disabled={isSubmitting}>
-							{isSubmitting ? "Submitting..." : submitButtonLabel}
+				<div>
+					{onCancel && (
+						<Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+							Cancel
 						</Button>
-					</Box>
-				</Grid>
-			</Grid>
+					)}
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting ? "Submitting..." : submitButtonLabel}
+					</Button>
+				</div>
+			</div>
 
 			{/* Error Display */}
 			{error && (
-				<Alert severity="error" sx={{ mt: 2 }}>
+				<div>
+					<Icon name="error" />
 					{error.message}
-				</Alert>
+				</div>
 			)}
 		</form>
 	);

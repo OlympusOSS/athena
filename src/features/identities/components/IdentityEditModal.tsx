@@ -1,8 +1,18 @@
 import type { Identity } from "@ory/kratos-client";
-import Form from "@rjsf/mui";
+import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import React, { useEffect, useState } from "react";
-import { ActionBar, Alert, Box, Chip, Dialog, DialogActions, DialogContent, Spinner, Typography } from "@/components/ui";
+import { Alert, AlertDescription, Icon } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@olympus/canvas";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { uiLogger } from "@/lib/logger";
 import { useUpdateIdentity } from "../hooks/useIdentities";
@@ -35,8 +45,8 @@ interface IdentityEditModalProps {
 export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onClose, identity, onSuccess }) => {
 	const updateIdentityMutation = useUpdateIdentity();
 	const { data: schemas, isLoading: schemasLoading } = useSchemas();
-	const [formData, setFormData] = useState<any>({});
-	const [formSchema, setFormSchema] = useState<any | null>(null);
+	const [formData, setFormData] = useState<Record<string, unknown>>({});
+	const [formSchema, setFormSchema] = useState<Record<string, unknown> | null>(null);
 
 	// Custom widgets for better form experience
 	const widgets = React.useMemo(
@@ -50,7 +60,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 		[],
 	);
 
-	// Custom templates for Material-UI styling
+	// Custom templates for styling
 	const templates = React.useMemo(
 		() => ({
 			FieldTemplate: FieldTemplate,
@@ -67,16 +77,14 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 			if (schema?.schema) {
 				const rjsfSchema = convertKratosSchemaToRJSF(schema.schema);
 				setFormSchema(rjsfSchema);
-				setFormData(identity.traits || {});
+				setFormData((identity.traits as Record<string, unknown>) || {});
 				uiLogger.debug("Initialized form with identity traits:", identity.traits);
 			}
 		}
 	}, [identity, schemas]);
 
-	const onSubmit = async (data: any) => {
+	const onSubmit = async (submitData: Record<string, unknown>) => {
 		if (!identity) return;
-
-		const { formData: submitData } = data;
 
 		try {
 			uiLogger.debug("Submitting identity update:", {
@@ -107,107 +115,79 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 	if (!identity) return null;
 
 	return (
-		<Dialog
-			open={open}
-			onClose={handleClose}
-			maxWidth="md"
-			fullWidth
-			title={
-				<Box>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-						}}
-					>
-						<Typography variant="heading" size="lg">
-							Edit Identity
-						</Typography>
-						<Chip label={identity.schema_id} variant="tag" />
-					</Box>
-					<Typography variant="code" sx={{ mt: 1 }}>
-						{identity.id}
-					</Typography>
-				</Box>
-			}
-			slotProps={{
-				paper: {
-					sx: { minHeight: "500px" },
-				},
-			}}
-		>
+		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
 			<DialogContent>
-				{updateIdentityMutation.isError && (
-					<Alert variant="inline" severity="error" sx={{ mb: 2 }}>
-						Failed to update identity: {(updateIdentityMutation.error as any)?.message || "Unknown error"}
-					</Alert>
-				)}
+				<DialogHeader>
+					<div>
+						<DialogTitle>Edit Identity</DialogTitle>
+						<Badge variant="outline">{identity.schema_id}</Badge>
+					</div>
+					<DialogDescription>
+						<code>{identity.id}</code>
+					</DialogDescription>
+				</DialogHeader>
 
-				{schemasLoading && (
-					<Box display="flex" justifyContent="center" alignItems="center" height="300px">
-						<Spinner variant="ring" size="large" />
-					</Box>
-				)}
+				<div>
+					{updateIdentityMutation.isError && (
+						<Alert variant="destructive">
+							<Icon name="danger" />
+							<AlertDescription>
+								Failed to update identity: {(updateIdentityMutation.error as Error)?.message || "Unknown error"}
+							</AlertDescription>
+						</Alert>
+					)}
 
-				{!schemasLoading && formSchema && (
-					<Box
-						sx={{
-							mt: 2,
-							"& .rjsf": {
-								"& .field-string": { mb: 0 },
-								"& .field-object": { mb: 0 },
-								"& .form-group": { mb: 0 },
-								"& .control-label": { display: "none" },
-								"& .field-description": { display: "none" },
-								"& .help-block": { display: "none" },
-							},
-						}}
-					>
-						<Form
-							schema={formSchema}
-							uiSchema={createUISchema(formSchema)}
-							formData={formData}
-							onChange={({ formData }) => setFormData(formData)}
-							onSubmit={onSubmit}
-							validator={validator}
-							widgets={widgets}
-							templates={templates}
-							disabled={updateIdentityMutation.isPending}
-							showErrorList={false}
-							noHtml5Validate
-							className="rjsf"
-						>
-							<DialogActions sx={{ p: 3, pt: 1 }}>
-								<ActionBar
-									primaryAction={{
-										label: "Save Changes",
-										onClick: () => {
-											// Trigger form submission
-											document.querySelector<HTMLFormElement>("form.rjsf")?.requestSubmit();
-										},
-										loading: updateIdentityMutation.isPending,
-										disabled: false,
-									}}
-									secondaryActions={[
-										{
-											label: "Cancel",
-											onClick: handleClose,
-											variant: "outlined",
-											disabled: updateIdentityMutation.isPending,
-										},
-									]}
-								/>
-							</DialogActions>
-						</Form>
-					</Box>
-				)}
+					{schemasLoading && (
+						<div>
+							<Icon name="loading" />
+						</div>
+					)}
 
-				{!schemasLoading && !formSchema && (
-					<Alert variant="inline" severity="warning" sx={{ mt: 2 }}>
-						Schema not found for this identity
-					</Alert>
-				)}
+					{!schemasLoading && formSchema && (
+						<div>
+							<Form
+								schema={formSchema}
+								uiSchema={createUISchema(formSchema)}
+								formData={formData}
+								onChange={(data: IChangeEvent) => { if (data.formData) setFormData(data.formData); }}
+								onSubmit={(data: IChangeEvent) => { if (data.formData) onSubmit(data.formData as Record<string, unknown>); }}
+								validator={validator}
+								widgets={widgets}
+								templates={templates}
+								disabled={updateIdentityMutation.isPending}
+								showErrorList={false}
+								noHtml5Validate
+							>
+								<DialogFooter>
+									<Button
+										variant="outline"
+										onClick={handleClose}
+										disabled={updateIdentityMutation.isPending}
+										type="button"
+									>
+										Cancel
+									</Button>
+									<Button
+										type="submit"
+										disabled={updateIdentityMutation.isPending}
+									>
+										{updateIdentityMutation.isPending && (
+											<Icon name="loading" />
+										)}
+										Save Changes
+									</Button>
+								</DialogFooter>
+							</Form>
+						</div>
+					)}
+
+					{!schemasLoading && !formSchema && (
+						<Alert>
+							<Icon name="danger" />
+							<AlertDescription>Schema not found for this identity</AlertDescription>
+						</Alert>
+					)}
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

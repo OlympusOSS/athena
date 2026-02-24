@@ -1,24 +1,23 @@
-import { Cancel, CheckCircle, Close, Error as ErrorIcon, ExpandMore, Info, Mail, Person, Schedule, Sms } from "@mui/icons-material";
 import type React from "react";
-import { StatusBadge } from "@/components";
-import { ErrorState, LoadingState } from "@/components/feedback";
+import { Icon, StatusBadge } from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
+import { Badge } from "@olympus/canvas";
 import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
-	Alert,
-	Box,
-	Card,
-	CardContent,
-	Chip,
 	Dialog,
 	DialogContent,
+	DialogHeader,
 	DialogTitle,
-	Grid,
-	IconButton,
-	Spinner,
-	Typography,
-} from "@/components/ui";
+} from "@olympus/canvas";
+import { Button } from "@olympus/canvas";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@olympus/canvas";
+import { ScrollArea } from "@olympus/canvas";
+import { Separator } from "@olympus/canvas";
+import { cn } from "@olympus/canvas";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 import { useMessage } from "../hooks";
@@ -34,22 +33,22 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 
 	const message = messageData?.data;
 
-	const getStatusIcon = (status: CourierMessageStatus) => {
+	const getStatusIcon = (status: CourierMessageStatus): React.ReactNode => {
 		switch (status) {
 			case "sent":
-				return <CheckCircle color="success" />;
+				return <Icon name="success-filled" />;
 			case "queued":
-				return <Schedule color="info" />;
+				return <Icon name="time" />;
 			case "processing":
-				return <Spinner variant="inline" size="small" />;
+				return <Icon name="loading" />;
 			case "abandoned":
-				return <Cancel color="error" />;
+				return <Icon name="x-circle" />;
 			default:
-				return <ErrorIcon color="warning" />;
+				return <Icon name="error" />;
 		}
 	};
 
-	const _getStatusColor = (status: CourierMessageStatus) => {
+	const _getStatusColor = (status: CourierMessageStatus): string => {
 		switch (status) {
 			case "sent":
 				return "success";
@@ -64,20 +63,20 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 		}
 	};
 
-	const getMessageTypeIcon = (type: string) => {
+	const getMessageTypeIcon = (type: string): React.ReactNode => {
 		switch (type) {
 			case "email":
-				return <Mail color="primary" />;
+				return <Icon name="mail" />;
 			case "sms":
-				return <Sms color="primary" />;
+				return <Icon name="message" />;
 			default:
-				return <Mail color="primary" />;
+				return <Icon name="mail" />;
 		}
 	};
 
 	if (isLoading) {
 		return (
-			<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
 					<LoadingState variant="section" />
 				</DialogContent>
@@ -87,18 +86,11 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 
 	if (fetchError || !message) {
 		return (
-			<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-				<DialogTitle>
-					<Box display="flex" alignItems="center" justifyContent="space-between">
-						<Typography variant="heading" size="lg">
-							Message Details
-						</Typography>
-						<IconButton onClick={onClose} variant="action" size="small">
-							<Close />
-						</IconButton>
-					</Box>
-				</DialogTitle>
+			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Message Details</DialogTitle>
+					</DialogHeader>
 					<ErrorState variant="inline" message={`Failed to load message details: ${fetchError?.message || "Unknown error"}`} />
 				</DialogContent>
 			</Dialog>
@@ -106,240 +98,204 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 	}
 
 	return (
-		<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-			<DialogTitle>
-				<Box display="flex" alignItems="center" justifyContent="space-between">
-					<Box display="flex" alignItems="center" gap={1}>
+		<Dialog open={open} onOpenChange={() => onClose()}>
+			<DialogContent>
+				<DialogHeader>
+					<div>
 						{getMessageTypeIcon(message.type)}
-						<Typography variant="heading" size="lg">
-							Message Details
-						</Typography>
-					</Box>
-					<IconButton onClick={onClose} variant="action" size="small">
-						<Close />
-					</IconButton>
-				</Box>
-			</DialogTitle>
+						<DialogTitle>Message Details</DialogTitle>
+					</div>
+				</DialogHeader>
 
-			<DialogContent dividers>
-				<Grid container spacing={3}>
-					{/* Basic Message Info */}
-					<Grid size={{ xs: 12 }}>
-						<Card>
-							<CardContent>
-								<Box display="flex" alignItems="center" gap={1} mb={2}>
-									<Info color="primary" />
-									<Typography variant="heading" size="lg">
-										Basic Information
-									</Typography>
-								</Box>
+				<ScrollArea>
+					<div>
+						{/* Basic Message Info */}
+						<div>
+							<div>
+								<Icon name="info" />
+								<h3>Basic Information</h3>
+							</div>
 
-								<Grid container spacing={2}>
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Message ID
-										</Typography>
-										<Typography variant="code" sx={{ wordBreak: "break-all" }}>
-											{message.id}
-										</Typography>
-									</Grid>
+							<div>
+								<div>
+									<span>
+										Message ID
+									</span>
+									<code>
+										{message.id}
+									</code>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Type
-										</Typography>
-										<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-											{getMessageTypeIcon(message.type)}
-											<Typography variant="body" sx={{ textTransform: "capitalize" }}>
-												{message.type}
-											</Typography>
-										</Box>
-									</Grid>
+								<div>
+									<span>
+										Type
+									</span>
+									<div>
+										{getMessageTypeIcon(message.type)}
+										<span>{message.type}</span>
+									</div>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Status
-										</Typography>
-										<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-											{getStatusIcon(message.status)}
-											<StatusBadge
-												status={message.status === "sent" ? "active" : message.status === "queued" ? "pending" : "inactive"}
-												label={message.status}
-												showIcon={false}
-											/>
-										</Box>
-									</Grid>
+								<div>
+									<span>
+										Status
+									</span>
+									<div>
+										{getStatusIcon(message.status)}
+										<StatusBadge
+											status={message.status === "sent" ? "active" : message.status === "queued" ? "pending" : "inactive"}
+											label={message.status}
+											showIcon={false}
+										/>
+									</div>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Send Count
-										</Typography>
-										<Typography variant="body">{message.send_count || 0}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Send Count
+									</span>
+									<p>{message.send_count || 0}</p>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Created At
-										</Typography>
-										<Typography variant="body">{formatDate(message.created_at)}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Created At
+									</span>
+									<p>{formatDate(message.created_at)}</p>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Updated At
-										</Typography>
-										<Typography variant="body">{formatDate(message.updated_at)}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Updated At
+									</span>
+									<p>{formatDate(message.updated_at)}</p>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Template Type
-										</Typography>
-										<Typography variant="code">{message.template_type || "Unknown"}</Typography>
-									</Grid>
+								<div>
+									<span>
+										Template Type
+									</span>
+									<code>
+										{message.template_type || "Unknown"}
+									</code>
+								</div>
 
-									<Grid size={{ xs: 12, sm: 6 }}>
-										<Typography variant="label" color="text.secondary">
-											Channel
-										</Typography>
-										<Typography variant="body">{message.channel || "Default"}</Typography>
-									</Grid>
-								</Grid>
-							</CardContent>
-						</Card>
-					</Grid>
+								<div>
+									<span>
+										Channel
+									</span>
+									<p>{message.channel || "Default"}</p>
+								</div>
+							</div>
+						</div>
 
-					{/* Recipient Information */}
-					<Grid size={{ xs: 12 }}>
-						<Card>
-							<CardContent>
-								<Box display="flex" alignItems="center" gap={1} mb={2}>
-									<Person color="primary" />
-									<Typography variant="heading" size="lg">
-										Recipient Information
-									</Typography>
-								</Box>
+						{/* Recipient Information */}
+						<div>
+							<div>
+								<Icon name="user" />
+								<h3>Recipient Information</h3>
+							</div>
 
-								<Typography variant="label" color="text.secondary">
-									Recipient
-								</Typography>
-								<Typography variant="body" sx={{ wordBreak: "break-all", mb: 2 }}>
-									{message.recipient}
-								</Typography>
+							<div>
+								<div>
+									<span>
+										Recipient
+									</span>
+									<p>{message.recipient}</p>
+								</div>
 
-								<Typography variant="label" color="text.secondary">
-									Subject
-								</Typography>
-								<Typography variant="body">{message.subject || "No subject"}</Typography>
-							</CardContent>
-						</Card>
-					</Grid>
+								<div>
+									<span>
+										Subject
+									</span>
+									<p>{message.subject || "No subject"}</p>
+								</div>
+							</div>
+						</div>
 
-					{/* Message Content */}
-					{message.body && (
-						<Grid size={{ xs: 12 }}>
-							<Card>
-								<CardContent>
-									<Typography variant="heading" size="lg" gutterBottom>
-										Message Content
-									</Typography>
-									<Box
-										component="div"
-										sx={{
-											backgroundColor: "grey.50",
-											p: 2,
-											borderRadius: 1,
-											maxHeight: "300px",
-											overflow: "auto",
-											fontSize: "0.875rem",
-											whiteSpace: "pre-wrap",
-											border: "1px solid",
-											borderColor: "grey.200",
-										}}
-									>
-										{message.body}
-									</Box>
-								</CardContent>
-							</Card>
-						</Grid>
-					)}
+						{/* Message Content */}
+						{message.body && (
+							<div>
+								<h3>Message Content</h3>
+								<div>
+									{message.body}
+								</div>
+							</div>
+						)}
 
-					{/* Dispatches */}
-					{message.dispatches && message.dispatches.length > 0 && (
-						<Grid size={{ xs: 12 }}>
-							<Card>
-								<CardContent>
-									<Typography variant="heading" size="lg" gutterBottom>
-										Delivery Attempts
-									</Typography>
+						{/* Dispatches */}
+						{message.dispatches && message.dispatches.length > 0 && (
+							<div>
+								<h3>Delivery Attempts</h3>
 
-									<Accordion>
-										<AccordionSummary expandIcon={<ExpandMore />}>
-											<Typography variant="label">{message.dispatches.length} dispatch(es)</Typography>
-										</AccordionSummary>
-										<AccordionDetails>
+								<Accordion type="single" collapsible>
+									<AccordionItem value="dispatches">
+										<AccordionTrigger>
+											<span>{message.dispatches.length} dispatch(es)</span>
+										</AccordionTrigger>
+										<AccordionContent>
 											{message.dispatches.map((dispatch: any, _index: number) => (
-												<Box
+												<div
 													key={dispatch.id}
-													sx={{
-														mb: 2,
-														p: 2,
-														border: "1px solid",
-														borderColor: "grey.200",
-														borderRadius: 1,
-													}}
 												>
-													<Grid container spacing={2}>
-														<Grid size={{ xs: 12, sm: 6 }}>
-															<Typography variant="label" color="text.secondary">
+													<div>
+														<div>
+															<span>
 																Dispatch ID
-															</Typography>
-															<Typography variant="code" fontSize="0.75rem">
+															</span>
+															<code>
 																{dispatch.id}
-															</Typography>
-														</Grid>
+															</code>
+														</div>
 
-														<Grid size={{ xs: 12, sm: 6 }}>
-															<Typography variant="label" color="text.secondary">
+														<div>
+															<span>
 																Status
-															</Typography>
-															<Chip label={dispatch.status} variant="status" status={dispatch.status === "failed" ? "inactive" : "active"} />
-														</Grid>
+															</span>
+															<div>
+																<StatusBadge
+																	status={dispatch.status === "failed" ? "inactive" : "active"}
+																	label={dispatch.status}
+																/>
+															</div>
+														</div>
 
-														<Grid size={{ xs: 12, sm: 6 }}>
-															<Typography variant="label" color="text.secondary">
+														<div>
+															<span>
 																Created At
-															</Typography>
-															<Typography variant="body">{formatDate(dispatch.created_at)}</Typography>
-														</Grid>
+															</span>
+															<p>{formatDate(dispatch.created_at)}</p>
+														</div>
 
-														<Grid size={{ xs: 12, sm: 6 }}>
-															<Typography variant="label" color="text.secondary">
+														<div>
+															<span>
 																Updated At
-															</Typography>
-															<Typography variant="body">{formatDate(dispatch.updated_at)}</Typography>
-														</Grid>
+															</span>
+															<p>{formatDate(dispatch.updated_at)}</p>
+														</div>
 
 														{dispatch.error && (
-															<Grid size={{ xs: 12 }}>
-																<Typography variant="label" color="text.secondary">
+															<div>
+																<span>
 																	Error
-																</Typography>
-																<Alert variant="inline" severity="error" sx={{ mt: 1 }}>
-																	<Typography variant="code">{JSON.stringify(dispatch.error, null, 2)}</Typography>
-																</Alert>
-															</Grid>
+																</span>
+																<div>
+																	<code>
+																		{JSON.stringify(dispatch.error, null, 2)}
+																	</code>
+																</div>
+															</div>
 														)}
-													</Grid>
-												</Box>
+													</div>
+												</div>
 											))}
-										</AccordionDetails>
-									</Accordion>
-								</CardContent>
-							</Card>
-						</Grid>
-					)}
-				</Grid>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</div>
+						)}
+					</div>
+				</ScrollArea>
 			</DialogContent>
 		</Dialog>
 	);

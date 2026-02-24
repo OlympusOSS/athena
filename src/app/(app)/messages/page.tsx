@@ -1,25 +1,25 @@
 "use client";
 
-import { Close, Email, ExpandMore, Refresh } from "@mui/icons-material";
+import type { Message } from "@ory/kratos-client";
 import { useEffect, useMemo, useState } from "react";
+import { Icon, SearchBar } from "@olympus/canvas";
+import { ErrorState, LoadingState } from "@olympus/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
+import { Button } from "@olympus/canvas";
+import { Card, CardContent } from "@olympus/canvas";
 import {
-	Box,
-	Button,
-	Card,
-	CardContent,
-	ErrorState,
-	FormControl,
-	IconButton,
-	InputLabel,
-	LoadingState,
-	MenuItem,
-	SearchBar,
 	Select,
-	Spinner,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@olympus/canvas";
+import {
 	Tooltip,
-	Typography,
-} from "@/components/ui";
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { MessageDetailDialog, MessagesTable } from "@/features/messages/components";
@@ -68,13 +68,13 @@ export default function MessagesPage() {
 		}
 
 		const searchLower = trimmedSearchQuery.toLowerCase();
-		return allMessages.filter((message: any) => {
+		return allMessages.filter((message: Message) => {
 			return (
-				message.recipient?.toLowerCase().includes(searchLower) ||
-				message.subject?.toLowerCase().includes(searchLower) ||
-				message.id?.toLowerCase().includes(searchLower) ||
-				message.template_type?.toLowerCase().includes(searchLower) ||
-				message.type?.toLowerCase().includes(searchLower)
+				(message.recipient as string | undefined)?.toLowerCase().includes(searchLower) ||
+				(message.subject as string | undefined)?.toLowerCase().includes(searchLower) ||
+				(message.id as string | undefined)?.toLowerCase().includes(searchLower) ||
+				(message.template_type as string | undefined)?.toLowerCase().includes(searchLower) ||
+				(message.type as string | undefined)?.toLowerCase().includes(searchLower)
 			);
 		});
 	}, [isSearching, searchQuery_.data, paginatedQuery.data, trimmedSearchQuery]);
@@ -110,45 +110,56 @@ export default function MessagesPage() {
 	return (
 		<ProtectedRoute requiredRole={UserRole.ADMIN}>
 			<AdminLayout>
-				<Box sx={{ p: 3 }}>
+				<div className="space-y-6">
 					<PageHeader
 						title="Messages"
 						subtitle="Monitor email and SMS messages sent through Kratos"
-						icon={<Email sx={{ fontSize: 32, color: "white" }} />}
+						icon={<Icon name="mail" />}
 						actions={
-							<Tooltip title="Refresh">
-								<IconButton variant="action" onClick={() => refetch()}>
-									<Refresh />
-								</IconButton>
-							</Tooltip>
+							<TooltipProvider delayDuration={0}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button variant="ghost" size="icon" onClick={() => refetch()}>
+											<Icon name="refresh" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Refresh</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						}
 					/>
 
-					<Card variant="bordered" sx={{ mb: 4 }}>
+					<Card>
 						<CardContent>
 							{/* Filters */}
-							<Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-								<Box sx={{ minWidth: "300px" }}>
+							<div className="flex flex-wrap items-center gap-3">
+								<div className="flex-1 min-w-[200px]">
 									<SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search messages (recipient, subject, ID, template...)..." />
-								</Box>
+								</div>
 
-								<FormControl size="small" sx={{ minWidth: "150px" }}>
-									<InputLabel>Status</InputLabel>
-									<Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value as CourierMessageStatus | "")}>
-										<MenuItem value="">All Statuses</MenuItem>
-										<MenuItem value="queued">Queued</MenuItem>
-										<MenuItem value="processing">Processing</MenuItem>
-										<MenuItem value="sent">Sent</MenuItem>
-										<MenuItem value="abandoned">Abandoned</MenuItem>
-									</Select>
-								</FormControl>
+								<Select
+									value={statusFilter || "all"}
+									onValueChange={(value) => setStatusFilter(value === "all" ? "" : value as CourierMessageStatus)}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Status" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="all">All Statuses</SelectItem>
+										<SelectItem value="queued">Queued</SelectItem>
+										<SelectItem value="processing">Processing</SelectItem>
+										<SelectItem value="sent">Sent</SelectItem>
+										<SelectItem value="abandoned">Abandoned</SelectItem>
+									</SelectContent>
+								</Select>
 
 								{(searchQuery || statusFilter) && (
-									<Button variant="outlined" onClick={handleClearFilters} startIcon={<Close />}>
+									<Button variant="outline" onClick={handleClearFilters}>
+										<Icon name="close" />
 										Clear Filters
 									</Button>
 								)}
-							</Box>
+							</div>
 
 							{/* Messages Table */}
 							{isError ? (
@@ -164,37 +175,42 @@ export default function MessagesPage() {
 
 									{/* Loading/pagination controls for search mode */}
 									{isSearching && hasNextPage && (
-										<Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+										<div className="flex items-center justify-center py-4">
 											{searchQuery_.isAutoSearching ? (
-												<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-													<Spinner variant="inline" />
-													<Typography variant="subheading">Searching for more messages...</Typography>
-												</Box>
+												<div className="flex items-center gap-2 text-sm text-muted-foreground">
+													<Icon name="loading" />
+													<span>Searching for more messages...</span>
+												</div>
 											) : (
-												<Button onClick={() => searchQuery_.loadMoreMatches()} variant="outlined" startIcon={<ExpandMore />}>
+												<Button variant="outline" onClick={() => searchQuery_.loadMoreMatches()}>
+													<Icon name="chevron-down" />
 													Load More Matches
 												</Button>
 											)}
-										</Box>
+										</div>
 									)}
 
 									{/* Manual load more for browsing mode */}
 									{!isSearching && hasNextPage && (
-										<Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+										<div className="flex items-center justify-center py-4">
 											<Button
+												variant="outline"
 												onClick={() => fetchNextPage()}
 												disabled={isFetchingNextPage}
-												variant="outlined"
-												startIcon={isFetchingNextPage ? <Spinner variant="button" /> : <ExpandMore />}
 											>
+												{isFetchingNextPage ? (
+													<Icon name="loading" />
+												) : (
+													<Icon name="chevron-down" />
+												)}
 												{isFetchingNextPage ? "Loading..." : "Load More Messages"}
 											</Button>
-										</Box>
+										</div>
 									)}
 
 									{/* Messages count */}
-									<Box sx={{ mt: 2, textAlign: "center" }}>
-										<Typography variant="subheading">
+									<div className="py-2 text-center">
+										<p className="text-sm text-muted-foreground">
 											{isSearching ? (
 												<>
 													Found {messages.length} message(s) matching &ldquo;
@@ -220,8 +236,8 @@ export default function MessagesPage() {
 													{hasNextPage && " (more available)"}
 												</>
 											)}
-										</Typography>
-									</Box>
+										</p>
+									</div>
 								</>
 							)}
 						</CardContent>
@@ -229,7 +245,7 @@ export default function MessagesPage() {
 
 					{/* Message Detail Dialog */}
 					{selectedMessageId && <MessageDetailDialog open={true} onClose={() => setSelectedMessageId(null)} messageId={selectedMessageId} />}
-				</Box>
+				</div>
 			</AdminLayout>
 		</ProtectedRoute>
 	);
