@@ -1,10 +1,7 @@
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
 import type { FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps, WidgetProps } from "@rjsf/utils";
 import parsePhoneNumber, { type CountryCode, getCountries, getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
 import React, { useState } from "react";
-import { Input } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
 
 // Memoize country options for autocomplete to avoid recalculation
 export const getCountryOptions = () => {
@@ -27,7 +24,7 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 	const [phoneInput, setPhoneInput] = useState("");
 	const [error, setError] = useState<string>("");
 	const [isValid, setIsValid] = useState<boolean | null>(null);
-	const [countrySearch, setCountrySearch] = useState("");
+	const [countrySearch, _setCountrySearch] = useState("");
 
 	const countryOptions = getCountryOptions();
 
@@ -126,14 +123,14 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 
 	const currentCountry = countryOptions.find((c) => c.code === selectedCountry);
 
-	const getBorderClass = () => {
+	const _getBorderClass = () => {
 		if (isValid === true) return "border-emerald-500 focus-visible:ring-emerald-500";
 		if (isValid === false) return "border-red-500 focus-visible:ring-red-500";
 		return "";
 	};
 
 	// Filter countries for the searchable select
-	const filteredCountries = countrySearch
+	const _filteredCountries = countrySearch
 		? countryOptions.filter((c) => c.label.toLowerCase().includes(countrySearch.toLowerCase()))
 		: countryOptions;
 
@@ -141,11 +138,7 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 		<div>
 			<div>
 				<Label>Country</Label>
-				<Select
-					value={selectedCountry}
-					onValueChange={(val: string) => handleCountryChange(val as CountryCode)}
-					disabled={disabled || readonly}
-				>
+				<Select value={selectedCountry} onValueChange={(val: string) => handleCountryChange(val as CountryCode)} disabled={disabled || readonly}>
 					<SelectTrigger>
 						<SelectValue placeholder="Select country" />
 					</SelectTrigger>
@@ -175,15 +168,7 @@ export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, 
 					disabled={disabled}
 					readOnly={readonly}
 				/>
-				{error ? (
-					<p>{error}</p>
-				) : (
-					currentCountry && (
-						<p>
-							Format: {currentCountry.callingCode} XXX XXX XXXX
-						</p>
-					)
-				)}
+				{error ? <p>{error}</p> : currentCountry && <p>Format: {currentCountry.callingCode} XXX XXX XXXX</p>}
 			</div>
 		</div>
 	);
@@ -255,7 +240,7 @@ export const TextWidget: React.FC<WidgetProps> = ({
 		}
 	}, [value, validateField]);
 
-	const getBorderClass = () => {
+	const _getBorderClass = () => {
 		if (isValid === true) return "border-emerald-500 focus-visible:ring-emerald-500";
 		if (isValid === false) return "border-red-500 focus-visible:ring-red-500";
 		return "";
@@ -320,7 +305,7 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 		}
 	};
 
-	const getBorderClass = () => {
+	const _getBorderClass = () => {
 		if (isValid === true) return "border-emerald-500";
 		if (isValid === false) return "border-red-500";
 		return "";
@@ -332,11 +317,7 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 				{label}
 				{required && <span>*</span>}
 			</Label>
-			<Select
-				value={value || ""}
-				onValueChange={handleChange}
-				disabled={disabled || readonly}
-			>
+			<Select value={value || ""} onValueChange={handleChange} disabled={disabled || readonly}>
 				<SelectTrigger id={id}>
 					<SelectValue placeholder={placeholder || "Select..."} />
 				</SelectTrigger>
@@ -361,21 +342,9 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, descript
 	return (
 		<div>
 			{children}
-			{description && (
-				<span>
-					{description}
-				</span>
-			)}
-			{errors && (
-				<span>
-					{errors}
-				</span>
-			)}
-			{help && (
-				<span>
-					{help}
-				</span>
-			)}
+			{description && <span>{description}</span>}
+			{errors && <span>{errors}</span>}
+			{help && <span>{help}</span>}
 		</div>
 	);
 };
@@ -384,12 +353,8 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, descript
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = ({ title, description, properties }) => {
 	return (
 		<div>
-			{title && (
-				<h3>{title}</h3>
-			)}
-			{description && (
-				<p>{description}</p>
-			)}
+			{title && <h3>{title}</h3>}
+			{description && <p>{description}</p>}
 			<div>
 				{properties.map((prop) => (
 					<div key={prop.name}>{prop.content}</div>

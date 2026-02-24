@@ -1,29 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { Icon, StatCard } from "@olympus/canvas";
-import { EmptyState, ErrorState } from "@olympus/canvas";
-import { ActionBar, AdminLayout, PageHeader, PageTabs } from "@/components/layout";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@olympus/canvas";
-import { Alert, AlertDescription } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Card } from "@olympus/canvas";
-import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
+	Card,
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@olympus/canvas";
-import { Input } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import {
+	EmptyState,
+	ErrorState,
+	Icon,
+	Input,
+	Label,
+	StatCard,
 	Table,
 	TableBody,
 	TableCell,
@@ -31,8 +28,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@olympus/canvas";
+import { useState } from "react";
+import { ActionBar, AdminLayout, PageHeader, PageTabs } from "@/components/layout";
 import type { IntrospectTokenFormData, OAuth2TokenDetails, TokenFormErrors } from "@/features/oauth2-tokens";
-import type { IntrospectedOAuth2Token } from "@/services/hydra";
 import {
 	enhanceTokenDetails,
 	getDefaultIntrospectTokenFormData,
@@ -42,6 +40,7 @@ import {
 	useTokenIntrospectionManager,
 	validateIntrospectTokenForm,
 } from "@/features/oauth2-tokens";
+import type { IntrospectedOAuth2Token } from "@/services/hydra";
 
 // Type for items returned by the token introspection manager
 type IntrospectedTokenListItem = IntrospectedOAuth2Token & {
@@ -194,11 +193,7 @@ export default function OAuth2TokensPage() {
 									</div>
 									<div className="flex items-center gap-2">
 										<Button type="submit" disabled={isIntrospecting}>
-											{isIntrospecting ? (
-												<Icon name="loading" />
-											) : (
-												<Icon name="search" />
-											)}
+											{isIntrospecting ? <Icon name="loading" /> : <Icon name="search" />}
 											{isIntrospecting ? "Introspecting..." : "Introspect Token"}
 										</Button>
 										<Button variant="outline" type="button" onClick={() => setIntrospectFormData(getDefaultIntrospectTokenFormData())}>
@@ -240,7 +235,7 @@ export default function OAuth2TokensPage() {
 												const statusInfo = getTokenStatusInfo(token);
 												const expValue = token.exp;
 												const expiryDate = expValue ? new Date(expValue * 1000) : null;
-												const isExpired = expiryDate ? expiryDate < new Date() : false;
+												const _isExpired = expiryDate ? expiryDate < new Date() : false;
 
 												return (
 													<TableRow key={token.key}>
@@ -252,49 +247,30 @@ export default function OAuth2TokensPage() {
 														<TableCell>
 															{token.scope ? (
 																<div className="flex flex-wrap gap-1">
-																	{token.scope.split(" ").slice(0, 2).map((scope: string) => (
-																		<Badge key={scope} variant="secondary">
-																			{scope}
-																		</Badge>
-																	))}
-																	{token.scope.split(" ").length > 2 && (
-																		<Badge variant="secondary">
-																			+{token.scope.split(" ").length - 2}
-																		</Badge>
-																	)}
+																	{token.scope
+																		.split(" ")
+																		.slice(0, 2)
+																		.map((scope: string) => (
+																			<Badge key={scope} variant="secondary">
+																				{scope}
+																			</Badge>
+																		))}
+																	{token.scope.split(" ").length > 2 && <Badge variant="secondary">+{token.scope.split(" ").length - 2}</Badge>}
 																</div>
 															) : null}
 														</TableCell>
 														<TableCell>
-															<Badge variant={statusInfo.status === "active" ? "default" : "destructive"}>
-																{statusInfo.displayName}
-															</Badge>
+															<Badge variant={statusInfo.status === "active" ? "default" : "destructive"}>{statusInfo.displayName}</Badge>
 														</TableCell>
 														<TableCell>
-															{expiryDate ? (
-																<span className="text-sm text-muted-foreground">
-																	{expiryDate.toLocaleDateString()}
-																</span>
-															) : (
-																"Never"
-															)}
+															{expiryDate ? <span className="text-sm text-muted-foreground">{expiryDate.toLocaleDateString()}</span> : "Never"}
 														</TableCell>
 														<TableCell>
 															<div className="flex items-center gap-1">
-																<Button
-																	variant="ghost"
-																	size="icon"
-																	onClick={() => handleViewToken(token)}
-																	title="View Details"
-																>
+																<Button variant="ghost" size="icon" onClick={() => handleViewToken(token)} title="View Details">
 																	<Icon name="view" />
 																</Button>
-																<Button
-																	variant="ghost"
-																	size="icon"
-																	onClick={() => handleRevokeClick(token)}
-																	title="Revoke Token"
-																>
+																<Button variant="ghost" size="icon" onClick={() => handleRevokeClick(token)} title="Revoke Token">
 																	<Icon name="delete" />
 																</Button>
 															</div>
@@ -323,25 +299,17 @@ export default function OAuth2TokensPage() {
 							<div className="space-y-4">
 								{/* Status Banner */}
 								<Alert variant={selectedToken.statusInfo?.isActive ? "default" : "destructive"}>
-									{selectedToken.statusInfo?.isActive ? (
-										<Icon name="success" />
-									) : (
-										<Icon name="x-circle" />
-									)}
+									{selectedToken.statusInfo?.isActive ? <Icon name="success" /> : <Icon name="x-circle" />}
 									<AlertDescription>
 										Token is {selectedToken.statusInfo?.isActive ? "active" : "inactive/expired"}
-										{selectedToken.statusInfo?.timeToExpiry && (
-											<> &bull; Expires in {selectedToken.statusInfo.timeToExpiry}</>
-										)}
+										{selectedToken.statusInfo?.timeToExpiry && <> &bull; Expires in {selectedToken.statusInfo.timeToExpiry}</>}
 									</AlertDescription>
 								</Alert>
 
 								<Accordion type="multiple" defaultValue={["basic"]}>
 									{/* Basic Information */}
 									<AccordionItem value="basic">
-										<AccordionTrigger>
-											Basic Information
-										</AccordionTrigger>
+										<AccordionTrigger>Basic Information</AccordionTrigger>
 										<AccordionContent>
 											<div className="grid gap-3">
 												<div className="space-y-1">
@@ -366,9 +334,7 @@ export default function OAuth2TokensPage() {
 
 									{/* Timestamps */}
 									<AccordionItem value="timestamps">
-										<AccordionTrigger>
-											Timestamps
-										</AccordionTrigger>
+										<AccordionTrigger>Timestamps</AccordionTrigger>
 										<AccordionContent>
 											<div className="grid gap-3">
 												<div className="space-y-1">
@@ -391,9 +357,7 @@ export default function OAuth2TokensPage() {
 
 									{/* Scopes and Audience */}
 									<AccordionItem value="scopes">
-										<AccordionTrigger>
-											Scopes &amp; Audience
-										</AccordionTrigger>
+										<AccordionTrigger>Scopes &amp; Audience</AccordionTrigger>
 										<AccordionContent>
 											<div className="grid gap-3">
 												<div className="space-y-1">
@@ -423,7 +387,9 @@ export default function OAuth2TokensPage() {
 							</div>
 						)}
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
+							<Button variant="outline" onClick={() => setViewDialogOpen(false)}>
+								Close
+							</Button>
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
@@ -438,9 +404,7 @@ export default function OAuth2TokensPage() {
 							<p className="text-sm text-muted-foreground">
 								Are you sure you want to revoke this token? This action cannot be undone and will immediately invalidate the token.
 							</p>
-							<code className="block rounded-md bg-muted px-3 py-2 font-mono text-sm">
-								{revokeTokenValue}
-							</code>
+							<code className="block rounded-md bg-muted px-3 py-2 font-mono text-sm">{revokeTokenValue}</code>
 						</div>
 						<DialogFooter>
 							<ActionBar
@@ -465,9 +429,7 @@ export default function OAuth2TokensPage() {
 				{revokeTokenMutation.error && (
 					<Alert variant="destructive">
 						<Icon name="error" />
-						<AlertDescription>
-							Failed to revoke token: {revokeTokenMutation.error.message}
-						</AlertDescription>
+						<AlertDescription>Failed to revoke token: {revokeTokenMutation.error.message}</AlertDescription>
 					</Alert>
 				)}
 			</div>

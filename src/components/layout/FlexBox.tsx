@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import { cn } from "@olympus/canvas";
+import React from "react";
 
 export interface FlexBoxProps extends React.HTMLAttributes<HTMLDivElement> {
 	direction?: "row" | "column";
@@ -45,34 +45,14 @@ const gapMap: Record<number, string> = {
 };
 
 export const FlexBox = React.forwardRef<HTMLDivElement, FlexBoxProps>(
-	(
-		{
-			direction = "row",
-			align = "flex-start",
-			justify = "flex-start",
-			gap,
-			wrap = false,
-			className,
-			style,
-			...rest
-		},
-		ref,
-	) => {
+	({ direction = "row", align = "flex-start", justify = "flex-start", gap, wrap = false, className, style, ...rest }, ref) => {
 		const gapClass = typeof gap === "number" ? gapMap[gap] || "" : "";
 		const gapStyle = typeof gap === "string" ? { gap } : {};
 
 		return (
 			<div
 				ref={ref}
-				className={cn(
-					"flex",
-					directionMap[direction],
-					alignMap[align],
-					justifyMap[justify],
-					gapClass,
-					wrap && "flex-wrap",
-					className,
-				)}
+				className={cn("flex", directionMap[direction], alignMap[align], justifyMap[justify], gapClass, wrap && "flex-wrap", className)}
 				style={{ ...gapStyle, ...style }}
 				{...rest}
 			/>

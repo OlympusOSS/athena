@@ -1,24 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@olympus/canvas";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
+	Badge,
+	Button,
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	ErrorState,
+	Icon,
+	LoadingState,
+	ScrollArea,
+	StatusBadge,
 } from "@olympus/canvas";
-import { ScrollArea } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
 import { formatDate } from "@/lib/date-utils";
 import { disableSession, extendSession, getSession } from "../../../services/kratos/endpoints/sessions";
 
@@ -142,7 +141,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 
 	const timeRemaining = session.expires_at ? getTimeRemaining(session.expires_at) : null;
 	const isExpired = timeRemaining === "Expired";
-	const isExpiringSoon = timeRemaining?.includes("m remaining");
+	const _isExpiringSoon = timeRemaining?.includes("m remaining");
 
 	return (
 		<Dialog open={open} onOpenChange={() => onClose()}>
@@ -171,55 +170,35 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 
 							<div>
 								<div>
-									<span>
-										Session ID
-									</span>
-									<code>
-										{session.id}
-									</code>
+									<span>Session ID</span>
+									<code>{session.id}</code>
 								</div>
 
 								<div>
-									<span>
-										Status
-									</span>
+									<span>Status</span>
 									<div>
 										<StatusBadge status={session.active ? "active" : "inactive"} label={session.active ? "Active" : "Inactive"} showIcon />
 									</div>
 								</div>
 
 								<div>
-									<span>
-										Authenticated At
-									</span>
+									<span>Authenticated At</span>
 									<p>{session.authenticated_at ? formatDate(session.authenticated_at) : "N/A"}</p>
 								</div>
 
 								<div>
-									<span>
-										Issued At
-									</span>
+									<span>Issued At</span>
 									<p>{session.issued_at ? formatDate(session.issued_at) : "N/A"}</p>
 								</div>
 
 								<div>
-									<span>
-										Expires At
-									</span>
-									<p>
-										{session.expires_at ? formatDate(session.expires_at) : "N/A"}
-									</p>
-									{timeRemaining && (
-										<span>
-											{timeRemaining}
-										</span>
-									)}
+									<span>Expires At</span>
+									<p>{session.expires_at ? formatDate(session.expires_at) : "N/A"}</p>
+									{timeRemaining && <span>{timeRemaining}</span>}
 								</div>
 
 								<div>
-									<span>
-										Assurance Level
-									</span>
+									<span>Assurance Level</span>
 									<p>{session.authenticator_assurance_level || "N/A"}</p>
 								</div>
 							</div>
@@ -235,34 +214,24 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 
 								<div>
 									<div>
-										<span>
-											Identity ID
-										</span>
-										<code>
-											{session.identity.id}
-										</code>
+										<span>Identity ID</span>
+										<code>{session.identity.id}</code>
 									</div>
 
 									<div>
-										<span>
-											Display Name
-										</span>
+										<span>Display Name</span>
 										<p>{getIdentityDisplay(session.identity)}</p>
 									</div>
 
 									<div>
-										<span>
-											State
-										</span>
+										<span>State</span>
 										<div>
 											<Badge variant="secondary">{session.identity.state}</Badge>
 										</div>
 									</div>
 
 									<div>
-										<span>
-											Schema ID
-										</span>
+										<span>Schema ID</span>
 										<p>{session.identity.schema_id || "N/A"}</p>
 									</div>
 								</div>
@@ -274,9 +243,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 												<span>Identity Traits</span>
 											</AccordionTrigger>
 											<AccordionContent>
-												<pre>
-													{JSON.stringify(session.identity.traits, null, 2)}
-												</pre>
+												<pre>{JSON.stringify(session.identity.traits, null, 2)}</pre>
 											</AccordionContent>
 										</AccordionItem>
 									</Accordion>
@@ -298,9 +265,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 											<span>{session.authentication_methods.length} method(s) used</span>
 										</AccordionTrigger>
 										<AccordionContent>
-											<pre>
-												{JSON.stringify(session.authentication_methods, null, 2)}
-											</pre>
+											<pre>{JSON.stringify(session.authentication_methods, null, 2)}</pre>
 										</AccordionContent>
 									</AccordionItem>
 								</Accordion>
@@ -321,9 +286,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 											<span>{session.devices.length} device(s) registered</span>
 										</AccordionTrigger>
 										<AccordionContent>
-											<pre>
-												{JSON.stringify(session.devices, null, 2)}
-											</pre>
+											<pre>{JSON.stringify(session.devices, null, 2)}</pre>
 										</AccordionContent>
 									</AccordionItem>
 								</Accordion>
@@ -337,19 +300,11 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 						Close
 					</Button>
 					{session.active && !isExpired && (
-						<Button
-							variant="outline"
-							onClick={handleExtendSession}
-							disabled={actionLoading === "extend"}
-						>
+						<Button variant="outline" onClick={handleExtendSession} disabled={actionLoading === "extend"}>
 							{actionLoading === "extend" ? "Extending..." : "Extend Session"}
 						</Button>
 					)}
-					<Button
-						variant="destructive"
-						onClick={handleRevokeSession}
-						disabled={actionLoading === "delete"}
-					>
+					<Button variant="destructive" onClick={handleRevokeSession} disabled={actionLoading === "delete"}>
 						{actionLoading === "delete" ? "Revoking..." : "Revoke Session"}
 					</Button>
 				</DialogFooter>

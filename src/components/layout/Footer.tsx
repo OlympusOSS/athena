@@ -5,10 +5,6 @@ export function Footer() {
 		<footer>
 			<p>
 				Built by{" "}
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-				>
 				</a>
 			</p>
 		</footer>

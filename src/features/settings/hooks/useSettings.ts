@@ -147,7 +147,13 @@ function readSettingsFromCookies(): {
 }
 
 // Write all settings to cookies
-function writeSettingsToCookies(settings: { kratos: KratosEndpoints; hydra: HydraEndpoints; isOryNetwork: boolean; hydraEnabled: boolean; defaultClientId: string }) {
+function writeSettingsToCookies(settings: {
+	kratos: KratosEndpoints;
+	hydra: HydraEndpoints;
+	isOryNetwork: boolean;
+	hydraEnabled: boolean;
+	defaultClientId: string;
+}) {
 	setCookie("kratos-public-url", settings.kratos.publicUrl);
 	setCookie("kratos-admin-url", settings.kratos.adminUrl);
 	setCookie("kratos-api-key", settings.kratos.apiKey || "");

@@ -1,30 +1,27 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Icon, StatCard } from "@olympus/canvas";
-import { DataTable, SearchBar } from "@olympus/canvas";
 import type { DataTableColumn } from "@olympus/canvas";
-import { EmptyState, ErrorState } from "@olympus/canvas";
-import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Card } from "@olympus/canvas";
 import {
+	Badge,
+	Button,
+	Card,
+	DataTable,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	EmptyState,
+	ErrorState,
+	Icon,
+	SearchBar,
+	StatCard,
 } from "@olympus/canvas";
-import {
-	formatClientId,
-	getClientType,
-	transformOAuth2ClientForTable,
-	useAllOAuth2Clients,
-	useDeleteOAuth2Client,
-} from "@/features/oauth2-clients";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
+import { formatClientId, getClientType, transformOAuth2ClientForTable, useAllOAuth2Clients, useDeleteOAuth2Client } from "@/features/oauth2-clients";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
 import { useDialog } from "@/hooks";
 import type { OAuth2Client } from "@/services/hydra";
@@ -146,11 +143,7 @@ export default function OAuth2ClientsPage() {
 							{grantType.replace("_", " ")}
 						</Badge>
 					))}
-					{value?.length > 2 && (
-						<Badge variant="outline">
-							+{value.length - 2}
-						</Badge>
-					)}
+					{value?.length > 2 && <Badge variant="outline">+{value.length - 2}</Badge>}
 				</div>
 			),
 		},
@@ -166,11 +159,7 @@ export default function OAuth2ClientsPage() {
 							{scope}
 						</Badge>
 					))}
-					{value?.length > 3 && (
-						<Badge variant="outline">
-							+{value.length - 3}
-						</Badge>
-					)}
+					{value?.length > 3 && <Badge variant="outline">+{value.length - 3}</Badge>}
 				</div>
 			),
 		},
@@ -180,11 +169,7 @@ export default function OAuth2ClientsPage() {
 			width: 120,
 			renderCell: (_value: any, row: any) => {
 				const clientType = getClientType(row as OAuth2Client);
-				return (
-					<Badge variant={clientType === "confidential" ? "default" : "secondary"}>
-						{clientType}
-					</Badge>
-				);
+				return <Badge variant={clientType === "confidential" ? "default" : "secondary"}>{clientType}</Badge>;
 			},
 		},
 		{
@@ -211,11 +196,7 @@ export default function OAuth2ClientsPage() {
 		return (
 			<ProtectedPage>
 				<div className="space-y-6">
-					<PageHeader
-						title="OAuth2 Clients"
-						subtitle="Manage OAuth2 client applications and their configurations"
-						icon={<Icon name="grid" />}
-					/>
+					<PageHeader title="OAuth2 Clients" subtitle="Manage OAuth2 client applications and their configurations" icon={<Icon name="grid" />} />
 					<Card>
 						<EmptyState
 							icon={<Icon name="cloud-off" />}
@@ -254,12 +235,7 @@ export default function OAuth2ClientsPage() {
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					<StatCard title="Total Clients" value={clientsData?.totalCount || 0} icon={<Icon name="users" />} colorVariant="primary" />
-					<StatCard
-						title="Public Clients"
-						value={clients.filter((c) => !c.client_secret).length}
-						icon={<Icon name="globe" />}
-						colorVariant="blue"
-					/>
+					<StatCard title="Public Clients" value={clients.filter((c) => !c.client_secret).length} icon={<Icon name="globe" />} colorVariant="blue" />
 					<StatCard
 						title="Confidential Clients"
 						value={clients.filter((c) => !!c.client_secret).length}
@@ -280,9 +256,7 @@ export default function OAuth2ClientsPage() {
 				</SectionCard>
 
 				{/* Error Display */}
-				{error && (
-					<ErrorState variant="inline" message={`Failed to load OAuth2 clients: ${error.message}`} />
-				)}
+				{error && <ErrorState variant="inline" message={`Failed to load OAuth2 clients: ${error.message}`} />}
 
 				{/* Data Table */}
 				<Card>
@@ -342,9 +316,7 @@ export default function OAuth2ClientsPage() {
 					<DialogContent>
 						<DialogHeader>
 							<DialogTitle>Delete OAuth2 Client</DialogTitle>
-							<DialogDescription>
-								Are you sure you want to delete this OAuth2 client? This action cannot be undone.
-							</DialogDescription>
+							<DialogDescription>Are you sure you want to delete this OAuth2 client? This action cannot be undone.</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
 							<ActionBar

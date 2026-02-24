@@ -1,27 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useMemo, useRef, useState } from "react";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { ActionBar, ProtectedPage } from "@/components/layout";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Card, CardContent, CardHeader, CardTitle } from "@olympus/canvas";
 import {
+	Badge,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@olympus/canvas";
-import {
+	ErrorState,
+	Icon,
+	LoadingState,
+	StatusBadge,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@olympus/canvas";
+import { useRouter } from "next/navigation";
+import { use, useMemo, useRef, useState } from "react";
+import { ActionBar, ProtectedPage } from "@/components/layout";
 import {
 	getClientType,
 	getGrantTypeDisplayName,
@@ -115,13 +118,9 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								<LoadingState variant="inline" />
 							) : (
 								<>
-									<h1 className="text-2xl font-bold text-foreground">
-										{client?.client_name || "Unnamed Client"}
-									</h1>
+									<h1 className="text-2xl font-bold text-foreground">{client?.client_name || "Unnamed Client"}</h1>
 									<div className="flex items-center gap-2">
-										<code className="text-xs font-mono text-muted-foreground">
-											{client?.client_id}
-										</code>
+										<code className="text-xs font-mono text-muted-foreground">{client?.client_id}</code>
 										{client?.client_id && (
 											<TooltipProvider delayDuration={0}>
 												<Tooltip>
@@ -135,18 +134,11 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 															<Icon name="copy" />
 														</Button>
 													</TooltipTrigger>
-													<TooltipContent>
-														{copiedField === "client_id" ? "Copied!" : "Copy Client ID"}
-													</TooltipContent>
+													<TooltipContent>{copiedField === "client_id" ? "Copied!" : "Copy Client ID"}</TooltipContent>
 												</Tooltip>
 											</TooltipProvider>
 										)}
-										{clientType && (
-											<StatusBadge
-												status={clientType.toLowerCase() === "public" ? "active" : "inactive"}
-												label={clientType}
-											/>
-										)}
+										{clientType && <StatusBadge status={clientType.toLowerCase() === "public" ? "active" : "inactive"} label={clientType} />}
 									</div>
 								</>
 							)}
@@ -159,13 +151,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								<Icon name="edit" />
 								Edit
 							</Button>
-							<Button
-								ref={menuButtonRef}
-								variant="ghost"
-								size="icon"
-								onClick={handleMenuClick}
-								aria-label="More options"
-							>
+							<Button ref={menuButtonRef} variant="ghost" size="icon" onClick={handleMenuClick} aria-label="More options">
 								<Icon name="more-vertical" />
 							</Button>
 						</div>
@@ -190,29 +176,18 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								) : (
 									<div className="space-y-4">
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Client Name
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Client Name</p>
 											<p className="text-sm text-foreground">{client?.client_name || "Not specified"}</p>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Owner
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Owner</p>
 											<p className="text-sm text-foreground">{client?.owner || "Not specified"}</p>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Client URI
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Client URI</p>
 											<p className="text-sm text-foreground">
 												{client?.client_uri ? (
-													<a
-														className="text-sm text-primary hover:underline"
-														href={client.client_uri}
-														target="_blank"
-														rel="noopener noreferrer"
-													>
+													<a className="text-sm text-primary hover:underline" href={client.client_uri} target="_blank" rel="noopener noreferrer">
 														{client.client_uri}
 													</a>
 												) : (
@@ -221,17 +196,10 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 											</p>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Logo URI
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Logo URI</p>
 											<p className="text-sm text-foreground">
 												{client?.logo_uri ? (
-													<a
-														className="text-sm text-primary hover:underline"
-														href={client.logo_uri}
-														target="_blank"
-														rel="noopener noreferrer"
-													>
+													<a className="text-sm text-primary hover:underline" href={client.logo_uri} target="_blank" rel="noopener noreferrer">
 														{client.logo_uri}
 													</a>
 												) : (
@@ -259,37 +227,27 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								) : (
 									<div className="space-y-4">
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Grant Types
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Grant Types</p>
 											<div className="flex flex-wrap gap-1">
 												{client?.grant_types?.map((grantType) => (
 													<Badge key={grantType} variant="outline">
 														{getGrantTypeDisplayName(grantType)}
 													</Badge>
-												)) || (
-													<span className="text-sm text-muted-foreground">None specified</span>
-												)}
+												)) || <span className="text-sm text-muted-foreground">None specified</span>}
 											</div>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Response Types
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Response Types</p>
 											<div className="flex flex-wrap gap-1">
 												{client?.response_types?.map((responseType) => (
 													<Badge key={responseType} variant="secondary">
 														{getResponseTypeDisplayName(responseType)}
 													</Badge>
-												)) || (
-													<span className="text-sm text-muted-foreground">None specified</span>
-												)}
+												)) || <span className="text-sm text-muted-foreground">None specified</span>}
 											</div>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Scopes
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Scopes</p>
 											<div className="flex flex-wrap gap-1">
 												{client?.scope ? (
 													client.scope
@@ -321,25 +279,16 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								) : client?.redirect_uris?.length ? (
 									<ul className="space-y-2">
 										{client.redirect_uris.map((uri, index) => (
-											<li
-												key={index}
-												className="flex items-center gap-2 rounded-md border border-border px-3 py-2"
-											>
+											<li key={index} className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
 												<code className="flex-1 font-mono text-sm text-foreground">{uri}</code>
 												<TooltipProvider delayDuration={0}>
 													<Tooltip>
 														<TooltipTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																onClick={() => copyToClipboard(uri, `redirect_${index}`)}
-															>
+															<Button variant="ghost" size="icon" onClick={() => copyToClipboard(uri, `redirect_${index}`)}>
 																<Icon name="copy" />
 															</Button>
 														</TooltipTrigger>
-														<TooltipContent>
-															{copiedField === `redirect_${index}` ? "Copied!" : "Copy URI"}
-														</TooltipContent>
+														<TooltipContent>{copiedField === `redirect_${index}` ? "Copied!" : "Copy URI"}</TooltipContent>
 													</Tooltip>
 												</TooltipProvider>
 											</li>
@@ -366,33 +315,23 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								<CardContent>
 									<div className="space-y-3">
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Client ID
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Client ID</p>
 											<div className="flex items-center gap-2">
 												<code className="rounded bg-muted px-2 py-1 font-mono text-sm">{client.client_id}</code>
 												<TooltipProvider delayDuration={0}>
 													<Tooltip>
 														<TooltipTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																onClick={() => copyToClipboard(client.client_id!, "client_id_sidebar")}
-															>
+															<Button variant="ghost" size="icon" onClick={() => copyToClipboard(client.client_id!, "client_id_sidebar")}>
 																<Icon name="copy" />
 															</Button>
 														</TooltipTrigger>
-														<TooltipContent>
-															{copiedField === "client_id_sidebar" ? "Copied!" : "Copy"}
-														</TooltipContent>
+														<TooltipContent>{copiedField === "client_id_sidebar" ? "Copied!" : "Copy"}</TooltipContent>
 													</Tooltip>
 												</TooltipProvider>
 											</div>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Client Secret
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Client Secret</p>
 											<div className="flex items-center gap-2">
 												<span className="font-mono text-sm text-muted-foreground">{"*".repeat(32)}</span>
 												<TooltipProvider delayDuration={0}>
@@ -406,9 +345,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 													</Tooltip>
 												</TooltipProvider>
 											</div>
-											<p className="text-xs text-muted-foreground">
-												Secret cannot be displayed for security reasons
-											</p>
+											<p className="text-xs text-muted-foreground">Secret cannot be displayed for security reasons</p>
 										</div>
 									</div>
 								</CardContent>
@@ -426,24 +363,16 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								) : (
 									<div className="space-y-4">
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Subject Type
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Subject Type</p>
 											<p className="text-sm text-foreground">{client?.subject_type || "public"}</p>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Token Endpoint Auth Method
-											</p>
-											<p className="text-sm text-foreground">
-												{client?.token_endpoint_auth_method || "client_secret_basic"}
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Token Endpoint Auth Method</p>
+											<p className="text-sm text-foreground">{client?.token_endpoint_auth_method || "client_secret_basic"}</p>
 										</div>
 										{client?.userinfo_signed_response_alg && (
 											<div className="space-y-1">
-												<p className="text-sm font-medium text-muted-foreground">
-													UserInfo Signed Response Algorithm
-												</p>
+												<p className="text-sm font-medium text-muted-foreground">UserInfo Signed Response Algorithm</p>
 												<p className="text-sm text-foreground">{client.userinfo_signed_response_alg}</p>
 											</div>
 										)}
@@ -463,22 +392,16 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								) : (
 									<div className="space-y-4">
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Created
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Created</p>
 											<p className="text-sm text-foreground">{formatTimestamp(client?.created_at)}</p>
 										</div>
 										<div className="space-y-1">
-											<p className="text-sm font-medium text-muted-foreground">
-												Last Updated
-											</p>
+											<p className="text-sm font-medium text-muted-foreground">Last Updated</p>
 											<p className="text-sm text-foreground">{formatTimestamp(client?.updated_at)}</p>
 										</div>
 										{client?.audience?.length ? (
 											<div className="space-y-1">
-												<p className="text-sm font-medium text-muted-foreground">
-													Audience
-												</p>
+												<p className="text-sm font-medium text-muted-foreground">Audience</p>
 												<div className="flex flex-wrap gap-1">
 													{client.audience.map((aud, index) => (
 														<Badge key={index} variant="outline">
@@ -530,8 +453,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 							<DialogTitle>Delete OAuth2 Client</DialogTitle>
 							<DialogDescription>
 								Are you sure you want to delete the client &quot;
-								{client?.client_name || client?.client_id}&quot;? This action cannot be undone and will
-								invalidate all tokens issued to this client.
+								{client?.client_name || client?.client_id}&quot;? This action cannot be undone and will invalidate all tokens issued to this client.
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>

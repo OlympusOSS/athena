@@ -1,8 +1,23 @@
 "use client";
 
+import {
+	Avatar,
+	AvatarFallback,
+	Button,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+	Icon,
+	Separator,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, AvatarFallback, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Icon, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, cn } from "@olympus/canvas";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
 import { APP_TITLE } from "@/lib/constants";
 import { useTheme } from "@/providers/ThemeProvider";
@@ -26,30 +41,16 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 					<TooltipProvider delayDuration={0}>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={onToggleSidebar}
-								>
-									{sidebarOpen ? (
-										<Icon name="panel-left" />
-									) : (
-										<Icon name="menu" />
-									)}
+								<Button variant="ghost" size="icon" onClick={onToggleSidebar}>
+									{sidebarOpen ? <Icon name="panel-left" /> : <Icon name="menu" />}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent>
-								{sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-							</TooltipContent>
+							<TooltipContent>{sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>
 
 					{/* Show title when sidebar is collapsed */}
-					{!sidebarOpen && (
-						<span className="text-sm font-semibold text-foreground">
-							{APP_TITLE}
-						</span>
-					)}
+					{!sidebarOpen && <span className="text-sm font-semibold text-foreground">{APP_TITLE}</span>}
 				</div>
 
 				{/* Right side actions */}
@@ -58,11 +59,7 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 						{/* Settings */}
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									asChild
-								>
+								<Button variant="ghost" size="icon" asChild>
 									<Link href="/settings">
 										<Icon name="settings" />
 									</Link>
@@ -74,21 +71,11 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 						{/* Theme toggle */}
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={toggleTheme}
-								>
-									{theme === "dark" ? (
-										<Icon name="sun" />
-									) : (
-										<Icon name="moon" />
-									)}
+								<Button variant="ghost" size="icon" onClick={toggleTheme}>
+									{theme === "dark" ? <Icon name="sun" /> : <Icon name="moon" />}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent>
-								Switch to {theme === "dark" ? "light" : "dark"} mode
-							</TooltipContent>
+							<TooltipContent>Switch to {theme === "dark" ? "light" : "dark"} mode</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>
 
@@ -97,14 +84,9 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 					{/* User menu */}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								className="gap-2"
-							>
+							<Button variant="ghost" className="gap-2">
 								<Avatar className="h-7 w-7">
-									<AvatarFallback className="text-xs">
-										{user?.displayName?.charAt(0) || "U"}
-									</AvatarFallback>
+									<AvatarFallback className="text-xs">{user?.displayName?.charAt(0) || "U"}</AvatarFallback>
 								</Avatar>
 							</Button>
 						</DropdownMenuTrigger>
@@ -113,27 +95,19 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 								<>
 									<div className="px-3 py-2">
 										<p className="text-sm font-medium">{user.displayName}</p>
-										<p className="text-xs text-muted-foreground">
-											{user.email}
-										</p>
+										<p className="text-xs text-muted-foreground">{user.email}</p>
 									</div>
 									<DropdownMenuSeparator />
 								</>
 							)}
-							<DropdownMenuItem
-								asChild
-								disabled={pathname === "/profile"}
-							>
+							<DropdownMenuItem asChild disabled={pathname === "/profile"}>
 								<Link href="/profile">
 									<Icon name="user" className="mr-2 h-4 w-4" />
 									Profile
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onClick={() => logout()}
-								className="text-destructive focus:text-destructive"
-							>
+							<DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive">
 								<Icon name="logout" className="mr-2 h-4 w-4" />
 								Logout
 							</DropdownMenuItem>

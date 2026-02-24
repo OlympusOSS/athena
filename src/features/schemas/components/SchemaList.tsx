@@ -1,10 +1,8 @@
 "use client";
 
+import { Badge, EmptyState, Icon, LoadingState } from "@olympus/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import type React from "react";
-import { EmptyState, Icon, LoadingState } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
 import { formatSchemaForDisplay } from "../utils";
 
 interface SchemaListProps {
@@ -35,23 +33,17 @@ const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchem
 		<div>
 			{schemas.map((schema) => {
 				const formattedSchema = formatSchemaForDisplay(schema);
-				const isSelected = selectedSchemaId === schema.id;
+				const _isSelected = selectedSchemaId === schema.id;
 
 				return (
-					<button
-						key={schema.id}
-						type="button"
-						onClick={() => onSchemaSelect(schema)}
-					>
+					<button key={schema.id} type="button" onClick={() => onSchemaSelect(schema)}>
 						<div>
 							<Icon name="file-code" />
 						</div>
 						<div>
 							<div>
 								<span>{formattedSchema.displayName}</span>
-								{formattedSchema.isDefault && (
-									<Badge variant="secondary">Default</Badge>
-								)}
+								{formattedSchema.isDefault && <Badge variant="secondary">Default</Badge>}
 							</div>
 							<p>{formattedSchema.description}</p>
 							<span>

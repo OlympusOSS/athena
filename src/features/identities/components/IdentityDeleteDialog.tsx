@@ -1,16 +1,18 @@
-import type { Identity } from "@ory/kratos-client";
-import type React from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Icon,
 } from "@olympus/canvas";
+import type { Identity } from "@ory/kratos-client";
+import type React from "react";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentity } from "../hooks/useIdentities";
 
@@ -44,21 +46,24 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 		name?.first && name?.last ? `${name.first} ${name.last}` : (traits?.username as string) || (traits?.email as string) || "Unknown User";
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+		<Dialog
+			open={open}
+			onOpenChange={(isOpen: boolean) => {
+				if (!isOpen) onClose();
+			}}
+		>
 			<DialogContent
-				onInteractOutside={(e: Event) => { if (deleteIdentityMutation.isPending) e.preventDefault(); }}
+				onInteractOutside={(e: Event) => {
+					if (deleteIdentityMutation.isPending) e.preventDefault();
+				}}
 			>
 				<DialogHeader>
 					<DialogTitle>Delete Identity</DialogTitle>
-					<DialogDescription>
-						Confirm deletion of identity
-					</DialogDescription>
+					<DialogDescription>Confirm deletion of identity</DialogDescription>
 				</DialogHeader>
 
 				<div>
-					<p>
-						Are you sure you want to delete this identity? This action cannot be undone.
-					</p>
+					<p>Are you sure you want to delete this identity? This action cannot be undone.</p>
 
 					{/* Identity Information */}
 					<div>
@@ -69,13 +74,9 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 
 						<code>ID: {identity.id}</code>
 
-						{(traits?.email as string) && (
-							<p>Email: {traits.email as string}</p>
-						)}
+						{(traits?.email as string) && <p>Email: {traits.email as string}</p>}
 
-						{(traits?.username as string) && (
-							<p>Username: {traits.username as string}</p>
-						)}
+						{(traits?.username as string) && <p>Username: {traits.username as string}</p>}
 					</div>
 
 					<Alert variant="destructive">
@@ -95,25 +96,15 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 
 					{deleteIdentityMutation.isError && (
 						<Alert variant="destructive">
-							<AlertDescription>
-								Failed to delete identity: {(deleteIdentityMutation.error as Error)?.message || "Unknown error"}
-							</AlertDescription>
+							<AlertDescription>Failed to delete identity: {(deleteIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 						</Alert>
 					)}
 
 					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={onClose}
-							disabled={deleteIdentityMutation.isPending}
-						>
+						<Button variant="outline" onClick={onClose} disabled={deleteIdentityMutation.isPending}>
 							Cancel
 						</Button>
-						<Button
-							variant="destructive"
-							onClick={handleDelete}
-							disabled={deleteIdentityMutation.isPending}
-						>
+						<Button variant="destructive" onClick={handleDelete} disabled={deleteIdentityMutation.isPending}>
 							{deleteIdentityMutation.isPending ? "Deleting..." : "Delete Identity"}
 						</Button>
 					</DialogFooter>

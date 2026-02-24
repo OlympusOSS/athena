@@ -1,15 +1,17 @@
-import type React from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Icon,
 } from "@olympus/canvas";
+import type React from "react";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentityCredentials } from "../hooks/useIdentities";
 
@@ -65,21 +67,24 @@ export const CredentialDeleteDialog: React.FC<CredentialDeleteDialogProps> = ({
 	const typeLabel = CREDENTIAL_TYPE_LABELS[credentialType] || credentialType;
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+		<Dialog
+			open={open}
+			onOpenChange={(isOpen: boolean) => {
+				if (!isOpen) onClose();
+			}}
+		>
 			<DialogContent
-				onInteractOutside={(e: Event) => { if (deleteCredentialMutation.isPending) e.preventDefault(); }}
+				onInteractOutside={(e: Event) => {
+					if (deleteCredentialMutation.isPending) e.preventDefault();
+				}}
 			>
 				<DialogHeader>
 					<DialogTitle>Delete Credential</DialogTitle>
-					<DialogDescription>
-						Confirm deletion of credential
-					</DialogDescription>
+					<DialogDescription>Confirm deletion of credential</DialogDescription>
 				</DialogHeader>
 
 				<div>
-					<p>
-						Are you sure you want to delete this credential? This action cannot be undone.
-					</p>
+					<p>Are you sure you want to delete this credential? This action cannot be undone.</p>
 
 					{/* Credential Information */}
 					<div>
@@ -122,18 +127,10 @@ export const CredentialDeleteDialog: React.FC<CredentialDeleteDialogProps> = ({
 					)}
 
 					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={onClose}
-							disabled={deleteCredentialMutation.isPending}
-						>
+						<Button variant="outline" onClick={onClose} disabled={deleteCredentialMutation.isPending}>
 							Cancel
 						</Button>
-						<Button
-							variant="destructive"
-							onClick={handleDelete}
-							disabled={deleteCredentialMutation.isPending}
-						>
+						<Button variant="destructive" onClick={handleDelete} disabled={deleteCredentialMutation.isPending}>
 							{deleteCredentialMutation.isPending ? "Deleting..." : "Delete Credential"}
 						</Button>
 					</DialogFooter>

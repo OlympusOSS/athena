@@ -1,10 +1,8 @@
 "use client";
 
+import { Badge, LoadingState } from "@olympus/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import type React from "react";
-import { LoadingState } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import { ScrollArea } from "@olympus/canvas";
 import { extractSchemaFields, formatSchemaForDisplay } from "../utils";
 
 interface SchemaViewerProps {
@@ -29,23 +27,15 @@ const SchemaViewer: React.FC<SchemaViewerProps> = ({ schema, loading = false }) 
 		<div>
 			<h2>{formattedSchema.displayName}</h2>
 
-			<p>
-				{formattedSchema.description}
-			</p>
+			<p>{formattedSchema.description}</p>
 
 			<div>
-				<span>
-					Schema ID: {schema.id}
-				</span>
-				{formattedSchema.isDefault && (
-					<Badge>Default Schema</Badge>
-				)}
+				<span>Schema ID: {schema.id}</span>
+				{formattedSchema.isDefault && <Badge>Default Schema</Badge>}
 			</div>
 
 			<div>
-				<span>
-					Fields ({formattedSchema.fieldCount}):
-				</span>
+				<span>Fields ({formattedSchema.fieldCount}):</span>
 				<div>
 					{fields.map((field) => (
 						<Badge key={field} variant="secondary">
@@ -56,12 +46,8 @@ const SchemaViewer: React.FC<SchemaViewerProps> = ({ schema, loading = false }) 
 			</div>
 
 			<div>
-				<span>
-					Schema Definition:
-				</span>
-				<pre>
-					{JSON.stringify(schemaObj, null, 2)}
-				</pre>
+				<span>Schema Definition:</span>
+				<pre>{JSON.stringify(schemaObj, null, 2)}</pre>
 			</div>
 		</div>
 	);

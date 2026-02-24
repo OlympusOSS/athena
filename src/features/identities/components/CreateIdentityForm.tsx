@@ -1,14 +1,24 @@
+import {
+	Alert,
+	AlertDescription,
+	Button,
+	Icon,
+	Label,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympus/canvas";
+import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
-import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { Alert, AlertDescription, Icon } from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
-import { Skeleton } from "@olympus/canvas";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { useCreateIdentity } from "../hooks/useIdentities";
 import {
@@ -111,19 +121,13 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 
 	return (
 		<div>
-			<h2>
-				Create New Identity
-			</h2>
+			<h2>Create New Identity</h2>
 
-			<p>
-				Create a new user identity in your Kratos instance. Select a schema to see the required fields.
-			</p>
+			<p>Create a new user identity in your Kratos instance. Select a schema to see the required fields.</p>
 
 			{createIdentityMutation.isError && (
 				<Alert variant="destructive">
-					<AlertDescription>
-						Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}
-					</AlertDescription>
+					<AlertDescription>Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 				</Alert>
 			)}
 
@@ -132,11 +136,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 					<Label htmlFor="identity-schema">
 						Identity Schema <span>*</span>
 					</Label>
-					<Select
-						value={selectedSchemaId}
-						onValueChange={handleSchemaChange}
-						disabled={createIdentityMutation.isPending}
-					>
+					<Select value={selectedSchemaId} onValueChange={handleSchemaChange} disabled={createIdentityMutation.isPending}>
 						<SelectTrigger id="identity-schema">
 							<SelectValue placeholder="Select a schema..." />
 						</SelectTrigger>
@@ -145,13 +145,9 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 								<TooltipProvider key={schema.id} delayDuration={0}>
 									<Tooltip>
 										<TooltipTrigger asChild>
-											<SelectItem value={schema.id || ""}>
-												{(schema.schema as Record<string, unknown>)?.title as string || schema.id}
-											</SelectItem>
+											<SelectItem value={schema.id || ""}>{((schema.schema as Record<string, unknown>)?.title as string) || schema.id}</SelectItem>
 										</TooltipTrigger>
-										<TooltipContent side="right">
-											Schema ID: {schema.id}
-										</TooltipContent>
+										<TooltipContent side="right">Schema ID: {schema.id}</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
 							))}
@@ -165,8 +161,12 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							schema={formSchema}
 							uiSchema={createUISchema(formSchema)}
 							formData={formData}
-							onChange={(data: IChangeEvent) => { if (data.formData) setFormData(data.formData); }}
-							onSubmit={(data: IChangeEvent) => { if (data.formData) handleSubmit(data.formData as Record<string, unknown>); }}
+							onChange={(data: IChangeEvent) => {
+								if (data.formData) setFormData(data.formData);
+							}}
+							onSubmit={(data: IChangeEvent) => {
+								if (data.formData) handleSubmit(data.formData as Record<string, unknown>);
+							}}
 							validator={validator}
 							customValidate={(_, errors) => {
 								// Allow submission even with empty optional fields
@@ -182,24 +182,12 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							}}
 						>
 							<div>
-								<Button
-									variant="outline"
-									onClick={handleCancel}
-									disabled={createIdentityMutation.isPending}
-									type="button"
-								>
+								<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending} type="button">
 									<Icon name="close" />
 									Cancel
 								</Button>
-								<Button
-									type="submit"
-									disabled={createIdentityMutation.isPending || !selectedSchemaId}
-								>
-									{createIdentityMutation.isPending ? (
-										<Icon name="loading" />
-									) : (
-										<Icon name="save" />
-									)}
+								<Button type="submit" disabled={createIdentityMutation.isPending || !selectedSchemaId}>
+									{createIdentityMutation.isPending ? <Icon name="loading" /> : <Icon name="save" />}
 									{createIdentityMutation.isPending ? "Creating..." : "Create Identity"}
 								</Button>
 							</div>
@@ -213,9 +201,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							<Icon name="close" />
 							Cancel
 						</Button>
-						<Button disabled>
-							No form fields available
-						</Button>
+						<Button disabled>No form fields available</Button>
 					</div>
 				)}
 			</div>

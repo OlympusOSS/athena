@@ -1,10 +1,9 @@
 "use client";
 
+import { Button, ErrorState, Icon, LoadingState } from "@olympus/canvas";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
-import { ErrorState, Icon, LoadingState } from "@olympus/canvas";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@olympus/canvas";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
 import {
 	OAuth2ClientForm,

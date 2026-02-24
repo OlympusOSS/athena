@@ -1,8 +1,8 @@
 "use client";
 
+import { Icon } from "@olympus/canvas";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Icon } from "@olympus/canvas";
 import { useCheckSession, useIsAuthenticated, useIsAuthLoading } from "@/features/auth/hooks/useAuth";
 
 interface AuthProviderProps {

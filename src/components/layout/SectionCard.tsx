@@ -1,7 +1,7 @@
 "use client";
 
+import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, cn, Icon } from "@olympus/canvas";
 import type { ReactNode } from "react";
-import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, Icon, cn } from "@olympus/canvas";
 
 export interface SectionCardProps {
 	title?: string | ReactNode;
@@ -33,26 +33,10 @@ export function SectionCard({
 			{(title || subtitle || headerActions) && (
 				<CardHeader>
 					<div className="flex flex-1 flex-col gap-1">
-						{title && (
-							<>
-								{typeof title === "string" ? (
-									<CardTitle>
-										{title}
-									</CardTitle>
-								) : (
-									title
-								)}
-							</>
-						)}
-						{subtitle && (
-							<p className="text-sm text-muted-foreground">{subtitle}</p>
-						)}
+						{title && <>{typeof title === "string" ? <CardTitle>{title}</CardTitle> : title}</>}
+						{subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
 					</div>
-					{headerActions && (
-						<div className="flex items-center gap-2">
-							{headerActions}
-						</div>
-					)}
+					{headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
 				</CardHeader>
 			)}
 
@@ -64,9 +48,7 @@ export function SectionCard({
 				) : error ? (
 					<Alert variant="destructive">
 						<Icon name="error" className="h-4 w-4" />
-						<AlertDescription>
-							{typeof error === "string" ? error : "An error occurred"}
-						</AlertDescription>
+						<AlertDescription>{typeof error === "string" ? error : "An error occurred"}</AlertDescription>
 					</Alert>
 				) : emptyMessage && !children ? (
 					<div className="flex items-center justify-center py-8 text-center">

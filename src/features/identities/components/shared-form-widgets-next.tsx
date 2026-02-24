@@ -1,28 +1,10 @@
 "use client";
 
-import type {
-	FieldTemplateProps,
-	ObjectFieldTemplateProps,
-	SubmitButtonProps,
-	WidgetProps,
-} from "@rjsf/utils";
-import parsePhoneNumber, {
-	type CountryCode,
-	getCountries,
-	getCountryCallingCode,
-	isValidPhoneNumber,
-} from "libphonenumber-js";
-import React, { useCallback, useEffect, useState } from "react";
-import { Input } from "@olympus/canvas";
-import { Label } from "@olympus/canvas";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
+import type { FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps, WidgetProps } from "@rjsf/utils";
+import parsePhoneNumber, { type CountryCode, getCountries, getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ----- Country options -----
 
@@ -30,9 +12,7 @@ export const getCountryOptions = () => {
 	return getCountries()
 		.map((countryCode) => {
 			const callingCode = getCountryCallingCode(countryCode);
-			const name =
-				new Intl.DisplayNames(["en"], { type: "region" }).of(countryCode) ||
-				countryCode;
+			const name = new Intl.DisplayNames(["en"], { type: "region" }).of(countryCode) || countryCode;
 			return {
 				code: countryCode,
 				name,
@@ -45,22 +25,11 @@ export const getCountryOptions = () => {
 
 // ----- TelWidget -----
 
-export const TelWidget: React.FC<WidgetProps> = ({
-	id,
-	value,
-	onChange,
-	onBlur,
-	onFocus,
-	placeholder,
-	disabled,
-	readonly,
-	required,
-	label,
-}) => {
+export const TelWidget: React.FC<WidgetProps> = ({ id, value, onChange, onBlur, onFocus, placeholder, disabled, readonly, required, label }) => {
 	const [selectedCountry, setSelectedCountry] = useState<CountryCode>("US");
 	const [phoneInput, setPhoneInput] = useState("");
 	const [error, setError] = useState("");
-	const [validity, setValidity] = useState<boolean | null>(null);
+	const [_validity, setValidity] = useState<boolean | null>(null);
 
 	const countryOptions = getCountryOptions();
 
@@ -143,11 +112,7 @@ export const TelWidget: React.FC<WidgetProps> = ({
 				{required && <span>*</span>}
 			</Label>
 			<div>
-				<Select
-					value={selectedCountry}
-					onValueChange={handleCountryChange}
-					disabled={disabled || readonly}
-				>
+				<Select value={selectedCountry} onValueChange={handleCountryChange} disabled={disabled || readonly}>
 					<SelectTrigger>
 						<SelectValue />
 					</SelectTrigger>
@@ -167,20 +132,13 @@ export const TelWidget: React.FC<WidgetProps> = ({
 					onChange={(e) => handlePhoneChange(e.target.value)}
 					onBlur={() => onBlur?.(id, value)}
 					onFocus={() => onFocus?.(id, value)}
-					placeholder={
-						placeholder ||
-						`Enter phone number (${currentCountry?.callingCode})`
-					}
+					placeholder={placeholder || `Enter phone number (${currentCountry?.callingCode})`}
 					disabled={disabled}
 					readOnly={readonly}
 				/>
 			</div>
 			{error && <p>{error}</p>}
-			{!error && currentCountry && (
-				<p>
-					Format: {currentCountry.callingCode} XXX XXX XXXX
-				</p>
-			)}
+			{!error && currentCountry && <p>Format: {currentCountry.callingCode} XXX XXX XXXX</p>}
 		</div>
 	);
 };
@@ -201,7 +159,7 @@ export const TextWidget: React.FC<WidgetProps> = ({
 	label,
 }) => {
 	const isEmail = schema.format === "email";
-	const [validity, setValidity] = useState<boolean | null>(null);
+	const [_validity, setValidity] = useState<boolean | null>(null);
 
 	const validateField = useCallback(
 		(v: string) => {
@@ -275,11 +233,7 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 				{label}
 				{required && <span>*</span>}
 			</Label>
-			<Select
-				value={value || ""}
-				onValueChange={(v) => onChange(v === "" ? undefined : v)}
-				disabled={disabled || readonly}
-			>
+			<Select value={value || ""} onValueChange={(v) => onChange(v === "" ? undefined : v)} disabled={disabled || readonly}>
 				<SelectTrigger id={id}>
 					<SelectValue placeholder={placeholder || "Select..."} />
 				</SelectTrigger>
@@ -297,44 +251,24 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 
 // ----- Templates -----
 
-export const FieldTemplate: React.FC<FieldTemplateProps> = ({
-	children,
-	description,
-	errors,
-	help,
-	hidden,
-}) => {
+export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, description, errors, help, hidden }) => {
 	if (hidden) return <div>{children}</div>;
 
 	return (
 		<div>
 			{children}
-			{description && (
-				<p>{description}</p>
-			)}
-			{errors && (
-				<p>{errors}</p>
-			)}
-			{help && (
-				<p>{help}</p>
-			)}
+			{description && <p>{description}</p>}
+			{errors && <p>{errors}</p>}
+			{help && <p>{help}</p>}
 		</div>
 	);
 };
 
-export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = ({
-	title,
-	description,
-	properties,
-}) => {
+export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = ({ title, description, properties }) => {
 	return (
 		<div>
-			{title && (
-				<h3>{title}</h3>
-			)}
-			{description && (
-				<p>{description}</p>
-			)}
+			{title && <h3>{title}</h3>}
+			{description && <p>{description}</p>}
 			<div>
 				{properties.map((prop) => (
 					<div key={prop.name}>{prop.content}</div>

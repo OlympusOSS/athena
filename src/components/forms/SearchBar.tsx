@@ -1,7 +1,7 @@
 "use client";
 
+import { Badge, Button, Icon, Input } from "@olympus/canvas";
 import type React from "react";
-import { Badge, Button, Icon, Input, cn } from "@olympus/canvas";
 
 export interface SearchBarProps {
 	value: string;
@@ -54,25 +54,12 @@ export function SearchBar({
 			<div className="flex items-center gap-2">
 				<div className="relative flex flex-1 items-center">
 					<Icon name="search" className="absolute left-3 h-4 w-4 text-muted-foreground" />
-					<Input
-						value={value}
-						onChange={handleChange}
-						onKeyDown={handleKeyDown}
-						placeholder={placeholder}
-						className="pl-9 pr-8"
-					/>
+					<Input value={value} onChange={handleChange} onKeyDown={handleKeyDown} placeholder={placeholder} className="pl-9 pr-8" />
 					<div className="absolute right-2 flex items-center">
 						{loading ? (
 							<Icon name="loading" className="h-4 w-4 animate-spin text-muted-foreground" />
 						) : value ? (
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleClear}
-								aria-label="Clear search"
-								type="button"
-								className="h-6 w-6"
-							>
+							<Button variant="ghost" size="icon" onClick={handleClear} aria-label="Clear search" type="button" className="h-6 w-6">
 								<Icon name="close" className="h-3.5 w-3.5" />
 							</Button>
 						) : null}
@@ -89,9 +76,7 @@ export function SearchBar({
 							onClick={() => handleFilterClick(filter.value)}
 							className="cursor-pointer"
 						>
-							{filter.icon && (
-								<span className="mr-1">{filter.icon}</span>
-							)}
+							{filter.icon && <span className="mr-1">{filter.icon}</span>}
 							{filter.label}
 						</Badge>
 					))}

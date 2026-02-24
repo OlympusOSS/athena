@@ -1,17 +1,8 @@
 "use client";
 
+import { Button, Card, CardContent, ErrorState, Icon, SearchBar, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
 import { useCallback, useEffect, useState } from "react";
-import { Icon, SearchBar } from "@olympus/canvas";
-import { ErrorState } from "@olympus/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
-import { Button } from "@olympus/canvas";
-import { Card, CardContent } from "@olympus/canvas";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@olympus/canvas";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { SessionDetailDialog } from "@/features/sessions/components/SessionDetailDialog";
@@ -167,16 +158,8 @@ export default function SessionsPage() {
 									{/* Manual load more for browsing mode */}
 									{!isSearching && hasNextPage && (
 										<div className="flex items-center justify-center py-4">
-											<Button
-												variant="outline"
-												onClick={() => fetchNextPage()}
-												disabled={isFetchingNextPage}
-											>
-												{isFetchingNextPage ? (
-													<Icon name="loading" />
-												) : (
-													<Icon name="chevron-down" />
-												)}
+											<Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+												{isFetchingNextPage ? <Icon name="loading" /> : <Icon name="chevron-down" />}
 												{isFetchingNextPage ? "Loading..." : "Load More Sessions"}
 											</Button>
 										</div>

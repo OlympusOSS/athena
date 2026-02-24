@@ -1,8 +1,8 @@
 "use client";
 
+import { Alert, AlertDescription, Button, cn, Icon, Input, Label } from "@olympus/canvas";
 import { Controller, type UseFormReturn } from "react-hook-form";
 import { ApiKeyField } from "@/components/forms";
-import { Alert, AlertDescription, Button, Icon, Input, Label, cn } from "@olympus/canvas";
 import type { ServiceEndpoints, ServiceEndpointsForm } from "../hooks";
 
 export interface ServiceConfigSectionProps {
@@ -67,7 +67,9 @@ export function ServiceConfigSection({
 				{/* URL fields in 2-col grid */}
 				<div className="grid gap-4 sm:grid-cols-2">
 					<div className="space-y-1.5">
-						<Label htmlFor={`${serviceName}-publicUrl`} className="text-xs">Public URL</Label>
+						<Label htmlFor={`${serviceName}-publicUrl`} className="text-xs">
+							Public URL
+						</Label>
 						<Controller
 							name="publicUrl"
 							control={control}
@@ -76,12 +78,7 @@ export function ServiceConfigSection({
 								<>
 									<div className="relative">
 										<Icon name="globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-										<Input
-											{...field}
-											id={`${serviceName}-publicUrl`}
-											placeholder={publicUrlPlaceholder}
-											className="pl-8 text-sm"
-										/>
+										<Input {...field} id={`${serviceName}-publicUrl`} placeholder={publicUrlPlaceholder} className="pl-8 text-sm" />
 									</div>
 									<p className={cn("text-xs", errors.publicUrl ? "text-destructive" : "text-muted-foreground")}>
 										{errors.publicUrl?.message || publicUrlHelperText}
@@ -91,7 +88,9 @@ export function ServiceConfigSection({
 						/>
 					</div>
 					<div className="space-y-1.5">
-						<Label htmlFor={`${serviceName}-adminUrl`} className="text-xs">Admin URL</Label>
+						<Label htmlFor={`${serviceName}-adminUrl`} className="text-xs">
+							Admin URL
+						</Label>
 						<Controller
 							name="adminUrl"
 							control={control}
@@ -100,12 +99,7 @@ export function ServiceConfigSection({
 								<>
 									<div className="relative">
 										<Icon name="lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-										<Input
-											{...field}
-											id={`${serviceName}-adminUrl`}
-											placeholder={adminUrlPlaceholder}
-											className="pl-8 text-sm"
-										/>
+										<Input {...field} id={`${serviceName}-adminUrl`} placeholder={adminUrlPlaceholder} className="pl-8 text-sm" />
 									</div>
 									<p className={cn("text-xs", errors.adminUrl ? "text-destructive" : "text-muted-foreground")}>
 										{errors.adminUrl?.message || adminUrlHelperText}
@@ -121,9 +115,7 @@ export function ServiceConfigSection({
 					<div className="flex items-center gap-2">
 						<Label className="text-xs">API Key</Label>
 						{currentEndpoints.apiKey?.trim() && (
-							<span className="rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-medium uppercase text-success">
-								Configured
-							</span>
+							<span className="rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-medium uppercase text-success">Configured</span>
 						)}
 					</div>
 					<ApiKeyField
@@ -136,19 +128,13 @@ export function ServiceConfigSection({
 						error={errors.apiKey?.message}
 					/>
 					<Alert className="py-2">
-						<AlertDescription className="text-xs">
-							API keys are encrypted before storage. Required for Ory Network authentication.
-						</AlertDescription>
+						<AlertDescription className="text-xs">API keys are encrypted before storage. Required for Ory Network authentication.</AlertDescription>
 					</Alert>
 				</div>
 
 				{/* Save button */}
 				<div className="flex justify-end">
-					<Button
-						type="submit"
-						size="sm"
-						disabled={(!isDirty && !isEditingApiKey) || isSubmitting}
-					>
+					<Button type="submit" size="sm" disabled={(!isDirty && !isEditingApiKey) || isSubmitting}>
 						{isSubmitting ? "Saving..." : `Save ${serviceName} Settings`}
 					</Button>
 				</div>

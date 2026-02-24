@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import { cn } from "@olympus/canvas";
+import React from "react";
 
 export interface SectionProps extends React.HTMLAttributes<HTMLDivElement> {
 	spacing?: number;
@@ -18,16 +18,8 @@ const spacingMap: Record<number, string> = {
 	6: "space-y-12",
 };
 
-export const Section = React.forwardRef<HTMLDivElement, SectionProps>(
-	({ spacing = 3, className, ...rest }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(spacingMap[spacing] || "space-y-6", className)}
-				{...rest}
-			/>
-		);
-	},
-);
+export const Section = React.forwardRef<HTMLDivElement, SectionProps>(({ spacing = 3, className, ...rest }, ref) => {
+	return <div ref={ref} className={cn(spacingMap[spacing] || "space-y-6", className)} {...rest} />;
+});
 
 Section.displayName = "Section";

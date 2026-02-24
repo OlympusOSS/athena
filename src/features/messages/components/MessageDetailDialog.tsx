@@ -1,23 +1,19 @@
-import type React from "react";
-import { Icon, StatusBadge } from "@olympus/canvas";
-import { ErrorState, LoadingState } from "@olympus/canvas";
-import { Badge } from "@olympus/canvas";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@olympus/canvas";
-import { Button } from "@olympus/canvas";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	ErrorState,
+	Icon,
+	LoadingState,
+	ScrollArea,
+	StatusBadge,
 } from "@olympus/canvas";
-import { ScrollArea } from "@olympus/canvas";
-import { Separator } from "@olympus/canvas";
-import { cn } from "@olympus/canvas";
+import type React from "react";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";
 import { useMessage } from "../hooks";
@@ -118,18 +114,12 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 
 							<div>
 								<div>
-									<span>
-										Message ID
-									</span>
-									<code>
-										{message.id}
-									</code>
+									<span>Message ID</span>
+									<code>{message.id}</code>
 								</div>
 
 								<div>
-									<span>
-										Type
-									</span>
+									<span>Type</span>
 									<div>
 										{getMessageTypeIcon(message.type)}
 										<span>{message.type}</span>
@@ -137,9 +127,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 								</div>
 
 								<div>
-									<span>
-										Status
-									</span>
+									<span>Status</span>
 									<div>
 										{getStatusIcon(message.status)}
 										<StatusBadge
@@ -151,39 +139,27 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 								</div>
 
 								<div>
-									<span>
-										Send Count
-									</span>
+									<span>Send Count</span>
 									<p>{message.send_count || 0}</p>
 								</div>
 
 								<div>
-									<span>
-										Created At
-									</span>
+									<span>Created At</span>
 									<p>{formatDate(message.created_at)}</p>
 								</div>
 
 								<div>
-									<span>
-										Updated At
-									</span>
+									<span>Updated At</span>
 									<p>{formatDate(message.updated_at)}</p>
 								</div>
 
 								<div>
-									<span>
-										Template Type
-									</span>
-									<code>
-										{message.template_type || "Unknown"}
-									</code>
+									<span>Template Type</span>
+									<code>{message.template_type || "Unknown"}</code>
 								</div>
 
 								<div>
-									<span>
-										Channel
-									</span>
+									<span>Channel</span>
 									<p>{message.channel || "Default"}</p>
 								</div>
 							</div>
@@ -198,16 +174,12 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 
 							<div>
 								<div>
-									<span>
-										Recipient
-									</span>
+									<span>Recipient</span>
 									<p>{message.recipient}</p>
 								</div>
 
 								<div>
-									<span>
-										Subject
-									</span>
+									<span>Subject</span>
 									<p>{message.subject || "No subject"}</p>
 								</div>
 							</div>
@@ -217,9 +189,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 						{message.body && (
 							<div>
 								<h3>Message Content</h3>
-								<div>
-									{message.body}
-								</div>
+								<div>{message.body}</div>
 							</div>
 						)}
 
@@ -235,54 +205,35 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 										</AccordionTrigger>
 										<AccordionContent>
 											{message.dispatches.map((dispatch: any, _index: number) => (
-												<div
-													key={dispatch.id}
-												>
+												<div key={dispatch.id}>
 													<div>
 														<div>
-															<span>
-																Dispatch ID
-															</span>
-															<code>
-																{dispatch.id}
-															</code>
+															<span>Dispatch ID</span>
+															<code>{dispatch.id}</code>
 														</div>
 
 														<div>
-															<span>
-																Status
-															</span>
+															<span>Status</span>
 															<div>
-																<StatusBadge
-																	status={dispatch.status === "failed" ? "inactive" : "active"}
-																	label={dispatch.status}
-																/>
+																<StatusBadge status={dispatch.status === "failed" ? "inactive" : "active"} label={dispatch.status} />
 															</div>
 														</div>
 
 														<div>
-															<span>
-																Created At
-															</span>
+															<span>Created At</span>
 															<p>{formatDate(dispatch.created_at)}</p>
 														</div>
 
 														<div>
-															<span>
-																Updated At
-															</span>
+															<span>Updated At</span>
 															<p>{formatDate(dispatch.updated_at)}</p>
 														</div>
 
 														{dispatch.error && (
 															<div>
-																<span>
-																	Error
-																</span>
+																<span>Error</span>
 																<div>
-																	<code>
-																		{JSON.stringify(dispatch.error, null, 2)}
-																	</code>
+																	<code>{JSON.stringify(dispatch.error, null, 2)}</code>
 																</div>
 															</div>
 														)}
