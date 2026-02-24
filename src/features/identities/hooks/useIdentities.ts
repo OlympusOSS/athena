@@ -27,7 +27,7 @@ export const useIdentities = (params?: { pageSize?: number; pageToken?: string }
 
 			// Extract next page token from Link header if available
 			const linkHeader = response.headers?.link;
-			let nextPageToken = null;
+			let nextPageToken: string | undefined;
 
 			if (linkHeader) {
 				const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
@@ -61,7 +61,7 @@ export const useIdentitiesSearch = (params?: { pageSize?: number; searchTerm?: s
 				const response = await listIdentities(requestParams);
 
 				const linkHeader = response.headers?.link;
-				let nextPageToken = null;
+				let nextPageToken: string | undefined;
 
 				if (linkHeader) {
 					const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
@@ -127,7 +127,7 @@ export const useIdentitiesSearch = (params?: { pageSize?: number; searchTerm?: s
 
 					// Extract next page token
 					const linkHeader = response.headers?.link;
-					let nextPageToken = null;
+					let nextPageToken: string | undefined;
 
 					if (linkHeader) {
 						const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
