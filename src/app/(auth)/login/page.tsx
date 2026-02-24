@@ -1,9 +1,8 @@
 "use client";
 
-import { Box, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useRef } from "react";
+import { Icon } from "@olympus/canvas";
 import { useLogin } from "@/features/auth/hooks/useAuth";
-import { gradientColors } from "@/theme";
 
 export default function LoginPage() {
 	const login = useLogin();
@@ -18,27 +17,24 @@ export default function LoginPage() {
 	}, [login]);
 
 	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				background: `linear-gradient(135deg, ${gradientColors.primary} 0%, ${gradientColors.secondary} 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%)`,
+		<div
+			className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[#667eea] via-[#764ba2] via-50% to-[#4facfe]"
+			style={{
 				backgroundSize: "400% 400%",
 				animation: "gradient 15s ease infinite",
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				justifyContent: "center",
-				"@keyframes gradient": {
-					"0%": { backgroundPosition: "0% 50%" },
-					"50%": { backgroundPosition: "100% 50%" },
-					"100%": { backgroundPosition: "0% 50%" },
-				},
 			}}
 		>
-			<CircularProgress size={48} sx={{ color: "white", mb: 3 }} />
-			<Typography variant="h6" sx={{ color: "white", fontWeight: 500 }}>
+			<style jsx>{`
+				@keyframes gradient {
+					0% { background-position: 0% 50%; }
+					50% { background-position: 100% 50%; }
+					100% { background-position: 0% 50%; }
+				}
+			`}</style>
+			<Icon name="loading" className="mb-6 h-12 w-12 animate-spin text-white" />
+			<h2 className="text-lg font-medium text-white">
 				Redirecting to login...
-			</Typography>
-		</Box>
+			</h2>
+		</div>
 	);
 }
