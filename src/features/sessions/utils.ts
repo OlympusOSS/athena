@@ -28,7 +28,7 @@ export function generateSessionAnalytics(sessions: Session[]): SessionAnalytics 
 	const activeSessions = sessions.filter((s) => s.active).length;
 
 	// Calculate sessions by day for the last 7 days
-	const sessionsByDay = [];
+	const sessionsByDay: Array<{ date: string; count: number }> = [];
 	for (let i = 6; i >= 0; i--) {
 		const date = new Date(now);
 		date.setDate(date.getDate() - i);
