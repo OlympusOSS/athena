@@ -16,6 +16,7 @@ import {
 	SelectValue,
 	Switch,
 } from "@olympus/canvas";
+import type { IconName } from "@olympus/canvas";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
@@ -47,7 +48,7 @@ function SettingRow({
 	children,
 	last = false,
 }: {
-	icon: string;
+	icon: IconName;
 	label: string;
 	description: string;
 	badge?: ReactNode;
