@@ -13,8 +13,9 @@ RUN bun install --production --frozen-lockfile
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 
-# Copy Canvas package
+# Copy Canvas package and install its deps (webpack resolves from source dir)
 COPY Canvas/ ../Canvas/
+RUN cd ../Canvas && bun install --production
 
 # Copy app source
 COPY Athena/package.json Athena/bun.lock ./
