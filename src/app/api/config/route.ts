@@ -21,6 +21,7 @@ export async function GET() {
 		hydraApiKey: encryptApiKey(hydraApiKey),
 		isOryNetwork: process.env.IS_ORY_NETWORK === "true",
 		hydraEnabled,
+		defaultClientId: process.env.DEFAULT_CLIENT_ID || "",
 	};
 
 	return NextResponse.json(config);

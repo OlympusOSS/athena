@@ -1,8 +1,8 @@
 "use client";
 
-import { Box, CircularProgress } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { Icon } from "@olympus/canvas";
 import { useCheckSession, useIsAuthenticated, useIsAuthLoading } from "@/features/auth/hooks/useAuth";
 
 interface AuthProviderProps {
@@ -48,16 +48,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	// Show loading spinner during initialization
 	if (isLoading || isInitializing) {
 		return (
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					minHeight: "100vh",
-				}}
-			>
-				<CircularProgress />
-			</Box>
+			<div className="flex min-h-screen items-center justify-center">
+				<Icon name="loading" className="h-8 w-8 animate-spin text-primary" />
+			</div>
 		);
 	}
 
