@@ -1,5 +1,5 @@
 {
-	"name": "kratos-admin-ui",
+	"name": "@olympus/athena",
 	"version": "0.1.1",
 	"private": true,
 	"scripts": {
@@ -10,16 +10,17 @@
 		"lint:fix": "biome check --write",
 		"format": "biome format --write .",
 		"typecheck": "tsc --noEmit",
-		"ci": "biome ci && tsc --noEmit",
-		"docker:dev": "docker compose -f dev/docker-compose.yml -f dev/docker-compose.override.dev.yml up",
-		"mock:server": "node dev/mock-server.js",
-		"local:dev": "bash dev/start-local-dev.sh"
+		"ci": "biome ci && tsc --noEmit"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/OlympusOSS/athena.git"
 	},
 	"dependencies": {
 		"@nivo/core": "^0.99.0",
 		"@nivo/line": "^0.99.0",
 		"@nivo/pie": "^0.99.0",
-		"@olympus/canvas": "file:../Canvas",
+		"@olympus/canvas": "^0.1.0",
 		"@ory/hydra-client": "^25.4.0",
 		"@ory/kratos-client": "^25.4.0",
 		"@rjsf/core": "6.2.5",
@@ -32,14 +33,14 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"framer-motion": "^12.34.2",
-		"lucide-react": "^0.574.0",
 		"jwt-decode": "^4.0.0",
 		"libphonenumber-js": "^1.12.34",
+		"lucide-react": "^0.574.0",
 		"next": "16.1.4",
 		"postcss": "^8.5.6",
+		"radix-ui": "^1.4.3",
 		"react": "19.2.3",
 		"react-dom": "19.2.3",
-		"radix-ui": "^1.4.3",
 		"react-hook-form": "^7.71.1",
 		"react-syntax-highlighter": "^16.1.0",
 		"tailwind-merge": "^3.5.0",
