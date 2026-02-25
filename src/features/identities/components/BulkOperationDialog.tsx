@@ -9,7 +9,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	Icon,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { Identity } from "@ory/kratos-client";
 import { useQueryClient } from "@tanstack/react-query";
 import type React from "react";

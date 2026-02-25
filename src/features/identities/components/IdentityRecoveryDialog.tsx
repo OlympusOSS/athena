@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 	Icon,
 	Label,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { Identity } from "@ory/kratos-client";
 import type React from "react";
 import { useState } from "react";

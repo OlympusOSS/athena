@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	Icon,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type React from "react";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentityCredentials } from "../hooks/useIdentities";

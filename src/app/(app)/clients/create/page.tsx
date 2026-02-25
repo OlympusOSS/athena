@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Icon } from "@olympus/canvas";
+import { Button, Icon } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";

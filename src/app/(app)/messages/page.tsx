@@ -17,7 +17,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { Message } from "@ory/kratos-client";
 import { useEffect, useMemo, useState } from "react";
 import { AdminLayout, PageHeader } from "@/components/layout";

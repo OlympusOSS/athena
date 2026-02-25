@@ -1,6 +1,6 @@
 "use client";
 
-import type { DataTableColumn } from "@olympus/canvas";
+import type { DataTableColumn } from "@olympusoss/canvas";
 import {
 	Badge,
 	Button,
@@ -17,7 +17,7 @@ import {
 	Icon,
 	SearchBar,
 	StatCard,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";

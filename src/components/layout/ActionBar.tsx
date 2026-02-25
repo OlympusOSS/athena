@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, cn, Icon } from "@olympus/canvas";
+import { Button, cn, Icon } from "@olympusoss/canvas";
 import type { ReactNode } from "react";
 
 export interface ActionBarProps {

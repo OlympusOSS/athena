@@ -1,6 +1,6 @@
 "use client";
 
-import type { IconName } from "@olympus/canvas";
+import type { IconName } from "@olympusoss/canvas";
 import {
 	Badge,
 	Button,
@@ -16,7 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Switch,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";

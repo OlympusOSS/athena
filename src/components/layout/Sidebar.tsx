@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, cn, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
+import { Button, cn, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole, useLogout, useUser } from "@/features/auth";

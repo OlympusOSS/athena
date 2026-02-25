@@ -1,4 +1,4 @@
-import { DataTable, type DataTableColumn, Icon, StatusBadge } from "@olympus/canvas";
+import { DataTable, type DataTableColumn, Icon, StatusBadge } from "@olympusoss/canvas";
 import React, { useMemo } from "react";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";

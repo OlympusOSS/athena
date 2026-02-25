@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, CardContent, ErrorState, Icon, SearchBar, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
+import { Button, Card, CardContent, ErrorState, Icon, SearchBar, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
 import { useCallback, useEffect, useState } from "react";
 import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";

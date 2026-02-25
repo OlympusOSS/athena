@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	Icon,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { Identity } from "@ory/kratos-client";
 import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";

@@ -1,4 +1,4 @@
-import { DataTable, type DataTableColumn, Icon, StatusBadge, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
+import { DataTable, type DataTableColumn, Icon, StatusBadge, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
 import React, { useMemo } from "react";
 import { formatDate } from "@/lib/date-utils";
 

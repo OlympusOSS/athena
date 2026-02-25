@@ -27,7 +27,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useState } from "react";
 import { ActionBar, AdminLayout, PageHeader, PageTabs } from "@/components/layout";
 import type { IntrospectTokenFormData, OAuth2TokenDetails, TokenFormErrors } from "@/features/oauth2-tokens";

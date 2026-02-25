@@ -15,7 +15,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ErrorState, Icon, LoadingState } from "@olympus/canvas";
+import { Button, ErrorState, Icon, LoadingState } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";

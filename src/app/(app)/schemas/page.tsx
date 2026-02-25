@@ -30,7 +30,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import { useEffect, useState } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";

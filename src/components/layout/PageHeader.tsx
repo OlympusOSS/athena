@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, Icon } from "@olympus/canvas";
+import { cn, Icon } from "@olympusoss/canvas";
 import Link from "next/link";
 import type { ReactNode } from "react";
 

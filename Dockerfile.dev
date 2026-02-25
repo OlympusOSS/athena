@@ -1,16 +1,9 @@
 FROM oven/bun:1-alpine
-
 WORKDIR /app
-
 RUN apk --no-cache add curl git
-
-ARG NODE_AUTH_TOKEN
-COPY .npmrc ./
-COPY package.json bun.lock ./
-RUN bun install
-
+COPY package.json ./
+RUN --mount=type=secret,id=npmrc,target=/app/.npmrc \
+    bun install
 COPY . .
-
 EXPOSE 3000
-
 CMD ["bun", "run", "dev"]

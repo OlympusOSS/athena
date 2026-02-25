@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Icon, Input } from "@olympus/canvas";
+import { Badge, Button, Icon, Input } from "@olympusoss/canvas";
 import type React from "react";
 
 export interface SearchBarProps {

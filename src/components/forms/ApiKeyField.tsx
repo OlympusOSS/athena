@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, cn, Icon, Input, Label, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympus/canvas";
+import { Button, cn, Icon, Input, Label, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
 import { useEffect, useState } from "react";
 import { type Control, Controller, type FieldPath, type FieldValues } from "react-hook-form";
 
