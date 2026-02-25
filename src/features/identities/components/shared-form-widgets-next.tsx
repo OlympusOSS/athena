@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympusoss/canvas";
 import type { FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps, WidgetProps } from "@rjsf/utils";
 import parsePhoneNumber, { type CountryCode, getCountries, getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
 import type React from "react";

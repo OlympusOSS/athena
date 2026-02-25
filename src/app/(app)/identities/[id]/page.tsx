@@ -22,7 +22,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";

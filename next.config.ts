@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 	output: "standalone",
 	reactStrictMode: true,
-	transpilePackages: ["@olympus/canvas"],
+	transpilePackages: ["@olympusoss/canvas"],
 	images: {
 		domains: ["localhost", "kratos.local"],
 	},

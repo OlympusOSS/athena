@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Icon, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympus/canvas";
+import { Badge, Button, Icon, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympusoss/canvas";
 import { useState } from "react";
 import type { OAuth2ClientFormData, OAuth2ClientFormErrors } from "../types";
 import { OAUTH2_GRANT_TYPES, OAUTH2_RESPONSE_TYPES, OAUTH2_SUBJECT_TYPES, OAUTH2_TOKEN_ENDPOINT_AUTH_METHODS } from "../types";

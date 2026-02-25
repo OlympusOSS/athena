@@ -15,7 +15,7 @@ import {
 	LoadingState,
 	ScrollArea,
 	StatusBadge,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { formatDate } from "@/lib/date-utils";

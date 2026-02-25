@@ -12,7 +12,7 @@ import {
 	LoadingState,
 	ScrollArea,
 	StatusBadge,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type React from "react";
 import { formatDate } from "@/lib/date-utils";
 import type { CourierMessageStatus } from "@/services/kratos/endpoints/courier";

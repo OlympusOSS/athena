@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, cn, FieldDisplay, Icon, Input, Label } from "@olympus/canvas";
+import { Badge, cn, FieldDisplay, Icon, Input, Label } from "@olympusoss/canvas";
 import { useEffect, useState } from "react";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";

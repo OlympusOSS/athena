@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon, LoadingState } from "@olympus/canvas";
+import { Icon, LoadingState } from "@olympusoss/canvas";
 import { lazy, Suspense } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
 import { UserRole } from "@/features/auth";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@olympus/canvas";
+import { Icon } from "@olympusoss/canvas";
 import { useEffect, useRef } from "react";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 

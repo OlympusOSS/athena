@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, cn, Icon } from "@olympus/canvas";
+import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, cn, Icon } from "@olympusoss/canvas";
 import type { ReactNode } from "react";
 
 export interface SectionCardProps {

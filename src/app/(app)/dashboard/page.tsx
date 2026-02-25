@@ -14,7 +14,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 	VerificationGauge,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";

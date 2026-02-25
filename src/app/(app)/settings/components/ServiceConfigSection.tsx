@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription, Button, cn, Icon, Input, Label } from "@olympus/canvas";
+import { Alert, AlertDescription, Button, cn, Icon, Input, Label } from "@olympusoss/canvas";
 import { Controller, type UseFormReturn } from "react-hook-form";
 import { ApiKeyField } from "@/components/forms";
 import type { ServiceEndpoints, ServiceEndpointsForm } from "../hooks";

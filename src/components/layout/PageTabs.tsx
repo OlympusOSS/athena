@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@olympus/canvas";
+import { cn } from "@olympusoss/canvas";
 import type React from "react";
 
 export interface PageTabsProps {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, EmptyState, Icon, LoadingState } from "@olympus/canvas";
+import { Badge, EmptyState, Icon, LoadingState } from "@olympusoss/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import type React from "react";
 import { formatSchemaForDisplay } from "../utils";

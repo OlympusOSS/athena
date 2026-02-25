@@ -21,7 +21,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { use, useMemo, useRef, useState } from "react";
 import { ActionBar, ProtectedPage } from "@/components/layout";

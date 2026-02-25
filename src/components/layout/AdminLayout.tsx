@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@olympus/canvas";
+import { cn } from "@olympusoss/canvas";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";

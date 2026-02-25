@@ -13,7 +13,7 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@olympus/canvas";
+} from "@olympusoss/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
