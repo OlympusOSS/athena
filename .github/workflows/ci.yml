@@ -10,6 +10,7 @@ on:
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
+  workflow_dispatch:
   repository_dispatch:
     types: [canvas-updated]
 
