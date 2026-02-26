@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, ErrorState, Icon, LoadingState } from "@olympusoss/canvas";
+import { ErrorState, Icon, LoadingState } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout, PageHeader } from "@/components/layout";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
 import {
 	OAuth2ClientForm,
@@ -71,17 +71,15 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 	return (
 		<AdminLayout>
 			<div className="space-y-6">
-				{/* Header */}
-				<div className="flex items-center gap-3">
-					<Button variant="ghost" size="icon" onClick={() => router.back()}>
-						<Icon name="arrow-left" />
-					</Button>
-					<Icon name="grid" />
-					<div className="space-y-1">
-						<h1 className="text-2xl font-bold text-foreground">Edit OAuth2 Client</h1>
-						<p className="text-sm text-muted-foreground">Update client configuration</p>
-					</div>
-				</div>
+				<PageHeader
+					title="Edit OAuth2 Client"
+					subtitle="Update client configuration"
+					icon={<Icon name="grid" />}
+					breadcrumbs={[
+						{ label: "OAuth2 Clients", href: "/clients" },
+						{ label: "Edit" },
+					]}
+				/>
 
 				<OAuth2ClientForm
 					initialData={initialFormData}

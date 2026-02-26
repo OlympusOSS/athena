@@ -2,13 +2,19 @@ import {
 	Alert,
 	AlertDescription,
 	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
 	Icon,
 	Label,
+	LoadingState,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Separator,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
@@ -112,51 +118,51 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 	};
 
 	if (schemasLoading) {
-		return (
-			<div>
-				<Icon name="loading" />
-			</div>
-		);
+		return <LoadingState message="Loading schemas..." />;
 	}
 
 	return (
-		<div>
-			<h2>Create New Identity</h2>
+		<Card>
+			<CardHeader>
+				<CardTitle>Identity Schema</CardTitle>
+			</CardHeader>
+			<CardContent>
+				{createIdentityMutation.isError && (
+					<Alert variant="destructive">
+						<Icon name="alert-circle" />
+						<AlertDescription>Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
+					</Alert>
+				)}
 
-			<p>Create a new user identity in your Kratos instance. Select a schema to see the required fields.</p>
+				<Label htmlFor="identity-schema">
+					Identity Schema <span>*</span>
+				</Label>
+				<Select value={selectedSchemaId} onValueChange={handleSchemaChange} disabled={createIdentityMutation.isPending}>
+					<SelectTrigger id="identity-schema">
+						<SelectValue placeholder="Select a schema..." />
+					</SelectTrigger>
+					<SelectContent>
+						{schemas?.map((schema: IdentitySchemaContainer) => (
+							<TooltipProvider key={schema.id} delayDuration={0}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<SelectItem value={schema.id || ""}>{((schema.schema as Record<string, unknown>)?.title as string) || schema.id}</SelectItem>
+									</TooltipTrigger>
+									<TooltipContent side="right">Schema ID: {schema.id}</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						))}
+					</SelectContent>
+				</Select>
+			</CardContent>
 
-			{createIdentityMutation.isError && (
-				<Alert variant="destructive">
-					<AlertDescription>Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
-				</Alert>
-			)}
-
-			<div>
-				<div>
-					<Label htmlFor="identity-schema">
-						Identity Schema <span>*</span>
-					</Label>
-					<Select value={selectedSchemaId} onValueChange={handleSchemaChange} disabled={createIdentityMutation.isPending}>
-						<SelectTrigger id="identity-schema">
-							<SelectValue placeholder="Select a schema..." />
-						</SelectTrigger>
-						<SelectContent>
-							{schemas?.map((schema: IdentitySchemaContainer) => (
-								<TooltipProvider key={schema.id} delayDuration={0}>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<SelectItem value={schema.id || ""}>{((schema.schema as Record<string, unknown>)?.title as string) || schema.id}</SelectItem>
-										</TooltipTrigger>
-										<TooltipContent side="right">Schema ID: {schema.id}</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-
-				{selectedSchemaId && formSchema && (
-					<div>
+			{selectedSchemaId && formSchema && (
+				<>
+					<Separator />
+					<CardHeader>
+						<CardTitle>Identity Traits</CardTitle>
+					</CardHeader>
+					<CardContent>
 						<Form
 							schema={formSchema}
 							uiSchema={createUISchema(formSchema)}
@@ -181,31 +187,35 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 								console.error("Form validation errors:", errors);
 							}}
 						>
-							<div>
+							<Separator />
+							<CardContent>
 								<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending} type="button">
-									<Icon name="close" />
+									<Icon name="x" />
 									Cancel
 								</Button>
 								<Button type="submit" disabled={createIdentityMutation.isPending || !selectedSchemaId}>
-									{createIdentityMutation.isPending ? <Icon name="loading" /> : <Icon name="save" />}
+									{createIdentityMutation.isPending ? <Icon name="loader" /> : <Icon name="save" />}
 									{createIdentityMutation.isPending ? "Creating..." : "Create Identity"}
 								</Button>
-							</div>
+							</CardContent>
 						</Form>
-					</div>
-				)}
+					</CardContent>
+				</>
+			)}
 
-				{selectedSchemaId && !formSchema && (
-					<div>
+			{selectedSchemaId && !formSchema && (
+				<>
+					<Separator />
+					<CardContent>
 						<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending}>
-							<Icon name="close" />
+							<Icon name="x" />
 							Cancel
 						</Button>
 						<Button disabled>No form fields available</Button>
-					</div>
-				)}
-			</div>
-		</div>
+					</CardContent>
+				</>
+			)}
+		</Card>
 	);
 };
 

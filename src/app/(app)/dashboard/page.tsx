@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	Alert,
+	AlertDescription,
 	AnimatedAreaChart,
 	AnimatedPieChart,
 	Button,
@@ -144,19 +146,21 @@ export default function Dashboard() {
 
 			{/* Hydra not available info banner */}
 			{!isHydraAvailable && (
-				<div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
-					<Icon name="info" className="h-4 w-4 shrink-0" />
-					<span>
+				<Alert>
+					<Icon name="info" />
+					<AlertDescription>
 						{!hydraEnabled
 							? "Hydra integration is disabled. Enable it in Settings to view OAuth2 analytics."
 							: "Hydra is not available. OAuth2 analytics are hidden. Check your Hydra configuration in Settings."}
-					</span>
-				</div>
+					</AlertDescription>
+				</Alert>
 			)}
 
 			{/* Key Metrics Cards */}
-			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				<StatCard
+					index={0}
+					colorVariant="primary"
 					title="Total Users"
 					value={formatNumber(identity.data?.totalIdentities || 0)}
 					subtitle={`+${identity.data?.newIdentitiesLast30Days || 0} in last 30 days`}
@@ -164,6 +168,8 @@ export default function Dashboard() {
 				/>
 
 				<StatCard
+					index={1}
+					colorVariant="blue"
 					title="Active Sessions"
 					value={formatNumber(session.data?.activeSessions || 0)}
 					subtitle={`${session.data?.sessionsLast7Days || 0} in last 7 days`}
@@ -171,15 +177,18 @@ export default function Dashboard() {
 				/>
 
 				<StatCard
+					index={2}
+					colorVariant="purple"
 					title="Avg Session"
 					value={formatDuration(session.data?.averageSessionDuration || 0)}
 					subtitle="Average duration"
 					icon={<Icon name="time" />}
 				/>
 
-				<StatCard title="Verification Rate" value={`${verificationRate}%`} subtitle="Email verified users" icon={<Icon name="verified" />} />
+				<StatCard index={3} colorVariant="warning" title="Verification Rate" value={`${verificationRate}%`} subtitle="Email verified users" icon={<Icon name="verified" />} />
 
 				<StatCard
+					index={4}
 					title="Identity Schemas"
 					value={formatNumber(system.data?.totalSchemas || 0)}
 					subtitle="Total schemas configured"
@@ -187,6 +196,8 @@ export default function Dashboard() {
 				/>
 
 				<StatCard
+					index={5}
+					colorVariant="success"
 					title="Kratos Health"
 					value={system.data?.systemHealth === "healthy" ? "\u2713 Healthy" : system.data?.systemHealth || "Unknown"}
 					subtitle={system.data?.systemHealth || "Unknown"}
@@ -197,6 +208,8 @@ export default function Dashboard() {
 				{isHydraAvailable && (
 					<>
 						<StatCard
+							index={6}
+							colorVariant="blue"
 							title="OAuth2 Clients"
 							value={formatNumber(hydra.data?.totalClients || 0)}
 							subtitle={`${hydra.data?.publicClients || 0} public, ${hydra.data?.confidentialClients || 0} confidential`}
@@ -204,6 +217,8 @@ export default function Dashboard() {
 						/>
 
 						<StatCard
+							index={7}
+							colorVariant="purple"
 							title="Grant Types"
 							value={hydra.data?.clientsByGrantType.length || 0}
 							subtitle="Different grant types in use"
@@ -211,6 +226,8 @@ export default function Dashboard() {
 						/>
 
 						<StatCard
+							index={8}
+							colorVariant="success"
 							title="Hydra Health"
 							value={hydra.data?.systemHealth === "healthy" ? "\u2713 Healthy" : hydra.data?.systemHealth === "error" ? "\u2717 Error" : "Unknown"}
 							subtitle={hydra.data?.systemHealth || "Unknown"}
@@ -221,11 +238,11 @@ export default function Dashboard() {
 			</div>
 
 			{/* Charts Section */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				{/* User Growth Chart */}
-				<div>
+				<div className="md:col-span-2">
 					<ChartCard title="New User Registrations (Last 30 Days)">
-						<AnimatedAreaChart data={identityChartData} height={350} color="var(--chart-1)" gradientId="identityAreaGradient" />
+						<AnimatedAreaChart data={identityChartData} height={350} color="chart-1" gradientId="identityAreaGradient" />
 					</ChartCard>
 				</div>
 
@@ -239,7 +256,7 @@ export default function Dashboard() {
 				{/* Session Activity Chart */}
 				<div>
 					<ChartCard title="Session Activity (Last 7 Days)">
-						<AnimatedAreaChart data={sessionChartData} height={350} color="var(--chart-2)" gradientId="sessionAreaGradient" />
+						<AnimatedAreaChart data={sessionChartData} height={350} color="chart-2" gradientId="sessionAreaGradient" />
 					</ChartCard>
 				</div>
 

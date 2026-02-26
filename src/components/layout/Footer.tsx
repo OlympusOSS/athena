@@ -4,8 +4,7 @@ export function Footer() {
 	return (
 		<footer>
 			<p>
-				Built by{" "}
-				</a>
+				Built by Olympus
 			</p>
 		</footer>
 	);

@@ -7,6 +7,7 @@ import {
 	Button,
 	Card,
 	CardContent,
+	CodeBlock,
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -25,8 +26,6 @@ import {
 } from "@olympusoss/canvas";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { CredentialDeleteDialog } from "@/features/identities/components/CredentialDeleteDialog";
@@ -39,7 +38,6 @@ import { SessionsTable } from "@/features/sessions/components/SessionsTable";
 import { useDeleteIdentitySessions, useIdentitySessions } from "@/features/sessions/hooks";
 import { useDialog } from "@/hooks";
 import { formatDate } from "@/lib/date-utils";
-import { useTheme } from "@/providers/ThemeProvider";
 
 const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
 	password: "Password",
@@ -58,7 +56,6 @@ const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
 const NON_DELETABLE_CREDENTIALS = new Set(["password", "passkey", "code"]);
 
 export default function IdentityDetailPage() {
-	const { theme } = useTheme();
 	const params = useParams();
 	const router = useRouter();
 	const identityId = params.id as string;
@@ -167,7 +164,6 @@ export default function IdentityDetailPage() {
 	}
 
 	const traits = identity.traits as Record<string, unknown>;
-	const isDark = theme === "dark";
 
 	return (
 		<ProtectedPage requiredRole={UserRole.ADMIN}>
@@ -268,25 +264,11 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
-								<div className="overflow-auto rounded-md" style={{ maxHeight: "400px" }}>
-									<SyntaxHighlighter
-										language="json"
-										style={isDark ? vs2015 : github}
-										customStyle={{
-											margin: 0,
-											padding: "1rem",
-											fontSize: "0.875rem",
-											background: isDark ? "#1e1e1e" : "#f8f9fa",
-											borderRadius: "var(--radius)",
-											lineHeight: 1.4,
-											border: `1px solid ${isDark ? "hsl(var(--border))" : "hsl(var(--border))"}`,
-										}}
-										showLineNumbers={false}
-										wrapLongLines={true}
-									>
-										{JSON.stringify(identity.metadata_public, null, 2)}
-									</SyntaxHighlighter>
-								</div>
+								<CodeBlock
+									code={JSON.stringify(identity.metadata_public, null, 2)}
+									language="json"
+									maxHeight="400px"
+								/>
 							) : (
 								<p className="text-sm text-muted-foreground">No public metadata available</p>
 							)}
@@ -300,25 +282,11 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
-								<div className="overflow-auto rounded-md" style={{ maxHeight: "400px" }}>
-									<SyntaxHighlighter
-										language="json"
-										style={isDark ? vs2015 : github}
-										customStyle={{
-											margin: 0,
-											padding: "1rem",
-											fontSize: "0.875rem",
-											background: isDark ? "#1e1e1e" : "#f8f9fa",
-											borderRadius: "var(--radius)",
-											lineHeight: 1.4,
-											border: `1px solid ${isDark ? "hsl(var(--border))" : "hsl(var(--border))"}`,
-										}}
-										showLineNumbers={false}
-										wrapLongLines={true}
-									>
-										{JSON.stringify(identity.metadata_admin, null, 2)}
-									</SyntaxHighlighter>
-								</div>
+								<CodeBlock
+									code={JSON.stringify(identity.metadata_admin, null, 2)}
+									language="json"
+									maxHeight="400px"
+								/>
 							) : (
 								<p className="text-sm text-muted-foreground">No admin metadata available</p>
 							)}
@@ -480,31 +448,12 @@ export default function IdentityDetailPage() {
 							<CardContent className="space-y-4">
 								<h3 className="text-lg font-semibold text-foreground">Raw Data</h3>
 								<Separator />
-								<div className="overflow-auto rounded-md" style={{ maxHeight: "60vh" }}>
-									<SyntaxHighlighter
-										language="json"
-										style={isDark ? vs2015 : github}
-										customStyle={{
-											margin: 0,
-											padding: "1.5rem",
-											fontSize: "0.875rem",
-											background: isDark ? "#1e1e1e" : "#f8f9fa",
-											borderRadius: "var(--radius)",
-											lineHeight: 1.5,
-											border: `1px solid hsl(var(--border))`,
-										}}
-										showLineNumbers={true}
-										lineNumberStyle={{
-											color: isDark ? "hsl(var(--muted-foreground))" : "hsl(var(--muted-foreground))",
-											paddingRight: "1rem",
-											minWidth: "2rem",
-											userSelect: "none",
-										}}
-										wrapLongLines={true}
-									>
-										{JSON.stringify(identity, null, 2)}
-									</SyntaxHighlighter>
-								</div>
+								<CodeBlock
+									code={JSON.stringify(identity, null, 2)}
+									language="json"
+									title="Identity JSON"
+									maxHeight="60vh"
+								/>
 							</CardContent>
 						</Card>
 					</div>

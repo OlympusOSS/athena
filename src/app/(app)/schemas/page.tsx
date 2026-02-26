@@ -5,6 +5,7 @@ import {
 	Button,
 	Card,
 	CardContent,
+	CodeBlock,
 	Dialog,
 	DialogContent,
 	DialogFooter,
@@ -33,18 +34,13 @@ import {
 } from "@olympusoss/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
 import { useEffect, useState } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { github, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { useSchemas } from "@/features/schemas/hooks";
-import { useTheme } from "@/providers/ThemeProvider";
 import { getIdentitySchema } from "@/services/kratos";
 
 export default function SchemasPage() {
-	const { theme } = useTheme();
-	const isDark = theme === "dark";
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 	const [selectedSchemaId, setSelectedSchemaId] = useState<string | null>(null);
@@ -279,31 +275,11 @@ export default function SchemasPage() {
 								{schemaLoading ? (
 									<LoadingState variant="section" message="Loading schema details..." />
 								) : schemaContent ? (
-									<div className="overflow-auto rounded-md" style={{ maxHeight: "60vh" }}>
-										<SyntaxHighlighter
-											language="json"
-											style={isDark ? vs2015 : github}
-											customStyle={{
-												margin: 0,
-												padding: "1.5rem",
-												fontSize: "0.875rem",
-												background: isDark ? "#1e1e1e" : "#f8f9fa",
-												borderRadius: "var(--radius)",
-												lineHeight: 1.5,
-												border: "1px solid hsl(var(--border))",
-											}}
-											showLineNumbers={true}
-											lineNumberStyle={{
-												color: isDark ? "#6b7280" : "#9ca3af",
-												paddingRight: "1rem",
-												minWidth: "2rem",
-												userSelect: "none",
-											}}
-											wrapLongLines={true}
-										>
-											{JSON.stringify(schemaContent, null, 2)}
-										</SyntaxHighlighter>
-									</div>
+									<CodeBlock
+										code={JSON.stringify(schemaContent, null, 2)}
+										language="json"
+										maxHeight="60vh"
+									/>
 								) : (
 									<p className="text-sm text-muted-foreground">Failed to load schema content. Please try again.</p>
 								)}

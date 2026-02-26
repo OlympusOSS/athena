@@ -21,6 +21,7 @@ import {
 	Input,
 	Label,
 	StatCard,
+	Textarea,
 	Table,
 	TableBody,
 	TableCell,
@@ -157,9 +158,9 @@ export default function OAuth2TokensPage() {
 								<div className="space-y-6">
 									<div className="space-y-2">
 										<Label htmlFor="token-input">Access Token</Label>
-										<textarea
+										<Textarea
 											id="token-input"
-											className="min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+											className="min-h-[120px] font-mono"
 											value={introspectFormData.token}
 											onChange={(e) =>
 												setIntrospectFormData((prev) => ({

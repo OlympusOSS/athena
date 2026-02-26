@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge, cn, FieldDisplay, Icon, Input, Label } from "@olympusoss/canvas";
-import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, Badge, Card, CardContent, FieldDisplay, Icon, Input, Label, Toaster, useToast } from "@olympusoss/canvas";
+import { useState } from "react";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { useUser } from "@/features/auth/hooks/useAuth";
@@ -11,15 +11,7 @@ export default function ProfilePage() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [displayName, setDisplayName] = useState(user?.displayName || "");
 	const [email, setEmail] = useState(user?.email || "");
-	const [showToast, setShowToast] = useState(false);
-
-	// Auto-hide toast after 6 seconds
-	useEffect(() => {
-		if (showToast) {
-			const timer = setTimeout(() => setShowToast(false), 6000);
-			return () => clearTimeout(timer);
-		}
-	}, [showToast]);
+	const { show: showToast } = useToast();
 
 	if (!user) {
 		return null; // Protected by AdminLayout
@@ -39,7 +31,7 @@ export default function ProfilePage() {
 		// In a real application, this would update the user profile
 		// For now, we'll just show a success message
 		setIsEditing(false);
-		setShowToast(true);
+		showToast({ message: "Profile updated successfully!", variant: "success" });
 	};
 
 	return (
@@ -79,15 +71,17 @@ export default function ProfilePage() {
 
 					<div className="grid gap-6 lg:grid-cols-3">
 						<div>
-							<div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-card p-6">
-								<div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-3xl font-bold text-primary-foreground">
-									{user.displayName.charAt(0)}
-								</div>
+							<Card>
+								<CardContent className="flex flex-col items-center gap-4 pt-6">
+									<Avatar className="h-20 w-20">
+										<AvatarFallback className="text-3xl">{user.displayName.charAt(0)}</AvatarFallback>
+									</Avatar>
 
-								<Badge variant={user.role === UserRole.ADMIN ? "default" : "secondary"}>{user.role}</Badge>
+									<Badge variant={user.role === UserRole.ADMIN ? "default" : "secondary"}>{user.role}</Badge>
 
-								<span className="text-xs text-muted-foreground">Account created: March 1, 2025</span>
-							</div>
+									<span className="text-xs text-muted-foreground">Account created: March 1, 2025</span>
+								</CardContent>
+							</Card>
 						</div>
 
 						<div className="space-y-6 lg:col-span-2">
@@ -147,17 +141,7 @@ export default function ProfilePage() {
 				</div>
 			</div>
 
-			{/* Success Toast */}
-			<div
-				className={cn("fixed bottom-4 right-4 z-50 transition-all duration-300", showToast ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0")}
-			>
-				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
-					<span className="text-sm font-medium text-foreground">Profile updated successfully!</span>
-					<button type="button" onClick={() => setShowToast(false)} className="ml-2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground">
-						<Icon name="close" />
-					</button>
-				</div>
-			</div>
+			<Toaster />
 		</ProtectedPage>
 	);
 }

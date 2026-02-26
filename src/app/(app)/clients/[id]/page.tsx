@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	Alert,
+	AlertDescription,
 	Badge,
 	Button,
 	Card,
@@ -13,6 +15,11 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 	ErrorState,
 	Icon,
 	LoadingState,
@@ -23,7 +30,7 @@ import {
 	TooltipTrigger,
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
-import { use, useMemo, useRef, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { ActionBar, ProtectedPage } from "@/components/layout";
 import {
 	getClientType,
@@ -41,9 +48,6 @@ interface Props {
 export default function OAuth2ClientDetailPage({ params }: Props) {
 	const resolvedParams = use(params);
 	const router = useRouter();
-	const [menuOpen, setMenuOpen] = useState(false);
-	const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
-	const menuButtonRef = useRef<HTMLButtonElement>(null);
 	const { copy, copiedField } = useCopyToClipboard();
 	const { isOpen: deleteDialogOpen, open: openDeleteDialog, close: closeDeleteDialog } = useDialog();
 	const { formatDateTime } = useFormatters();
@@ -54,25 +58,12 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 	const client = clientResponse?.data;
 	const clientType = useMemo(() => (client ? getClientType(client) : null), [client]);
 
-	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-		const rect = event.currentTarget.getBoundingClientRect();
-		setMenuPosition({ top: rect.bottom + 4, left: rect.left - 120 });
-		setMenuOpen(true);
-	};
-
-	const handleMenuClose = () => {
-		setMenuOpen(false);
-		setMenuPosition(null);
-	};
-
 	const handleEdit = () => {
 		router.push(`/clients/${resolvedParams.id}/edit`);
-		handleMenuClose();
 	};
 
 	const handleDeleteClick = () => {
 		openDeleteDialog();
-		handleMenuClose();
 	};
 
 	const handleDeleteConfirm = async () => {
@@ -151,9 +142,24 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 								<Icon name="edit" />
 								Edit
 							</Button>
-							<Button ref={menuButtonRef} variant="ghost" size="icon" onClick={handleMenuClick} aria-label="More options">
-								<Icon name="more-vertical" />
-							</Button>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" size="icon" aria-label="More options">
+										<Icon name="more-vertical" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem onClick={handleEdit}>
+										<Icon name="edit" />
+										Edit Client
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
+										<Icon name="delete" />
+										Delete Client
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 					)}
 				</div>
@@ -418,34 +424,6 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 					</div>
 				</div>
 
-				{/* Context Menu (dropdown) */}
-				{menuOpen && menuPosition && (
-					<>
-						<div className="fixed inset-0 z-40" onClick={handleMenuClose} />
-						<div
-							className="fixed z-50 min-w-[160px] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-md"
-							style={{ top: menuPosition.top, left: menuPosition.left }}
-						>
-							<button
-								type="button"
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent"
-								onClick={handleEdit}
-							>
-								<Icon name="edit" />
-								Edit Client
-							</button>
-							<button
-								type="button"
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
-								onClick={handleDeleteClick}
-							>
-								<Icon name="delete" />
-								Delete Client
-							</button>
-						</div>
-					</>
-				)}
-
 				{/* Delete Confirmation Dialog */}
 				<Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && closeDeleteDialog()}>
 					<DialogContent>
@@ -477,9 +455,9 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 
 				{/* Error Display */}
 				{deleteClientMutation.error && (
-					<div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-						Failed to delete client: {deleteClientMutation.error.message}
-					</div>
+					<Alert variant="destructive">
+						<AlertDescription>Failed to delete client: {deleteClientMutation.error.message}</AlertDescription>
+					</Alert>
 				)}
 			</div>
 		</ProtectedPage>

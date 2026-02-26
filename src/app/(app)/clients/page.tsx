@@ -12,6 +12,11 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 	EmptyState,
 	ErrorState,
 	Icon,
@@ -19,7 +24,7 @@ import {
 	StatCard,
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { formatClientId, getClientType, transformOAuth2ClientForTable, useAllOAuth2Clients, useDeleteOAuth2Client } from "@/features/oauth2-clients";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
@@ -29,12 +34,8 @@ import type { OAuth2Client } from "@/services/hydra";
 export default function OAuth2ClientsPage() {
 	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState("");
-	const [selectedClient, setSelectedClient] = useState<string | null>(null);
-	const [menuOpen, setMenuOpen] = useState(false);
-	const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
 	const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 	const { isOpen: deleteDialogOpen, open: openDeleteDialog, close: closeDeleteDialog } = useDialog();
-	const menuRef = useRef<HTMLDivElement>(null);
 
 	// Check if Hydra is enabled
 	const hydraEnabled = useHydraEnabled();
@@ -59,44 +60,27 @@ export default function OAuth2ClientsPage() {
 		[tableRows, searchTerm],
 	);
 
-	// Handle menu actions
-	const handleMenuClick = useCallback((event: React.MouseEvent<HTMLElement>, clientId: string) => {
-		event.stopPropagation();
-		const rect = event.currentTarget.getBoundingClientRect();
-		setSelectedClient(clientId);
-		setMenuPosition({ top: rect.bottom + 4, left: rect.left - 120 });
-		setMenuOpen(true);
-	}, []);
-
-	const handleMenuClose = useCallback(() => {
-		setMenuOpen(false);
-		setSelectedClient(null);
-		setMenuPosition(null);
-	}, []);
-
+	// Handle actions
 	const handleView = useCallback(
 		(clientId: string) => {
 			router.push(`/clients/${clientId}`);
-			handleMenuClose();
 		},
-		[router, handleMenuClose],
+		[router],
 	);
 
 	const handleEdit = useCallback(
 		(clientId: string) => {
 			router.push(`/clients/${clientId}/edit`);
-			handleMenuClose();
 		},
-		[router, handleMenuClose],
+		[router],
 	);
 
 	const handleDeleteClick = useCallback(
 		(clientId: string) => {
 			setClientToDelete(clientId);
 			openDeleteDialog();
-			handleMenuClose();
 		},
-		[openDeleteDialog, handleMenuClose],
+		[openDeleteDialog],
 	);
 
 	const handleDeleteConfirm = async () => {
@@ -184,9 +168,28 @@ export default function OAuth2ClientsPage() {
 			width: 80,
 			sortable: false,
 			renderCell: (_value: any, row: any) => (
-				<Button variant="ghost" size="icon" onClick={(event) => handleMenuClick(event, row.id)}>
-					<Icon name="more-vertical" />
-				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+							<Icon name="more-vertical" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={() => handleView(row.id)}>
+							<Icon name="view" />
+							View Details
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => handleEdit(row.id)}>
+							<Icon name="edit" />
+							Edit Client
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem variant="destructive" onClick={() => handleDeleteClick(row.id)}>
+							<Icon name="delete" />
+							Delete Client
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			),
 		},
 	];
@@ -272,44 +275,6 @@ export default function OAuth2ClientsPage() {
 						pageSizeOptions={[10, 25, 50, 100]}
 					/>
 				</Card>
-
-				{/* Context Menu (dropdown) */}
-				{menuOpen && menuPosition && (
-					<>
-						{/* Backdrop to close the menu */}
-						<div className="fixed inset-0 z-40" onClick={handleMenuClose} />
-						<div
-							ref={menuRef}
-							className="fixed z-50 min-w-[160px] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-md"
-							style={{ top: menuPosition.top, left: menuPosition.left }}
-						>
-							<button
-								type="button"
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-								onClick={() => selectedClient && handleView(selectedClient)}
-							>
-								<Icon name="view" />
-								View Details
-							</button>
-							<button
-								type="button"
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-								onClick={() => selectedClient && handleEdit(selectedClient)}
-							>
-								<Icon name="edit" />
-								Edit Client
-							</button>
-							<button
-								type="button"
-								className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
-								onClick={() => selectedClient && handleDeleteClick(selectedClient)}
-							>
-								<Icon name="delete" />
-								Delete Client
-							</button>
-						</div>
-					</>
-				)}
 
 				{/* Delete Confirmation Dialog */}
 				<Dialog open={deleteDialogOpen} onOpenChange={(open) => !open && handleDeleteCancel()}>

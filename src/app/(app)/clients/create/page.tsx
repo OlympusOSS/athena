@@ -2,7 +2,7 @@
 
 import { Button, Icon } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout, PageHeader } from "@/components/layout";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
 import { getDefaultOAuth2ClientFormData, OAuth2ClientForm, transformFormDataToCreateRequest, useCreateOAuth2Client } from "@/features/oauth2-clients";
 
@@ -22,17 +22,15 @@ export default function CreateOAuth2ClientPage() {
 	return (
 		<AdminLayout>
 			<div className="space-y-6">
-				{/* Header */}
-				<div className="flex items-center gap-3">
-					<Button variant="ghost" size="icon" onClick={() => router.back()}>
-						<Icon name="arrow-left" />
-					</Button>
-					<Icon name="grid" />
-					<div className="space-y-1">
-						<h1 className="text-2xl font-bold text-foreground">Create OAuth2 Client</h1>
-						<p className="text-sm text-muted-foreground">Configure a new OAuth2 client application</p>
-					</div>
-				</div>
+				<PageHeader
+					title="Create OAuth2 Client"
+					subtitle="Configure a new OAuth2 client application"
+					icon={<Icon name="grid" />}
+					breadcrumbs={[
+						{ label: "OAuth2 Clients", href: "/clients" },
+						{ label: "Create" },
+					]}
+				/>
 
 				<OAuth2ClientForm
 					initialData={getDefaultOAuth2ClientFormData()}

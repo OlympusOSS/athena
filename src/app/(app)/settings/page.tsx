@@ -2,6 +2,9 @@
 
 import type { IconName } from "@olympusoss/canvas";
 import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
 	Badge,
 	Button,
 	Card,
@@ -16,9 +19,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Switch,
+	Toaster,
+	useToast,
 } from "@olympusoss/canvas";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
 import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import {
@@ -71,7 +76,7 @@ function SettingRow({
 }
 
 export default function SettingsPage() {
-	const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+	const { show: showSuccessToast } = useToast();
 	const { theme: currentTheme, toggleTheme } = useTheme();
 
 	// Settings store hooks
@@ -92,7 +97,7 @@ export default function SettingsPage() {
 	const { data: allClientsData } = useAllOAuth2Clients({ enabled: hydraEnabled });
 
 	// Success callback for all save operations
-	const showSuccess = () => setShowSuccessMessage(true);
+	const showSuccess = () => showSuccessToast({ message: "Settings saved successfully!", variant: "success" });
 
 	// Form hooks for Kratos and Hydra
 	const kratosForm = useServiceSettingsForm({
@@ -145,14 +150,6 @@ export default function SettingsPage() {
 			setIsResetting(false);
 		}
 	};
-
-	// Auto-hide success message
-	useEffect(() => {
-		if (showSuccessMessage) {
-			const timer = setTimeout(() => setShowSuccessMessage(false), 3000);
-			return () => clearTimeout(timer);
-		}
-	}, [showSuccessMessage]);
 
 	return (
 		<ProtectedPage>
@@ -258,45 +255,25 @@ export default function SettingsPage() {
 				</Card>
 
 				{/* ── Danger Zone ── */}
-				<div className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-					<div className="flex items-center gap-3">
-						<Icon name="warning" className="h-4 w-4 text-destructive" />
-						<div>
-							<p className="text-sm font-medium text-destructive">Reset all settings</p>
-							<p className="text-xs text-muted-foreground">Clears all endpoint configurations and API keys. Cannot be undone.</p>
-						</div>
-					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={handleResetAll}
-						disabled={isResetting}
-						className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
-					>
-						<Icon name="reset" className="mr-1 h-3.5 w-3.5" />
-						{isResetting ? "Resetting..." : "Reset"}
-					</Button>
-				</div>
+				<Alert variant="destructive">
+					<Icon name="warning" />
+					<AlertTitle>Reset all settings</AlertTitle>
+					<AlertDescription className="flex items-center justify-between">
+						<span>Clears all endpoint configurations and API keys. Cannot be undone.</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleResetAll}
+							disabled={isResetting}
+						>
+							<Icon name="reset" />
+							{isResetting ? "Resetting..." : "Reset"}
+						</Button>
+					</AlertDescription>
+				</Alert>
 			</div>
 
-			{/* Success toast */}
-			<div
-				className={cn(
-					"fixed bottom-4 right-4 z-50 transition-all duration-300",
-					showSuccessMessage ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none",
-				)}
-			>
-				<div className="flex items-center gap-3 rounded-lg border border-success bg-success/10 px-4 py-3 shadow-lg">
-					<svg className="h-5 w-5 text-success" fill="currentColor" viewBox="0 0 20 20">
-						<path
-							fillRule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-							clipRule="evenodd"
-						/>
-					</svg>
-					Settings saved successfully!
-				</div>
-			</div>
+			<Toaster />
 		</ProtectedPage>
 	);
 }

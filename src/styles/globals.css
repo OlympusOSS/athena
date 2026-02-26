@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@source "../../../Canvas/src/**/*.{ts,tsx}";
+@source "../../../canvas/src/**/*.{ts,tsx}";
 @import "@olympusoss/canvas/styles/tokens.css";
 @import "@olympusoss/canvas/styles/animations.css";
 @import "@olympusoss/canvas/styles/glass.css";
@@ -33,4 +33,13 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Dark mode ambient background — subtle gradient orbs give
+   glass surfaces something to frost against for visible depth */
+.dark body {
+	background:
+		radial-gradient(ellipse at 20% 50%, hsl(239 84% 67% / 0.08) 0%, transparent 50%),
+		radial-gradient(ellipse at 80% 20%, hsl(160 84% 39% / 0.06) 0%, transparent 50%),
+		hsl(var(--background));
 }

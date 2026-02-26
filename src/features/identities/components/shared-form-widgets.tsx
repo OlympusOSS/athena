@@ -1,4 +1,4 @@
-import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@olympusoss/canvas";
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator } from "@olympusoss/canvas";
 import type { FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps, WidgetProps } from "@rjsf/utils";
 import parsePhoneNumber, { type CountryCode, getCountries, getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
 import React, { useState } from "react";
@@ -336,15 +336,15 @@ export const SelectWidget: React.FC<WidgetProps> = ({
 // Custom Field Template
 export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, description, errors, help, hidden }) => {
 	if (hidden) {
-		return <div>{children}</div>;
+		return <div style={{ display: "none" }}>{children}</div>;
 	}
 
 	return (
-		<div>
+		<div data-slot="form-field" style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
 			{children}
-			{description && <span>{description}</span>}
-			{errors && <span>{errors}</span>}
-			{help && <span>{help}</span>}
+			{description && <span data-slot="field-description" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>{description}</span>}
+			{errors && <span data-slot="field-errors" style={{ fontSize: "13px", color: "hsl(var(--destructive))" }}>{errors}</span>}
+			{help && <span data-slot="field-help" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>{help}</span>}
 		</div>
 	);
 };
@@ -352,10 +352,11 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, descript
 // Custom Object Field Template for nested objects
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = ({ title, description, properties }) => {
 	return (
-		<div>
-			{title && <h3>{title}</h3>}
-			{description && <p>{description}</p>}
-			<div>
+		<div data-slot="form-object" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+			{title && <h3 style={{ fontSize: "14px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: "4px" }}>{title}</h3>}
+			{description && <p style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", marginBottom: "8px" }}>{description}</p>}
+			{(title || description) && <Separator style={{ marginBottom: "12px" }} />}
+			<div style={{ display: "flex", flexDirection: "column" }}>
 				{properties.map((prop) => (
 					<div key={prop.name}>{prop.content}</div>
 				))}
