@@ -75,10 +75,7 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 					title="Edit OAuth2 Client"
 					subtitle="Update client configuration"
 					icon={<Icon name="grid" />}
-					breadcrumbs={[
-						{ label: "OAuth2 Clients", href: "/clients" },
-						{ label: "Edit" },
-					]}
+					breadcrumbs={[{ label: "OAuth2 Clients", href: "/clients" }, { label: "Edit" }]}
 				/>
 
 				<OAuth2ClientForm

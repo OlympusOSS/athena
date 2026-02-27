@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, cn, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole, useLogout, useUser } from "@/features/auth";
@@ -57,17 +57,7 @@ const hydraNavItems: NavItem[] = [
 ];
 
 /* ── Nav item with animations ── */
-function NavLink({
-	item,
-	active,
-	index,
-	section,
-}: {
-	item: NavItem;
-	active: boolean;
-	index: number;
-	section: string;
-}) {
+function NavLink({ item, active, index, section }: { item: NavItem; active: boolean; index: number; section: string }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
@@ -83,9 +73,7 @@ function NavLink({
 						className={cn(
 							"group/nav relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
 							"transition-all duration-200 ease-out",
-							active
-								? "text-primary"
-								: "text-muted-foreground hover:translate-x-1 hover:text-accent-foreground",
+							active ? "text-primary" : "text-muted-foreground hover:translate-x-1 hover:text-accent-foreground",
 						)}
 					>
 						{/* Animated active background */}
@@ -220,13 +208,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 						{/* Main nav */}
 						<SectionLabel delay={0}>Main</SectionLabel>
 						{filteredMainNavItems.map((item, i) => (
-							<NavLink
-								key={item.path}
-								item={item}
-								active={isActive(item.path)}
-								index={i}
-								section="main"
-							/>
+							<NavLink key={item.path} item={item} active={isActive(item.path)} index={i} section="main" />
 						))}
 
 						{/* Hydra nav */}
@@ -235,13 +217,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 								<Separator className="my-2" />
 								<SectionLabel delay={0.3}>Hydra</SectionLabel>
 								{filteredHydraNavItems.map((item, i) => (
-									<NavLink
-										key={item.path}
-										item={item}
-										active={isActive(item.path)}
-										index={filteredMainNavItems.length + i}
-										section="hydra"
-									/>
+									<NavLink key={item.path} item={item} active={isActive(item.path)} index={filteredMainNavItems.length + i} section="hydra" />
 								))}
 							</>
 						)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Icon } from "@olympusoss/canvas";
+import { Icon } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { AdminLayout, PageHeader } from "@/components/layout";
 import type { OAuth2ClientFormData } from "@/features/oauth2-clients";
@@ -26,10 +26,7 @@ export default function CreateOAuth2ClientPage() {
 					title="Create OAuth2 Client"
 					subtitle="Configure a new OAuth2 client application"
 					icon={<Icon name="grid" />}
-					breadcrumbs={[
-						{ label: "OAuth2 Clients", href: "/clients" },
-						{ label: "Create" },
-					]}
+					breadcrumbs={[{ label: "OAuth2 Clients", href: "/clients" }, { label: "Create" }]}
 				/>
 
 				<OAuth2ClientForm

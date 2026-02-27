@@ -30,7 +30,7 @@ import {
 	TooltipTrigger,
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
-import { use, useMemo, useState } from "react";
+import { use, useMemo } from "react";
 import { ActionBar, ProtectedPage } from "@/components/layout";
 import {
 	getClientType,

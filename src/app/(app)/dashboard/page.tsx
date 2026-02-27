@@ -185,7 +185,14 @@ export default function Dashboard() {
 					icon={<Icon name="time" />}
 				/>
 
-				<StatCard index={3} colorVariant="warning" title="Verification Rate" value={`${verificationRate}%`} subtitle="Email verified users" icon={<Icon name="verified" />} />
+				<StatCard
+					index={3}
+					colorVariant="warning"
+					title="Verification Rate"
+					value={`${verificationRate}%`}
+					subtitle="Email verified users"
+					icon={<Icon name="verified" />}
+				/>
 
 				<StatCard
 					index={4}

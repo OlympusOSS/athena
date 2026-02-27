@@ -264,11 +264,7 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
-								<CodeBlock
-									code={JSON.stringify(identity.metadata_public, null, 2)}
-									language="json"
-									maxHeight="400px"
-								/>
+								<CodeBlock code={JSON.stringify(identity.metadata_public, null, 2)} language="json" maxHeight="400px" />
 							) : (
 								<p className="text-sm text-muted-foreground">No public metadata available</p>
 							)}
@@ -282,11 +278,7 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
-								<CodeBlock
-									code={JSON.stringify(identity.metadata_admin, null, 2)}
-									language="json"
-									maxHeight="400px"
-								/>
+								<CodeBlock code={JSON.stringify(identity.metadata_admin, null, 2)} language="json" maxHeight="400px" />
 							) : (
 								<p className="text-sm text-muted-foreground">No admin metadata available</p>
 							)}
@@ -448,12 +440,7 @@ export default function IdentityDetailPage() {
 							<CardContent className="space-y-4">
 								<h3 className="text-lg font-semibold text-foreground">Raw Data</h3>
 								<Separator />
-								<CodeBlock
-									code={JSON.stringify(identity, null, 2)}
-									language="json"
-									title="Identity JSON"
-									maxHeight="60vh"
-								/>
+								<CodeBlock code={JSON.stringify(identity, null, 2)} language="json" title="Identity JSON" maxHeight="60vh" />
 							</CardContent>
 						</Card>
 					</div>

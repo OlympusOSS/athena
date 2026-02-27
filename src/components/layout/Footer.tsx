@@ -3,9 +3,7 @@
 export function Footer() {
 	return (
 		<footer>
-			<p>
-				Built by Olympus
-			</p>
+			<p>Built by Olympus</p>
 		</footer>
 	);
 }

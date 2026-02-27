@@ -129,7 +129,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 			<CardContent>
 				{createIdentityMutation.isError && (
 					<Alert variant="destructive">
-						<Icon name="alert-circle" />
+						<Icon name="error" />
 						<AlertDescription>Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 					</Alert>
 				)}
@@ -190,11 +190,11 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							<Separator />
 							<CardContent>
 								<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending} type="button">
-									<Icon name="x" />
+									<Icon name="close" />
 									Cancel
 								</Button>
 								<Button type="submit" disabled={createIdentityMutation.isPending || !selectedSchemaId}>
-									{createIdentityMutation.isPending ? <Icon name="loader" /> : <Icon name="save" />}
+									{createIdentityMutation.isPending ? <Icon name="loading" /> : <Icon name="save" />}
 									{createIdentityMutation.isPending ? "Creating..." : "Create Identity"}
 								</Button>
 							</CardContent>
@@ -208,7 +208,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 					<Separator />
 					<CardContent>
 						<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending}>
-							<Icon name="x" />
+							<Icon name="close" />
 							Cancel
 						</Button>
 						<Button disabled>No form fields available</Button>

@@ -275,11 +275,7 @@ export default function SchemasPage() {
 								{schemaLoading ? (
 									<LoadingState variant="section" message="Loading schema details..." />
 								) : schemaContent ? (
-									<CodeBlock
-										code={JSON.stringify(schemaContent, null, 2)}
-										language="json"
-										maxHeight="60vh"
-									/>
+									<CodeBlock code={JSON.stringify(schemaContent, null, 2)} language="json" maxHeight="60vh" />
 								) : (
 									<p className="text-sm text-muted-foreground">Failed to load schema content. Please try again.</p>
 								)}

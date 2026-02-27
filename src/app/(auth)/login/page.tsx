@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthLayout, Icon, LoadingState } from "@olympusoss/canvas";
+import { AuthLayout, LoadingState } from "@olympusoss/canvas";
 import { useEffect, useRef } from "react";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 

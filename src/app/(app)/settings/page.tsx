@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Switch,
+	Toast,
 	Toaster,
 	useToast,
 } from "@olympusoss/canvas";
@@ -76,7 +77,7 @@ function SettingRow({
 }
 
 export default function SettingsPage() {
-	const { show: showSuccessToast } = useToast();
+	const { toast, show: showSuccessToast, dismiss } = useToast();
 	const { theme: currentTheme, toggleTheme } = useTheme();
 
 	// Settings store hooks
@@ -97,7 +98,7 @@ export default function SettingsPage() {
 	const { data: allClientsData } = useAllOAuth2Clients({ enabled: hydraEnabled });
 
 	// Success callback for all save operations
-	const showSuccess = () => showSuccessToast({ message: "Settings saved successfully!", variant: "success" });
+	const showSuccess = () => showSuccessToast("Settings saved successfully!", "success");
 
 	// Form hooks for Kratos and Hydra
 	const kratosForm = useServiceSettingsForm({
@@ -260,12 +261,7 @@ export default function SettingsPage() {
 					<AlertTitle>Reset all settings</AlertTitle>
 					<AlertDescription className="flex items-center justify-between">
 						<span>Clears all endpoint configurations and API keys. Cannot be undone.</span>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleResetAll}
-							disabled={isResetting}
-						>
+						<Button variant="outline" size="sm" onClick={handleResetAll} disabled={isResetting}>
 							<Icon name="reset" />
 							{isResetting ? "Resetting..." : "Reset"}
 						</Button>
@@ -273,7 +269,9 @@ export default function SettingsPage() {
 				</Alert>
 			</div>
 
-			<Toaster />
+			<Toaster>
+				<Toast {...toast} onClose={dismiss} />
+			</Toaster>
 		</ProtectedPage>
 	);
 }

@@ -342,9 +342,21 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = ({ children, descript
 	return (
 		<div data-slot="form-field" style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
 			{children}
-			{description && <span data-slot="field-description" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>{description}</span>}
-			{errors && <span data-slot="field-errors" style={{ fontSize: "13px", color: "hsl(var(--destructive))" }}>{errors}</span>}
-			{help && <span data-slot="field-help" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>{help}</span>}
+			{description && (
+				<span data-slot="field-description" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>
+					{description}
+				</span>
+			)}
+			{errors && (
+				<span data-slot="field-errors" style={{ fontSize: "13px", color: "hsl(var(--destructive))" }}>
+					{errors}
+				</span>
+			)}
+			{help && (
+				<span data-slot="field-help" style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>
+					{help}
+				</span>
+			)}
 		</div>
 	);
 };
