@@ -143,3 +143,15 @@ jobs:
 
       - name: Inspect image
         run: docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:latest
+
+  notify-platform:
+    needs: merge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger platform deploy
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.ORG_DISPATCH_TOKEN }}
+          repository: OlympusOSS/platform
+          event-type: image-pushed
+          client-payload: '{"service": "athena", "sha": "${{ github.sha }}"}'
