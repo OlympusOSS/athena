@@ -144,14 +144,60 @@ jobs:
       - name: Inspect image
         run: docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:latest
 
-  notify-platform:
+  deploy:
     needs: merge
     runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-athena-production
+      cancel-in-progress: false
+
+    env:
+      SSH_OPTS: -i ~/.ssh/deploy_key -p ${{ vars.DEPLOY_SSH_PORT || 22 }} -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=30
+      SSH_TARGET: ${{ vars.DEPLOY_USER || 'root' }}@${{ vars.DEPLOY_SERVER_IP }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/olympusoss/prod' }}
+      SERVICES: ciam-athena iam-athena
+
     steps:
-      - name: Trigger platform deploy
-        uses: peter-evans/repository-dispatch@v4
-        with:
-          token: ${{ secrets.ORG_DISPATCH_TOKEN }}
-          repository: OlympusOSS/platform
-          event-type: image-pushed
-          client-payload: '{"service": "athena", "sha": "${{ github.sha }}"}'
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -T 10 -p ${{ vars.DEPLOY_SSH_PORT || 22 }} ${{ vars.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Login to GHCR on server
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
+            "echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u ${{ vars.GHCR_USERNAME }} --password-stdin"
+
+      - name: Pull updated images
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
+            "cd ${{ env.DEPLOY_PATH }} && docker compose pull ${{ env.SERVICES }}"
+
+      - name: Restart services
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
+            "cd ${{ env.DEPLOY_PATH }} && docker compose up -d ${{ env.SERVICES }}"
+
+      - name: Wait for healthy
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'cd ${{ env.DEPLOY_PATH }} && \
+            for i in $(seq 1 20); do \
+              HEALTH=$(docker compose ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
+              echo "[${i}/20] ${HEALTH}"; \
+              if echo "${HEALTH}" | grep -qv "healthy"; then \
+                sleep 5; \
+              else \
+                echo "All services healthy!"; \
+                exit 0; \
+              fi; \
+            done; \
+            echo "WARNING: Not all services healthy after 100s"; \
+            docker compose ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
+            exit 1'
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
