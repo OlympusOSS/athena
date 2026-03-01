@@ -306,7 +306,7 @@ export default function Dashboard() {
 		});
 	}, [layout.widgets, isHydraAvailable]);
 
-	// Build react-grid-layout Layouts object
+	// Build react-grid-layout Layouts object with proper responsive reflow
 	const gridLayouts = useMemo<Layouts>(() => {
 		const xlLayout = visibleWidgets.map((w) => ({
 			i: w.i,
@@ -320,7 +320,44 @@ export default function Dashboard() {
 			maxH: w.maxH,
 		}));
 
-		return { xl: xlLayout, lg: xlLayout, md: xlLayout, sm: xlLayout, xs: xlLayout };
+		// Helper to build a stacked layout for a given column count
+		const buildResponsiveLayout = (maxCols: number, forceFullWidth = false) => {
+			let y = 0;
+			let x = 0;
+			let rowHeight = 0;
+			return visibleWidgets.map((w) => {
+				// At small breakpoints, force all widgets to full width
+				const widgetW = forceFullWidth ? maxCols : Math.min(w.w, maxCols);
+				// If it won't fit on the current row, move to next row
+				if (x + widgetW > maxCols) {
+					y += rowHeight;
+					x = 0;
+					rowHeight = 0;
+				}
+				const item = {
+					i: w.i,
+					x,
+					y,
+					w: widgetW,
+					h: w.h,
+					minW: w.minW ? Math.min(w.minW, maxCols) : undefined,
+					minH: w.minH,
+					maxW: w.maxW,
+					maxH: w.maxH,
+				};
+				x += widgetW;
+				rowHeight = Math.max(rowHeight, w.h);
+				return item;
+			});
+		};
+
+		return {
+			xl: xlLayout,
+			lg: xlLayout,
+			md: buildResponsiveLayout(6),
+			sm: buildResponsiveLayout(3, true),
+			xs: buildResponsiveLayout(1, true),
+		};
 	}, [visibleWidgets]);
 
 	// Available widgets for the add dialog

@@ -273,7 +273,7 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 	),
 
 	"stat-user-growth": ({ totalGrowth4Weeks, growthTrend, registrationsByWeek }) => {
-		const labels = ["Current", "1 Week", "2 Weeks", "3 Weeks"];
+		const labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
 		const reversed = [...registrationsByWeek].reverse();
 		const barData = reversed.map((count, i) => ({ year: i, count, label: labels[i] }));
 		return (
