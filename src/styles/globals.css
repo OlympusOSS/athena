@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source "../../../canvas/src/**/*.{ts,tsx}";
+@source "../../node_modules/@olympusoss/canvas/src/**/*.{ts,tsx}";
 @import "@olympusoss/canvas/styles/tokens.css";
 @import "@olympusoss/canvas/styles/animations.css";
 @import "@olympusoss/canvas/styles/glass.css";
