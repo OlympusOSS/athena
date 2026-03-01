@@ -120,9 +120,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 		const current = get().layout;
 		const updatedLayout = {
 			...current,
-			widgets: current.widgets.map((widget) =>
-				widget.i === widgetId ? { ...widget, w, h } : widget,
-			),
+			widgets: current.widgets.map((widget) => (widget.i === widgetId ? { ...widget, w, h } : widget)),
 		};
 		set({ layout: updatedLayout });
 		persistLayout(updatedLayout);
