@@ -139,6 +139,7 @@ export async function getSessionsUntilDate(options?: {
 	pageSize?: number;
 	active?: boolean;
 	untilDate?: Date;
+	expand?: Array<"identity" | "devices">;
 	onProgress?: (currentCount: number, pageNumber: number) => void;
 }) {
 	const {
@@ -146,6 +147,7 @@ export async function getSessionsUntilDate(options?: {
 		pageSize = 250,
 		active,
 		untilDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Default: 7 days ago
+		expand = ["identity"],
 		onProgress,
 	} = options || {};
 
@@ -163,7 +165,7 @@ export async function getSessionsUntilDate(options?: {
 		try {
 			const requestParams: any = {
 				pageSize,
-				expand: ["identity"],
+				expand,
 				active,
 			};
 

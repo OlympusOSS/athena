@@ -8,6 +8,18 @@ export interface IdentityAnalytics {
 		verified: number;
 		unverified: number;
 	};
+	weekOverWeekGrowth: {
+		currentWeekCount: number;
+		previousWeekCount: number;
+		percentageChange: number;
+		direction: "up" | "down" | "flat";
+	};
+	recentSignups: Array<{
+		id: string;
+		timestamp: string;
+		email: string;
+		schemaId: string;
+	}>;
 }
 
 export interface SessionAnalytics {
@@ -16,6 +28,16 @@ export interface SessionAnalytics {
 	sessionsByDay: Array<{ date: string; count: number }>;
 	averageSessionDuration: number;
 	sessionsLast7Days: number;
+	authMethodBreakdown: Array<{ method: string; count: number }>;
+	sessionsByHour: Array<{ hour: number; count: number }>;
+	recentLogins: Array<{
+		id: string;
+		timestamp: string;
+		email: string;
+		method: string;
+		identityId: string;
+	}>;
+	sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
 }
 
 export interface SystemAnalytics {

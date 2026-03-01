@@ -76,24 +76,40 @@ Endpoints and API keys can also be configured at runtime via the **Settings** pa
 
 ## Getting Started
 
-### Run locally
+Athena is part of the [OlympusOSS Identity Platform](https://github.com/OlympusOSS/platform). All repos must be cloned as siblings under a shared workspace:
+
+```
+Olympus/
+├── platform/    # Infrastructure & Docker Compose — start here
+├── athena/      # Admin dashboard (this repo)
+├── hera/        # Auth & consent UI
+├── site/        # Brochure site & OAuth2 playground
+├── canvas/      # Design system
+└── octl/        # Deployment CLI
+```
+
+### Start the development environment
+
+```bash
+cd platform/dev
+docker compose up -d
+```
+
+Wait for the seed to complete, then open:
+
+- **IAM Athena** — [http://localhost:4003](http://localhost:4003) (employee admin)
+- **CIAM Athena** — [http://localhost:3003](http://localhost:3003) (customer admin)
+
+Athena is volume-mounted into Docker for **live reload** — edit files locally and changes reflect immediately.
+
+### Standalone (without platform)
 
 ```bash
 bun install
 bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-### Run with Docker
-
-```bash
-docker build -t athena .
-docker run -p 3000:3000 \
-  -e KRATOS_PUBLIC_URL=http://your-kratos:4433 \
-  -e KRATOS_ADMIN_URL=http://your-kratos:4434 \
-  athena
-```
+Open [http://localhost:3000](http://localhost:3000). Requires Kratos (and optionally Hydra) running separately.
 
 ### Commands
 

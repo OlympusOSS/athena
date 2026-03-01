@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydraEnabled, useIsOryNetwork, useSettingsLoaded } from "@/features/settings/hooks/useSettings";
+import { resolveIPs, clusterGeoResults } from "@/services/geo";
 import { checkHydraHealth, listOAuth2Clients } from "@/services/hydra";
 import { checkKratosHealth, getAllIdentities, getSessionsUntilDate, listIdentitySchemas, listSessions } from "@/services/kratos";
 import type { HydraAnalytics, IdentityAnalytics, SessionAnalytics, SystemAnalytics } from "../types";
+import { calculatePercentageChange } from "../utils";
 
 // Health check hooks
 const useKratosHealthCheck = (isOryNetwork: boolean, isSettingsLoaded: boolean) => {
@@ -77,6 +79,20 @@ export const useIdentityAnalytics = (isKratosHealthy: boolean) => {
 				identitiesByDay.push({ date: dateStr, count });
 			}
 
+			// Group identities by year (for yearly bar chart)
+			const yearGroups = allIdentities.reduce(
+				(acc, identity) => {
+					const year = new Date(identity.created_at).getFullYear();
+					acc[year] = (acc[year] || 0) + 1;
+					return acc;
+				},
+				{} as Record<number, number>,
+			);
+
+			const identitiesByYear = Object.entries(yearGroups)
+				.map(([year, count]) => ({ year: Number(year), count: count as number }))
+				.sort((a, b) => b.year - a.year); // Latest year first
+
 			// Group by schema
 			const schemaGroups = allIdentities.reduce(
 				(acc, identity) => {
@@ -106,12 +122,53 @@ export const useIdentityAnalytics = (isKratosHealthy: boolean) => {
 				}
 			});
 
+			// Weekly registration counts (last 4 weeks, oldest first)
+			const registrationsByWeek: number[] = [];
+			for (let w = 3; w >= 0; w--) {
+				const weekStart = new Date(now.getTime() - (w + 1) * 7 * 24 * 60 * 60 * 1000);
+				const weekEnd = new Date(now.getTime() - w * 7 * 24 * 60 * 60 * 1000);
+				const count = allIdentities.filter((identity) => {
+					const createdAt = new Date(identity.created_at);
+					return createdAt >= weekStart && createdAt < weekEnd;
+				}).length;
+				registrationsByWeek.push(count);
+			}
+			const totalGrowth4Weeks = registrationsByWeek.reduce((a, b) => a + b, 0);
+
+			// Week-over-week growth (this week vs last week)
+			const currentWeekCount = registrationsByWeek[3]; // This week
+			const previousWeekCount = registrationsByWeek[2]; // Last week
+
+			const percentageChange = calculatePercentageChange(currentWeekCount, previousWeekCount);
+			const direction = percentageChange > 0 ? "up" : percentageChange < 0 ? "down" : "flat";
+
+			// Recent signups (top 20)
+			const recentSignups = [...allIdentities]
+				.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+				.slice(0, 20)
+				.map((identity) => ({
+					id: identity.id,
+					timestamp: identity.created_at,
+					email: identity.traits?.email || identity.traits?.username || identity.id,
+					schemaId: identity.schema_id || "unknown",
+				}));
+
 			return {
 				totalIdentities: allIdentities.length,
 				newIdentitiesLast30Days,
 				identitiesByDay,
+				identitiesByYear,
 				identitiesBySchema,
 				verificationStatus: { verified, unverified },
+				weekOverWeekGrowth: {
+					currentWeekCount,
+					previousWeekCount,
+					percentageChange: Math.round(percentageChange * 10) / 10,
+					direction: direction as "up" | "down" | "flat",
+				},
+				registrationsByWeek,
+				totalGrowth4Weeks,
+				recentSignups,
 			};
 		},
 		enabled: isKratosHealthy, // Only fetch when Kratos is healthy
@@ -125,13 +182,15 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 	return useQuery({
 		queryKey: ["analytics", "sessions"],
 		queryFn: async (): Promise<SessionAnalytics> => {
-			// Fetch sessions until 7 days ago (smart pagination stops when reaching older sessions)
+			// Fetch sessions up to 1 year ago for analytics (peak hours, locations, etc.)
+			const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
 			const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 			const result = await getSessionsUntilDate({
 				maxPages: 10,
 				pageSize: 250,
 				active: undefined, // Get all sessions (active and inactive)
-				untilDate: sevenDaysAgo,
+				untilDate: oneYearAgo,
+				expand: ["identity", "devices"],
 				onProgress: (count, page) => console.log(`Analytics: Fetched ${count} sessions (page ${page})`),
 			});
 
@@ -147,9 +206,9 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				return authenticatedAt >= sevenDaysAgo;
 			}).length;
 
-			// Group sessions by day (last 7 days) - count sessions that were active on each day
+			// Group sessions by day (last 30 days) - count sessions that were active on each day
 			const sessionsByDay: Array<{ date: string; count: number }> = [];
-			for (let i = 6; i >= 0; i--) {
+			for (let i = 29; i >= 0; i--) {
 				const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
 				const dateStr = date.toISOString().split("T")[0];
 				const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
@@ -178,13 +237,15 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				sessionsByDay.push({ date: dateStr, count });
 			}
 
-			// Calculate average session duration (estimate based on last activity)
+			// Calculate average session duration (time from authentication to now or expiry)
+			const currentTime = Date.now();
 			const sessionDurations = sessions
-				.filter((session) => session.authenticated_at && session.issued_at)
+				.filter((session) => session.authenticated_at)
 				.map((session) => {
 					const authenticated = new Date(session.authenticated_at || "").getTime();
-					const issued = new Date(session.issued_at || "").getTime();
-					return Math.abs(authenticated - issued) / (1000 * 60); // minutes
+					const expiresAt = session.expires_at ? new Date(session.expires_at).getTime() : currentTime;
+					const endTime = expiresAt < currentTime ? expiresAt : currentTime;
+					return Math.max(0, endTime - authenticated) / (1000 * 60); // minutes
 				});
 
 			const averageSessionDuration =
@@ -194,12 +255,99 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 			const activeSessionsResponse = await listSessions(true);
 			const activeSessions = activeSessionsResponse.data.length;
 
+			// Active users by year (unique identity IDs with sessions per year)
+			const activeUserYearSets: Record<number, Set<string>> = {};
+			sessions.forEach((session) => {
+				if (!session.authenticated_at || !session.identity?.id) return;
+				const year = new Date(session.authenticated_at).getFullYear();
+				if (!activeUserYearSets[year]) activeUserYearSets[year] = new Set();
+				activeUserYearSets[year].add(session.identity.id);
+			});
+
+			const activeUsersByYear = Object.entries(activeUserYearSets)
+				.map(([year, ids]) => ({ year: Number(year), count: ids.size }))
+				.sort((a, b) => b.year - a.year); // Latest year first
+
+			// Total unique active users (across all years)
+			const allActiveUserIds = new Set<string>();
+			Object.values(activeUserYearSets).forEach((ids) => ids.forEach((id) => allActiveUserIds.add(id)));
+			const totalActiveUsers = allActiveUserIds.size;
+
+			// Authentication method breakdown
+			const methodCounts: Record<string, number> = {};
+			sessions.forEach((session) => {
+				const methods = (session as any).authentication_methods || [];
+				const uniqueMethods = new Set(methods.map((m: any) => m.method).filter(Boolean));
+				uniqueMethods.forEach((method) => {
+					methodCounts[method as string] = (methodCounts[method as string] || 0) + 1;
+				});
+			});
+			const authMethodBreakdown = Object.entries(methodCounts)
+				.map(([method, count]) => ({ method, count: count as number }))
+				.sort((a, b) => b.count - a.count);
+
+			// Sessions by hour of day (0-23)
+			const hourCounts = new Array(24).fill(0);
+			sessions.forEach((session) => {
+				if (session.authenticated_at) {
+					const hour = new Date(session.authenticated_at).getHours();
+					hourCounts[hour]++;
+				}
+			});
+			const sessionsByHour = hourCounts.map((count, hour) => ({ hour, count }));
+
+			// Recent logins (top 20)
+			const recentLogins = sessions
+				.filter((s) => s.authenticated_at && s.identity)
+				.sort((a, b) => new Date(b.authenticated_at!).getTime() - new Date(a.authenticated_at!).getTime())
+				.slice(0, 20)
+				.map((session) => ({
+					id: session.id,
+					timestamp: session.authenticated_at!,
+					email: session.identity?.traits?.email || session.identity?.traits?.username || session.identity?.id || "Unknown",
+					method: ((session as any).authentication_methods || [])[0]?.method || "unknown",
+					identityId: session.identity?.id || "",
+				}));
+
+			// Location breakdown — resolve device IPs to lat/lng coordinates
+			const allIPs: string[] = [];
+			sessions.forEach((session) => {
+				const devices = (session as any).devices || [];
+				devices.forEach((device: any) => {
+					if (device.ip_address) {
+						allIPs.push(device.ip_address);
+					}
+				});
+			});
+
+			let sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }> = [];
+			if (allIPs.length > 0) {
+				try {
+					const geoResults = await resolveIPs(allIPs);
+					sessionGeoPoints = clusterGeoResults(geoResults);
+				} catch (err) {
+					console.warn("[analytics] IP geolocation failed:", err);
+				}
+			}
+
+			// Collect session timestamps for client-side peak hours filtering
+			const sessionTimestamps = sessions
+				.filter((s) => s.authenticated_at)
+				.map((s) => s.authenticated_at!);
+
 			return {
 				totalSessions: sessions.length,
 				activeSessions,
+				totalActiveUsers,
+				activeUsersByYear,
 				sessionsByDay,
 				averageSessionDuration: Math.round(averageSessionDuration),
 				sessionsLast7Days,
+				authMethodBreakdown,
+				sessionsByHour,
+				sessionTimestamps,
+				recentLogins,
+				sessionGeoPoints,
 			};
 		},
 		enabled: isKratosHealthy, // Only fetch when Kratos is healthy
