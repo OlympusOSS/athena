@@ -14,6 +14,7 @@ import type { Identity } from "@ory/kratos-client";
 import { useQueryClient } from "@tanstack/react-query";
 import type React from "react";
 import { useCallback, useState } from "react";
+import { isDemoIdentity } from "@/lib/demo";
 import { deleteIdentity, patchIdentity } from "@/services/kratos/endpoints/identities";
 import { deleteIdentitySessions } from "@/services/kratos/endpoints/sessions";
 
@@ -109,6 +110,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 
 	const config = OPERATION_CONFIG[operationType];
 	const displayIdentities = identities.filter((i) => identityIds.includes(i.id));
+	const demoCount = operationType === "delete" ? displayIdentities.filter((i) => isDemoIdentity(i)).length : 0;
 	const shown = displayIdentities.slice(0, 5);
 	const remaining = displayIdentities.length - shown.length;
 
@@ -138,6 +140,16 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 
 		for (let i = 0; i < total; i++) {
 			const id = identityIds[i];
+			// Skip demo identities for delete operations
+			if (operationType === "delete") {
+				const identity = identities.find((ident) => ident.id === id);
+				if (isDemoIdentity(identity)) {
+					errorList.push({ id, message: "Protected demo account — skipped" });
+					setProgress(((i + 1) / total) * 100);
+					setErrors([...errorList]);
+					continue;
+				}
+			}
 			try {
 				await executeOperation(operationType, id);
 				successCount++;
@@ -207,6 +219,15 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 								{remaining > 0 && <li>+{remaining} more</li>}
 							</ul>
 						</div>
+
+						{demoCount > 0 && (
+							<Alert>
+								<Icon name="lock" />
+								<AlertDescription>
+									{demoCount} demo {demoCount === 1 ? "account is" : "accounts are"} protected and will be skipped.
+								</AlertDescription>
+							</Alert>
+						)}
 
 						<DialogFooter>
 							<Button variant="outline" onClick={handleClose}>

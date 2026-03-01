@@ -13,6 +13,7 @@ import {
 } from "@olympusoss/canvas";
 import type { Identity } from "@ory/kratos-client";
 import type React from "react";
+import { isDemoIdentity } from "@/lib/demo";
 import { uiLogger } from "@/lib/logger";
 import { useDeleteIdentity } from "../hooks/useIdentities";
 
@@ -40,6 +41,7 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 
 	if (!identity) return null;
 
+	const isDemo = isDemoIdentity(identity);
 	const traits = identity.traits as Record<string, unknown>;
 	const name = traits?.name as Record<string, string> | undefined;
 	const displayName =
@@ -94,6 +96,13 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 						</AlertDescription>
 					</Alert>
 
+					{isDemo && (
+						<Alert>
+							<Icon name="lock" />
+							<AlertDescription>This is a protected demo account and cannot be deleted.</AlertDescription>
+						</Alert>
+					)}
+
 					{deleteIdentityMutation.isError && (
 						<Alert variant="destructive">
 							<AlertDescription>Failed to delete identity: {(deleteIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
@@ -104,7 +113,7 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 						<Button variant="outline" onClick={onClose} disabled={deleteIdentityMutation.isPending}>
 							Cancel
 						</Button>
-						<Button variant="destructive" onClick={handleDelete} disabled={deleteIdentityMutation.isPending}>
+						<Button variant="destructive" onClick={handleDelete} disabled={deleteIdentityMutation.isPending || isDemo}>
 							{deleteIdentityMutation.isPending ? "Deleting..." : "Delete Identity"}
 						</Button>
 					</DialogFooter>

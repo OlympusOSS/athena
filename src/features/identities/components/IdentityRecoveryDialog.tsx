@@ -14,6 +14,7 @@ import {
 import type { Identity } from "@ory/kratos-client";
 import type React from "react";
 import { useState } from "react";
+import { isDemoIdentity } from "@/lib/demo";
 import { createRecoveryLink } from "@/services/kratos";
 
 interface IdentityRecoveryDialogProps {
@@ -69,6 +70,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 
 	if (!identity) return null;
 
+	const isDemo = isDemoIdentity(identity);
 	const traits = identity.traits as Record<string, unknown>;
 	const email = (traits?.email as string) || "N/A";
 
@@ -131,9 +133,16 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 					)}
 				</div>
 
+				{isDemo && (
+					<Alert>
+						<Icon name="lock" />
+						<AlertDescription>Password recovery is disabled for demo accounts.</AlertDescription>
+					</Alert>
+				)}
+
 				<DialogFooter>
 					{!recoveryLink && (
-						<Button onClick={handleGenerateRecoveryLink} disabled={loading}>
+						<Button onClick={handleGenerateRecoveryLink} disabled={loading || isDemo}>
 							{loading ? <Icon name="loading" /> : <Icon name="link" />}
 							Generate Recovery Link
 						</Button>

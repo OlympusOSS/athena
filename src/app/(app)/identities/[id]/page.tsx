@@ -38,6 +38,7 @@ import { SessionsTable } from "@/features/sessions/components/SessionsTable";
 import { useDeleteIdentitySessions, useIdentitySessions } from "@/features/sessions/hooks";
 import { useDialog } from "@/hooks";
 import { formatDate } from "@/lib/date-utils";
+import { isDemoIdentity } from "@/lib/demo";
 
 const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
 	password: "Password",
@@ -163,6 +164,7 @@ export default function IdentityDetailPage() {
 		);
 	}
 
+	const isDemo = isDemoIdentity(identity);
 	const traits = identity.traits as Record<string, unknown>;
 
 	return (
@@ -175,7 +177,10 @@ export default function IdentityDetailPage() {
 								<Icon name="arrow-left" />
 							</Button>
 							<div className="space-y-1">
-								<h1 className="text-2xl font-bold text-foreground">Identity Details</h1>
+								<FlexBox align="center" gap={2}>
+									<h1 className="text-2xl font-bold text-foreground">Identity Details</h1>
+									{isDemo && <Badge variant="secondary">Demo Account</Badge>}
+								</FlexBox>
 								<code className="text-xs font-mono text-muted-foreground">{identityId}</code>
 							</div>
 						</FlexBox>
@@ -196,14 +201,14 @@ export default function IdentityDetailPage() {
 								<Icon name="edit" />
 								Edit
 							</Button>
-							<Button variant="outline" onClick={handleRecover}>
+							<Button variant="outline" onClick={handleRecover} disabled={isDemo}>
 								<Icon name="link" />
 								Recover
 							</Button>
 							<Button
 								variant={identity.state === "active" ? "outline" : "default"}
 								onClick={handleStateToggle}
-								disabled={patchIdentityMutation.isPending}
+								disabled={isDemo || patchIdentityMutation.isPending}
 							>
 								{identity.state === "active" ? (
 									<>
@@ -217,7 +222,7 @@ export default function IdentityDetailPage() {
 									</>
 								)}
 							</Button>
-							<Button variant="destructive" onClick={handleDelete}>
+							<Button variant="destructive" onClick={handleDelete} disabled={isDemo}>
 								<Icon name="delete" />
 								Delete
 							</Button>

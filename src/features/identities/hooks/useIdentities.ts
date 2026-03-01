@@ -9,6 +9,7 @@ import {
 	listIdentities,
 	patchIdentity,
 } from "@/services/kratos";
+import { isDemoIdentity } from "@/lib/demo";
 
 // Identity list hook with pagination
 export const useIdentities = (params?: { pageSize?: number; pageToken?: string }) => {
@@ -251,6 +252,10 @@ export const useDeleteIdentity = () => {
 
 	return useMutation({
 		mutationFn: async (id: string) => {
+			const { data: identity } = await getIdentity({ id });
+			if (isDemoIdentity(identity)) {
+				throw new Error("This is a protected demo account and cannot be deleted.");
+			}
 			await deleteIdentity({ id });
 			return id;
 		},
@@ -302,6 +307,10 @@ export const useDeleteIdentityCredentials = () => {
 export const useRecoverIdentity = () => {
 	return useMutation({
 		mutationFn: async ({ id }: { id: string }) => {
+			const { data: identity } = await getIdentity({ id });
+			if (isDemoIdentity(identity)) {
+				throw new Error("Password recovery is disabled for demo accounts.");
+			}
 			const { data } = await createRecoveryLink(id);
 			return data;
 		},
