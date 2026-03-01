@@ -147,7 +147,6 @@ jobs:
   deploy:
     needs: merge
     runs-on: ubuntu-latest
-    environment: production
     concurrency:
       group: deploy-athena-production
       cancel-in-progress: false
