@@ -3,6 +3,7 @@ export interface IdentityAnalytics {
 	totalIdentities: number;
 	newIdentitiesLast30Days: number;
 	identitiesByDay: Array<{ date: string; count: number }>;
+	identitiesByYear: Array<{ year: number; count: number }>;
 	identitiesBySchema: Array<{ schema: string; count: number }>;
 	verificationStatus: {
 		verified: number;
@@ -20,6 +21,8 @@ export interface IdentityAnalytics {
 		email: string;
 		schemaId: string;
 	}>;
+	registrationsByWeek: number[];
+	totalGrowth4Weeks: number;
 }
 
 export interface SessionAnalytics {
@@ -38,6 +41,9 @@ export interface SessionAnalytics {
 		identityId: string;
 	}>;
 	sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
+	totalActiveUsers: number;
+	activeUsersByYear: Array<{ year: number; count: number }>;
+	sessionTimestamps: string[];
 }
 
 export interface SystemAnalytics {

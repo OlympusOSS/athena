@@ -94,9 +94,7 @@ export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
  * Aggregate GeoResults into location clusters for the heat map.
  * Groups by city (rounded lat/lng for nearby locations).
  */
-export function clusterGeoResults(
-	results: GeoResult[],
-): Array<{ lat: number; lng: number; label: string; count: number }> {
+export function clusterGeoResults(results: GeoResult[]): Array<{ lat: number; lng: number; label: string; count: number }> {
 	// Group by rounded lat/lng (0.5 degree ≈ ~50km — enough to cluster a city)
 	const clusters = new Map<string, { lat: number; lng: number; label: string; count: number }>();
 

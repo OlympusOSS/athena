@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
 	ActivityFeed,
 	AnimatedBarChart,
@@ -7,12 +6,12 @@ import {
 	ChartCardWithFilter,
 	Icon,
 	MultiSeriesAreaChart,
-	WorldHeatMap,
-	Sparkline,
 	StatCard,
 	VerificationGauge,
+	WorldHeatMap,
 	YearlyBarChart,
 } from "@olympusoss/canvas";
+import type { ReactNode } from "react";
 import type { WidgetDefinition, WidgetId } from "./types";
 
 /**
@@ -249,11 +248,7 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 			title="Total Users"
 			value={formatNumber(identity.data?.totalIdentities || 0)}
 			icon={<Icon name="users" />}
-			sparkline={
-				identitiesByYear.length > 0 ? (
-					<YearlyBarChart data={identitiesByYear} height={28} color="primary" />
-				) : undefined
-			}
+			sparkline={identitiesByYear.length > 0 ? <YearlyBarChart data={identitiesByYear} height={28} color="primary" /> : undefined}
 		/>
 	),
 
@@ -263,11 +258,7 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 			title="Active Users"
 			value={formatNumber(session.data?.totalActiveUsers || 0)}
 			icon={<Icon name="shield" />}
-			sparkline={
-				activeUsersByYear.length > 0 ? (
-					<YearlyBarChart data={activeUsersByYear} height={28} color="chart-1" />
-				) : undefined
-			}
+			sparkline={activeUsersByYear.length > 0 ? <YearlyBarChart data={activeUsersByYear} height={28} color="chart-1" /> : undefined}
 		/>
 	),
 
@@ -292,11 +283,7 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 				value={totalGrowth4Weeks}
 				icon={<Icon name="trending-up" />}
 				trend={growthTrend ? { value: growthTrend.value, direction: growthTrend.direction } : undefined}
-				sparkline={
-					barData.length > 0 ? (
-						<YearlyBarChart data={barData} height={28} color="success" minBarWidth={32} />
-					) : undefined
-				}
+				sparkline={barData.length > 0 ? <YearlyBarChart data={barData} height={28} color="success" minBarWidth={32} /> : undefined}
 			/>
 		);
 	},
@@ -321,22 +308,14 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 		/>
 	),
 
-	"chart-combined-activity": ({
-		combinedActivitySeries,
-		activityTimeRange,
-		onActivityTimeRangeChange,
-	}) => (
+	"chart-combined-activity": ({ combinedActivitySeries, activityTimeRange, onActivityTimeRangeChange }) => (
 		<ChartCardWithFilter
 			title="Activity Overview"
 			timeRangeOptions={ACTIVITY_TIME_RANGE_OPTIONS}
 			selectedTimeRange={activityTimeRange}
 			onTimeRangeChange={onActivityTimeRangeChange}
 		>
-			<MultiSeriesAreaChart
-				series={combinedActivitySeries}
-				height="100%"
-				showLegend
-			/>
+			<MultiSeriesAreaChart series={combinedActivitySeries} height="100%" showLegend />
 		</ChartCardWithFilter>
 	),
 
@@ -355,11 +334,7 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 		</ChartCard>
 	),
 
-	"chart-peak-hours": ({
-		peakHoursBarData,
-		peakHoursTimeRange,
-		onPeakHoursTimeRangeChange,
-	}) => (
+	"chart-peak-hours": ({ peakHoursBarData, peakHoursTimeRange, onPeakHoursTimeRangeChange }) => (
 		<ChartCardWithFilter
 			title="Peak Activity Hours"
 			timeRangeOptions={PEAK_HOURS_TIME_RANGE_OPTIONS}
@@ -370,16 +345,11 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 		</ChartCardWithFilter>
 	),
 
-	"chart-session-locations": ({ geoPoints }) => (
-		<WorldHeatMap data={geoPoints} color="chart-1" title="Session Locations" />
-	),
+	"chart-session-locations": ({ geoPoints }) => <WorldHeatMap data={geoPoints} color="chart-1" title="Session Locations" />,
 
 	"chart-activity-feed": ({ activityFeedItems, formatRelativeTime }) => (
 		<ChartCard title="Recent Activity">
-			<ActivityFeed
-				items={activityFeedItems}
-				formatTimestamp={(ts) => formatRelativeTime(ts)}
-			/>
+			<ActivityFeed items={activityFeedItems} formatTimestamp={(ts) => formatRelativeTime(ts)} />
 		</ChartCard>
 	),
 
@@ -393,10 +363,14 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 /**
  * Builds the default dashboard layout by auto-placing widgets into a 12-column grid.
  */
-export function buildDefaultLayout(): { widgets: Array<{ i: WidgetId; x: number; y: number; w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number }>; hiddenWidgets: WidgetId[]; version: number } {
+export function buildDefaultLayout(): {
+	widgets: Array<{ i: WidgetId; x: number; y: number; w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number }>;
+	hiddenWidgets: WidgetId[];
+	version: number;
+} {
 	const widgets: Array<{ i: WidgetId; x: number; y: number; w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number }> = [];
-	let currentX = 0;
-	let currentY = 0;
+	const _currentX = 0;
+	const _currentY = 0;
 	const cols = 12;
 
 	// Track the maximum Y at each X position to handle variable-height items

@@ -1,5 +1,3 @@
-import type { Layout } from "react-grid-layout";
-
 /**
  * Unique identifier for each dashboard widget.
  */
@@ -19,11 +17,18 @@ export type WidgetId =
 	| "chart-session-locations";
 
 /**
- * Layout item for a widget — extends react-grid-layout's Layout
- * with our WidgetId type.
+ * Layout item for a widget — based on react-grid-layout's Layout type.
  */
-export interface WidgetLayoutItem extends Omit<Layout, "i"> {
+export interface WidgetLayoutItem {
 	i: WidgetId;
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+	minW?: number;
+	minH?: number;
+	maxW?: number;
+	maxH?: number;
 }
 
 /**

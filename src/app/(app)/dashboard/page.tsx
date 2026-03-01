@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import type { Layout, Layouts } from "@olympusoss/canvas";
 import {
 	AddWidgetDialog,
 	Alert,
@@ -16,17 +16,13 @@ import {
 	TooltipTrigger,
 	WidgetShell,
 } from "@olympusoss/canvas";
-import type { Layout, Layouts } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
 import { useAnalytics } from "@/features/analytics/hooks";
 import { UserRole } from "@/features/auth";
-import {
-	useDashboardLayoutStore,
-	WIDGET_DEFINITIONS,
-	WIDGET_RENDERERS,
-} from "@/features/dashboard";
 import type { WidgetId, WidgetRenderProps } from "@/features/dashboard";
+import { useDashboardLayoutStore, WIDGET_DEFINITIONS, WIDGET_RENDERERS } from "@/features/dashboard";
 import { useFormatters } from "@/hooks";
 import { parseError } from "@/utils/errors";
 
@@ -95,8 +91,15 @@ export default function Dashboard() {
 
 		const now = Date.now();
 		const rangeDays: Record<string, number | null> = {
-			today: 1, "7d": 7, "14d": 14, "30d": 30,
-			"60d": 60, "90d": 90, "180d": 180, "1y": 365, all: null,
+			today: 1,
+			"7d": 7,
+			"14d": 14,
+			"30d": 30,
+			"60d": 60,
+			"90d": 90,
+			"180d": 180,
+			"1y": 365,
+			all: null,
 		};
 		const days = rangeDays[peakHoursTimeRange] ?? null;
 		const cutoff = days ? now - days * 24 * 60 * 60 * 1000 : 0;
@@ -125,14 +128,8 @@ export default function Dashboard() {
 	}, [identity.data?.weekOverWeekGrowth]);
 
 	// Weekly registration data for User Growth widget
-	const registrationsByWeek = useMemo(
-		() => identity.data?.registrationsByWeek || [0, 0, 0, 0],
-		[identity.data?.registrationsByWeek],
-	);
-	const totalGrowth4Weeks = useMemo(
-		() => identity.data?.totalGrowth4Weeks || 0,
-		[identity.data?.totalGrowth4Weeks],
-	);
+	const registrationsByWeek = useMemo(() => identity.data?.registrationsByWeek || [0, 0, 0, 0], [identity.data?.registrationsByWeek]);
+	const totalGrowth4Weeks = useMemo(() => identity.data?.totalGrowth4Weeks || 0, [identity.data?.totalGrowth4Weeks]);
 
 	const activityFeedItems = useMemo(() => {
 		const signups = (identity.data?.recentSignups || []).map((s: { id: string; timestamp: string; email: string; schemaId: string }) => ({
@@ -153,9 +150,7 @@ export default function Dashboard() {
 			icon: <Icon name="key" size={14} />,
 		}));
 
-		return [...signups, ...logins]
-			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-			.slice(0, 20);
+		return [...signups, ...logins].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20);
 	}, [identity.data?.recentSignups, session.data?.recentLogins]);
 
 	const schemasPieData = useMemo(
@@ -177,14 +172,8 @@ export default function Dashboard() {
 	);
 
 	// Yearly data for stat card bar charts
-	const identitiesByYear = useMemo(
-		() => identity.data?.identitiesByYear || [],
-		[identity.data?.identitiesByYear],
-	);
-	const activeUsersByYear = useMemo(
-		() => session.data?.activeUsersByYear || [],
-		[session.data?.activeUsersByYear],
-	);
+	const identitiesByYear = useMemo(() => identity.data?.identitiesByYear || [], [identity.data?.identitiesByYear]);
+	const activeUsersByYear = useMemo(() => session.data?.activeUsersByYear || [], [session.data?.activeUsersByYear]);
 
 	// Growth bar data — [previous week, current week] for mini bar chart
 	const growthBarData = useMemo(() => {
@@ -203,10 +192,7 @@ export default function Dashboard() {
 		];
 	}, [identityChartData, sessionChartData, activityTimeRange]);
 
-	const geoPoints = useMemo(
-		() => session.data?.sessionGeoPoints || [],
-		[session.data?.sessionGeoPoints],
-	);
+	const geoPoints = useMemo(() => session.data?.sessionGeoPoints || [], [session.data?.sessionGeoPoints]);
 
 	// ── Widget render props ──────────────────────────────
 
@@ -240,16 +226,30 @@ export default function Dashboard() {
 			onPeakHoursTimeRangeChange: setPeakHoursTimeRange,
 		}),
 		[
-			identity, session, system, hydra,
-			formatNumber, formatDuration, formatRelativeTime,
+			identity,
+			session,
+			system,
+			hydra,
+			formatNumber,
+			formatDuration,
+			formatRelativeTime,
 			verificationRate,
-			schemasPieData, peakHoursBarData,
-			growthTrend, activityFeedItems, grantTypesPieData,
-			userSparkline, sessionSparkline, growthBarData,
-			registrationsByWeek, totalGrowth4Weeks,
-			identitiesByYear, activeUsersByYear,
-			combinedActivitySeries, geoPoints,
-			activityTimeRange, peakHoursTimeRange,
+			schemasPieData,
+			peakHoursBarData,
+			growthTrend,
+			activityFeedItems,
+			grantTypesPieData,
+			userSparkline,
+			sessionSparkline,
+			growthBarData,
+			registrationsByWeek,
+			totalGrowth4Weeks,
+			identitiesByYear,
+			activeUsersByYear,
+			combinedActivitySeries,
+			geoPoints,
+			activityTimeRange,
+			peakHoursTimeRange,
 		],
 	);
 
@@ -298,9 +298,7 @@ export default function Dashboard() {
 	// ── Filter widgets ──────────────────────────────────
 
 	const visibleWidgets = useMemo(() => {
-		const hydraWidgetIds = new Set(
-			WIDGET_DEFINITIONS.filter((d) => d.requiresHydra).map((d) => d.id),
-		);
+		const hydraWidgetIds = new Set(WIDGET_DEFINITIONS.filter((d) => d.requiresHydra).map((d) => d.id));
 
 		return layout.widgets.filter((w) => {
 			if (!isHydraAvailable && hydraWidgetIds.has(w.i)) return false;
@@ -327,9 +325,7 @@ export default function Dashboard() {
 
 	// Available widgets for the add dialog
 	const availableWidgets = useMemo(() => {
-		const hydraWidgetIds = new Set(
-			WIDGET_DEFINITIONS.filter((d) => d.requiresHydra).map((d) => d.id),
-		);
+		const hydraWidgetIds = new Set(WIDGET_DEFINITIONS.filter((d) => d.requiresHydra).map((d) => d.id));
 
 		return layout.hiddenWidgets
 			.filter((id) => {
@@ -366,11 +362,7 @@ export default function Dashboard() {
 					variant="page"
 					title={parsedError.title}
 					message={parsedError.message}
-					action={
-						parsedError.canRetry
-							? { label: "Retry", onClick: refetchAll, icon: <Icon name="refresh" /> }
-							: undefined
-					}
+					action={parsedError.canRetry ? { label: "Retry", onClick: refetchAll, icon: <Icon name="refresh" /> } : undefined}
 					secondaryAction={
 						parsedError.suggestSettings
 							? { label: "Check Settings", onClick: () => router.push("/settings"), icon: <Icon name="settings" /> }
@@ -472,11 +464,7 @@ export default function Dashboard() {
 
 					return (
 						<div key={widget.i}>
-							<WidgetShell
-								id={widget.i}
-								onRemove={() => handleRemoveWidget(widget.i)}
-								isEditable={isEditMode}
-							>
+							<WidgetShell id={widget.i} onRemove={() => handleRemoveWidget(widget.i)} isEditable={isEditMode}>
 								{renderer(renderProps)}
 							</WidgetShell>
 						</div>
@@ -485,12 +473,7 @@ export default function Dashboard() {
 			</DashboardGrid>
 
 			{/* Add Widget Dialog */}
-			<AddWidgetDialog
-				open={addWidgetOpen}
-				onOpenChange={setAddWidgetOpen}
-				availableWidgets={availableWidgets}
-				onAddWidget={handleAddWidget}
-			/>
+			<AddWidgetDialog open={addWidgetOpen} onOpenChange={setAddWidgetOpen} availableWidgets={availableWidgets} onAddWidget={handleAddWidget} />
 		</ProtectedPage>
 	);
 }

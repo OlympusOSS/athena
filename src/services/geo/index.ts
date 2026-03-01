@@ -1,1 +1,1 @@
-export { resolveIPs, clusterGeoResults, type GeoResult } from "./ip-geolocation";
+export { clusterGeoResults, type GeoResult, resolveIPs } from "./ip-geolocation";

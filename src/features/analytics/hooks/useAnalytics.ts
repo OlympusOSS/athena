@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydraEnabled, useIsOryNetwork, useSettingsLoaded } from "@/features/settings/hooks/useSettings";
-import { resolveIPs, clusterGeoResults } from "@/services/geo";
+import { clusterGeoResults, resolveIPs } from "@/services/geo";
 import { checkHydraHealth, listOAuth2Clients } from "@/services/hydra";
 import { checkKratosHealth, getAllIdentities, getSessionsUntilDate, listIdentitySchemas, listSessions } from "@/services/kratos";
 import type { HydraAnalytics, IdentityAnalytics, SessionAnalytics, SystemAnalytics } from "../types";
@@ -270,7 +270,9 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 
 			// Total unique active users (across all years)
 			const allActiveUserIds = new Set<string>();
-			Object.values(activeUserYearSets).forEach((ids) => ids.forEach((id) => allActiveUserIds.add(id)));
+			for (const ids of Object.values(activeUserYearSets)) {
+				for (const id of ids) allActiveUserIds.add(id);
+			}
 			const totalActiveUsers = allActiveUserIds.size;
 
 			// Authentication method breakdown
@@ -331,9 +333,7 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 			}
 
 			// Collect session timestamps for client-side peak hours filtering
-			const sessionTimestamps = sessions
-				.filter((s) => s.authenticated_at)
-				.map((s) => s.authenticated_at!);
+			const sessionTimestamps = sessions.filter((s) => s.authenticated_at).map((s) => s.authenticated_at!);
 
 			return {
 				totalSessions: sessions.length,
