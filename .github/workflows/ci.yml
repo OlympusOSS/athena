@@ -36,7 +36,7 @@ jobs:
 
   build:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -80,6 +80,8 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: ${{ matrix.platform }}
+          build-args: |
+            CACHE_BUST=${{ github.run_id }}
           secret-files: |
             npmrc=/tmp/.docker-npmrc
           labels: ${{ steps.meta.outputs.labels }}

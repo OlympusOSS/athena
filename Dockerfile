@@ -1,11 +1,13 @@
 FROM oven/bun:1-alpine AS deps
 WORKDIR /app
+ARG CACHE_BUST
 COPY package.json ./
 RUN --mount=type=secret,id=npmrc,target=/app/.npmrc \
     bun install --production
 
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
+ARG CACHE_BUST
 COPY package.json ./
 RUN --mount=type=secret,id=npmrc,target=/app/.npmrc \
     bun install
