@@ -175,7 +175,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 		if (errorList.length === 0) {
 			onSuccess();
 		}
-	}, [identityIds, operationType, queryClient, onSuccess]);
+	}, [identityIds, operationType, queryClient, onSuccess, identities]);
 
 	const handleDone = useCallback(() => {
 		resetState();

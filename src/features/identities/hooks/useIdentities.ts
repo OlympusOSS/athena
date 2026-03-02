@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isDemoIdentity } from "@/lib/demo";
 import type { DeleteIdentityCredentialsTypeEnum } from "@/services/kratos";
 import {
 	createIdentity,
@@ -9,7 +10,6 @@ import {
 	listIdentities,
 	patchIdentity,
 } from "@/services/kratos";
-import { isDemoIdentity } from "@/lib/demo";
 
 // Identity list hook with pagination
 export const useIdentities = (params?: { pageSize?: number; pageToken?: string }) => {
