@@ -79,12 +79,7 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 				<div className="flex items-center gap-2">
 					{/* Search — right-aligned like Zoho */}
 					<div className="hidden md:block">
-						<SearchBar
-							value={searchValue}
-							onChange={setSearchValue}
-							placeholder="Search identities, sessions..."
-							className="w-64"
-						/>
+						<SearchBar value={searchValue} onChange={setSearchValue} placeholder="Search identities, sessions..." className="w-64" />
 					</div>
 
 					<Separator orientation="vertical" className="mx-1 h-6" />

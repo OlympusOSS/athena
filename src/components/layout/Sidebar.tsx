@@ -72,9 +72,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 					<div
 						className={cn(
 							"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
-							active
-								? "font-medium"
-								: "opacity-75 hover:opacity-100",
+							active ? "font-medium" : "opacity-75 hover:opacity-100",
 						)}
 						style={active ? { background: "hsl(var(--sidebar-active))", color: "#fff" } : { color: "hsl(var(--sidebar-fg))" }}
 					>
@@ -128,7 +126,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 					{/* Olympus visor logo */}
 					<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-5 w-5" aria-label="Olympus">
-							<path fill="#fff" fillRule="evenodd" d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"/>
+							<path
+								fill="#fff"
+								fillRule="evenodd"
+								d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+							/>
 						</svg>
 					</div>
 					<span className="text-sm font-semibold" style={{ color: "#fff" }}>
