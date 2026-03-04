@@ -17,6 +17,23 @@ async function revokeHydraLoginSessions(hydraAdminUrl: string, subject: string):
 }
 
 /**
+ * Revoke all Kratos sessions for a given identity via the admin API.
+ * This prevents auto-login via a lingering ory_kratos_session cookie.
+ * Non-throwing — logs errors but allows logout to proceed.
+ */
+async function revokeKratosSessions(kratosAdminUrl: string, identityId: string): Promise<void> {
+	try {
+		const res = await fetch(`${kratosAdminUrl}/admin/identities/${identityId}/sessions`, { method: "DELETE" });
+		if (!res.ok && res.status !== 404 && res.status !== 204) {
+			const text = await res.text().catch(() => "");
+			console.error(`Failed to revoke Kratos sessions for ${identityId} (${res.status}): ${text}`);
+		}
+	} catch (err) {
+		console.error(`Error revoking Kratos sessions for ${identityId}:`, err);
+	}
+}
+
+/**
  * Revoke all Hydra OAuth2 consent sessions for a subject via the admin API.
  * Non-throwing — logs errors but allows logout to proceed.
  */
@@ -36,60 +53,67 @@ async function revokeHydraConsentSessions(hydraAdminUrl: string, subject: string
 
 export async function GET(request: NextRequest) {
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4003";
-	const hydraPublicUrl = process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
 	// IAM Hydra admin URL — needed to revoke login/consent sessions server-side
 	const iamHydraAdminUrl = process.env.IAM_HYDRA_ADMIN_URL || "http://localhost:4103";
+	// IAM Kratos admin URL — needed to revoke Kratos sessions so auto-login doesn't kick in
+	const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
-	// Read session to get ID token for RP-Initiated Logout
+	// Read session to extract subject for server-side session revocations
 	const sessionCookie = request.cookies.get("athena-session")?.value;
-	let idToken: string | null = null;
 	let subject: string | null = null;
 
 	if (sessionCookie) {
 		try {
 			const session = JSON.parse(sessionCookie);
-			idToken = session.idToken || null;
 			subject = session.user?.kratosIdentityId || null;
+
+			// Fallback: decode subject from ID token if not in session data
+			if (!subject && session.idToken) {
+				const parts = session.idToken.split(".");
+				if (parts.length === 3) {
+					const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
+					subject = claims.sub || null;
+				}
+			}
 		} catch (err) {
 			console.error("Failed to parse session cookie:", err);
 		}
 	}
 
-	// Decode subject from ID token if not in session data
-	if (!subject && idToken) {
-		try {
-			const parts = idToken.split(".");
-			if (parts.length === 3) {
-				const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
-				subject = claims.sub || null;
-			}
-		} catch {
-			// Ignore decode errors
-		}
-	}
-
-	// Revoke Hydra login & consent sessions BEFORE redirecting to Hydra's
-	// RP-Initiated Logout. This ensures that even if Hydra skips the
-	// logout_url callback, the user cannot be auto-logged back in.
+	// Revoke ALL sessions — Kratos, Hydra login, and Hydra consent — BEFORE
+	// redirecting to Hydra's RP-Initiated Logout. This ensures the user
+	// cannot be auto-logged back in via a lingering ory_kratos_session cookie.
 	if (subject) {
-		await Promise.all([revokeHydraLoginSessions(iamHydraAdminUrl, subject), revokeHydraConsentSessions(iamHydraAdminUrl, subject)]);
+		await Promise.all([
+			revokeKratosSessions(iamKratosAdminUrl, subject),
+			revokeHydraLoginSessions(iamHydraAdminUrl, subject),
+			revokeHydraConsentSessions(iamHydraAdminUrl, subject),
+		]);
 	}
 
-	const postLogoutRedirectUri = `${appUrl}/api/auth/login`;
-
-	if (idToken) {
-		// RP-Initiated Logout: redirect to Hydra to invalidate the login session
-		const logoutUrl = new URL("/oauth2/sessions/logout", hydraPublicUrl);
-		logoutUrl.searchParams.set("id_token_hint", idToken);
-		logoutUrl.searchParams.set("post_logout_redirect_uri", postLogoutRedirectUri);
-
-		const response = NextResponse.redirect(logoutUrl.toString());
-		response.cookies.delete("athena-session");
-		return response;
+	// Cookie deletion helper — must match the attributes used when setting the cookie
+	// so the browser recognises it as the same cookie and actually removes it.
+	function clearSessionCookie(response: NextResponse) {
+		response.cookies.set("athena-session", "", {
+			httpOnly: true,
+			path: "/",
+			maxAge: 0,
+			sameSite: "lax",
+		});
 	}
 
-	// Fallback: no ID token available, just clear cookie and redirect to login
-	const response = NextResponse.redirect(new URL("/api/auth/login", appUrl));
-	response.cookies.delete("athena-session");
+	// Return a small HTML page that clears the cookie (via Set-Cookie header on
+	// a 200 response) and then redirects client-side.  Using a 200 + meta-refresh
+	// instead of a 307 redirect ensures the browser ALWAYS processes the
+	// Set-Cookie header before navigating away — some browsers can drop
+	// Set-Cookie on rapid redirect chains, which caused the cookie to survive
+	// logout and silently re-authenticate the user.
+	const loginUrl = new URL("/api/auth/login", appUrl).toString();
+	const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${loginUrl}"></head><body></body></html>`;
+	const response = new NextResponse(html, {
+		status: 200,
+		headers: { "Content-Type": "text/html; charset=utf-8" },
+	});
+	clearSessionCookie(response);
 	return response;
 }

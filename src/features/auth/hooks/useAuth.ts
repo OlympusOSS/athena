@@ -81,12 +81,12 @@ export const useAuthStore = create<AuthStoreState>()((set, get) => ({
 	},
 
 	logout: () => {
-		set({
-			user: null,
-			isAuthenticated: false,
-			error: null,
-		});
-		// Redirect to logout endpoint (clears cookie, revokes token)
+		// Navigate to the logout endpoint FIRST, without clearing Zustand state.
+		// Clearing isAuthenticated here would trigger AuthProvider's useEffect to
+		// redirect to /api/auth/login — racing with this navigation and potentially
+		// overwriting it, causing the logout route to never be hit.
+		// The logout endpoint will delete the httpOnly cookie and revoke sessions,
+		// then redirect to the login flow where checkSession() will naturally reset state.
 		window.location.href = "/api/auth/logout";
 	},
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { Button, cn, Icon, type IconName, ScrollArea, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
-import { AnimatePresence, motion } from "framer-motion";
+import { cn, Icon, type IconName, ScrollArea, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole, useLogout, useUser } from "@/features/auth";
@@ -12,6 +11,8 @@ interface NavItem {
 	title: string;
 	path: string;
 	icon: IconName;
+	/** Zoho-style colored icon background (bg + text color) */
+	iconColor: string;
 	requiredRole?: UserRole;
 }
 
@@ -20,30 +21,35 @@ const mainNavItems: NavItem[] = [
 		title: "Dashboard",
 		path: "/dashboard",
 		icon: "dashboard",
+		iconColor: "bg-blue-500 text-white",
 		requiredRole: UserRole.VIEWER,
 	},
 	{
 		title: "Identities",
 		path: "/identities",
 		icon: "users",
+		iconColor: "bg-purple-500 text-white",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Sessions",
 		path: "/sessions",
 		icon: "shield",
+		iconColor: "bg-emerald-500 text-white",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Messages",
 		path: "/messages",
 		icon: "mail",
+		iconColor: "bg-amber-500 text-white",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Schemas",
 		path: "/schemas",
 		icon: "file-text",
+		iconColor: "bg-cyan-500 text-white",
 		requiredRole: UserRole.VIEWER,
 	},
 ];
@@ -53,102 +59,34 @@ const hydraNavItems: NavItem[] = [
 		title: "OAuth2 Clients",
 		path: "/clients",
 		icon: "app",
+		iconColor: "bg-rose-500 text-white",
 	},
 ];
 
-/* ── Nav item with animations ── */
-function NavLink({ item, active, index, section }: { item: NavItem; active: boolean; index: number; section: string }) {
+/* ── Nav item — Zoho CRM style with colored icon backgrounds ── */
+function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Link href={item.path} className="relative block">
-					<motion.div
-						initial={{ opacity: 0, x: -12 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{
-							duration: 0.3,
-							delay: 0.05 + index * 0.06,
-							ease: [0.22, 1, 0.36, 1],
-						}}
+					<div
 						className={cn(
-							"group/nav relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
-							"transition-all duration-200 ease-out",
-							active ? "text-primary" : "text-muted-foreground hover:translate-x-1 hover:text-accent-foreground",
+							"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
+							active
+								? "font-medium"
+								: "opacity-75 hover:opacity-100",
 						)}
+						style={active ? { background: "hsl(var(--sidebar-active))", color: "#fff" } : { color: "hsl(var(--sidebar-fg))" }}
 					>
-						{/* Animated active background */}
-						{active && (
-							<motion.div
-								layoutId={`nav-active-${section}`}
-								className="absolute inset-0 rounded-md bg-primary/10"
-								transition={{
-									type: "spring",
-									stiffness: 350,
-									damping: 30,
-								}}
-							/>
-						)}
-
-						{/* CSS hover background (no flickering) */}
-						{!active && (
-							<div className="absolute inset-0 rounded-md bg-accent opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100" />
-						)}
-
-						{/* Active left edge indicator */}
-						<AnimatePresence>
-							{active && (
-								<motion.div
-									initial={{ scaleY: 0, opacity: 0 }}
-									animate={{ scaleY: 1, opacity: 1 }}
-									exit={{ scaleY: 0, opacity: 0 }}
-									transition={{
-										type: "spring",
-										stiffness: 300,
-										damping: 25,
-									}}
-									className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary"
-								/>
-							)}
-						</AnimatePresence>
-
-						{/* Icon with CSS hover animation */}
-						<div className="relative z-10 h-4 w-4 shrink-0 transition-transform duration-200 group-hover/nav:scale-110">
-							<Icon name={item.icon} className="h-4 w-4" />
+						<div className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded", item.iconColor)}>
+							<Icon name={item.icon} className="h-3.5 w-3.5" />
 						</div>
-
-						<span className="relative z-10">{item.title}</span>
-
-						{/* Active dot */}
-						<AnimatePresence>
-							{active && (
-								<motion.div
-									initial={{ scale: 0, opacity: 0 }}
-									animate={{ scale: 1, opacity: 1 }}
-									exit={{ scale: 0, opacity: 0 }}
-									transition={{ delay: 0.1, type: "spring", stiffness: 400, damping: 20 }}
-									className="relative z-10 ml-auto h-1.5 w-1.5 rounded-full bg-primary"
-								/>
-							)}
-						</AnimatePresence>
-					</motion.div>
+						<span>{item.title}</span>
+					</div>
 				</Link>
 			</TooltipTrigger>
 			<TooltipContent side="right">{item.title}</TooltipContent>
 		</Tooltip>
-	);
-}
-
-/* ── Section label ── */
-function SectionLabel({ children, delay = 0 }: { children: string; delay?: number }) {
-	return (
-		<motion.p
-			initial={{ opacity: 0, y: -4 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.3, delay }}
-			className="mb-1 mt-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground"
-		>
-			{children}
-		</motion.p>
 	);
 }
 
@@ -180,44 +118,51 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 	return (
 		<aside
 			className={cn(
-				"fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r glass-chrome transition-transform duration-300",
+				"glass-nav fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-transform duration-300",
 				open ? "translate-x-0" : "-translate-x-full",
 			)}
 		>
-			{/* Sidebar header */}
+			{/* Sidebar header — logo + title (Zoho CRM style) */}
 			<div className="flex h-14 items-center justify-between px-4">
-				<motion.span
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.4, delay: 0.1 }}
-					className="text-lg font-semibold text-foreground"
+				<div className="flex items-center gap-2.5">
+					{/* Olympus visor logo */}
+					<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-5 w-5" aria-label="Olympus">
+							<path fill="#fff" fillRule="evenodd" d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"/>
+						</svg>
+					</div>
+					<span className="text-sm font-semibold" style={{ color: "#fff" }}>
+						{APP_TITLE}
+					</span>
+				</div>
+				<button
+					onClick={onClose}
+					type="button"
+					className="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
+					style={{ color: "hsl(var(--sidebar-fg))" }}
 				>
-					{APP_TITLE}
-				</motion.span>
-				<Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 transition-transform duration-150 hover:scale-110 active:scale-95">
-					<Icon name="chevron-left" />
-				</Button>
+					<Icon name="chevron-left" className="h-4 w-4" />
+				</button>
 			</div>
 
-			<Separator />
+			{/* Divider */}
+			<div className="mx-3" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
 
 			{/* Navigation */}
-			<ScrollArea className="flex-1 px-3 py-2">
-				<nav className="flex flex-col gap-1">
+			<ScrollArea className="flex-1 px-2.5 py-2">
+				<nav className="flex flex-col gap-0.5">
 					<TooltipProvider delayDuration={0}>
 						{/* Main nav */}
-						<SectionLabel delay={0}>Main</SectionLabel>
-						{filteredMainNavItems.map((item, i) => (
-							<NavLink key={item.path} item={item} active={isActive(item.path)} index={i} section="main" />
+						{filteredMainNavItems.map((item) => (
+							<NavLink key={item.path} item={item} active={isActive(item.path)} />
 						))}
 
 						{/* Hydra nav */}
 						{filteredHydraNavItems.length > 0 && (
 							<>
-								<Separator className="my-2" />
-								<SectionLabel delay={0.3}>Hydra</SectionLabel>
-								{filteredHydraNavItems.map((item, i) => (
-									<NavLink key={item.path} item={item} active={isActive(item.path)} index={filteredMainNavItems.length + i} section="hydra" />
+								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
+								{filteredHydraNavItems.map((item) => (
+									<NavLink key={item.path} item={item} active={isActive(item.path)} />
 								))}
 							</>
 						)}
@@ -226,18 +171,18 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 			</ScrollArea>
 
 			{/* Bottom section */}
-			<Separator />
-			<div className="p-3">
+			<div className="mx-3" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
+			<div className="p-2.5">
 				<button
 					onClick={() => logout()}
 					type="button"
-					className="group/logout relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:translate-x-1 hover:text-destructive"
+					className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm opacity-60 transition-all duration-150 hover:opacity-100"
+					style={{ color: "hsl(var(--sidebar-fg))" }}
 				>
-					<div className="absolute inset-0 rounded-md bg-destructive/10 opacity-0 transition-opacity duration-150 group-hover/logout:opacity-100" />
-					<div className="relative z-10 h-4 w-4 shrink-0 transition-transform duration-200 group-hover/logout:scale-110">
+					<div className="h-4 w-4 shrink-0">
 						<Icon name="logout" className="h-4 w-4" />
 					</div>
-					<span className="relative z-10">Logout</span>
+					<span>Logout</span>
 				</button>
 			</div>
 		</aside>

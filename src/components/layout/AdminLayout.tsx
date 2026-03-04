@@ -23,7 +23,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 				<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
 				{/* Main content area */}
-				<div className={cn("flex flex-1 flex-col overflow-hidden transition-all duration-300", sidebarOpen ? "md:ml-64" : "ml-0")}>
+				<div className={cn("flex flex-1 flex-col overflow-hidden transition-all duration-300", sidebarOpen ? "md:ml-60" : "ml-0")}>
 					{/* Header */}
 					<Header sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 

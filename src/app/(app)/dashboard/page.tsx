@@ -14,22 +14,31 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
+	WelcomeBanner,
 	WidgetShell,
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader, ProtectedPage } from "@/components/layout";
 import { useAnalytics } from "@/features/analytics/hooks";
-import { UserRole } from "@/features/auth";
+import { UserRole, useUser } from "@/features/auth";
 import type { WidgetId, WidgetRenderProps } from "@/features/dashboard";
 import { useDashboardLayoutStore, WIDGET_DEFINITIONS, WIDGET_RENDERERS } from "@/features/dashboard";
 import { useFormatters } from "@/hooks";
 import { parseError } from "@/utils/errors";
 
+function getGreeting(): string {
+	const hour = new Date().getHours();
+	if (hour < 12) return "Good morning,";
+	if (hour < 18) return "Good afternoon,";
+	return "Good evening,";
+}
+
 export default function Dashboard() {
 	const { identity, session, system, hydra, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
 	const { formatNumber, formatDuration, formatRelativeTime } = useFormatters();
 	const router = useRouter();
+	const user = useUser();
 	const [addWidgetOpen, setAddWidgetOpen] = useState(false);
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [activityTimeRange, setActivityTimeRange] = useState("30d");
@@ -413,7 +422,7 @@ export default function Dashboard() {
 	return (
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
 			<PageHeader
-				title="Analytics and Status"
+				title="Dashboard"
 				actions={
 					<>
 						{/* Refresh — always visible */}
@@ -474,6 +483,14 @@ export default function Dashboard() {
 						</TooltipProvider>
 					</>
 				}
+			/>
+
+			{/* Welcome Banner */}
+			<WelcomeBanner
+				greeting={getGreeting()}
+				userName={user?.displayName || "there"}
+				subtitle="Here's your identity platform overview"
+				className="mb-4"
 			/>
 
 			{/* Hydra not available info banner */}
