@@ -181,7 +181,7 @@ jobs:
       - name: Restart services
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && docker compose up -d ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && docker compose up -d --force-recreate ${{ env.SERVICES }}"
 
       - name: Wait for healthy
         run: |
