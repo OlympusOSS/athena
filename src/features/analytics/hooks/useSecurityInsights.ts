@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { IconName, SecurityAlert } from "@olympusoss/canvas";
-import type { SessionAnalytics, HydraAnalytics } from "../types";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import type { HydraAnalytics, SessionAnalytics } from "../types";
 import type { ServiceVersionInfo } from "./useGitHubReleases";
 
 interface GitHubAdvisory {
@@ -30,10 +30,9 @@ interface UseSecurityInsightsParams {
 /** Fetch GitHub security advisories for a repository */
 async function fetchSecurityAdvisories(repo: string): Promise<GitHubAdvisory[]> {
 	try {
-		const response = await fetch(
-			`https://api.github.com/repos/${repo}/security-advisories?state=published&per_page=10`,
-			{ headers: { Accept: "application/vnd.github.v3+json" } },
-		);
+		const response = await fetch(`https://api.github.com/repos/${repo}/security-advisories?state=published&per_page=10`, {
+			headers: { Accept: "application/vnd.github.v3+json" },
+		});
 
 		if (!response.ok) {
 			// Security advisories API may require auth or return 404
@@ -71,13 +70,10 @@ function formatRelativeTimestamp(isoDate: string): string {
 	return `${Math.floor(days / 365)}y ago`;
 }
 
-export function useSecurityInsights({
-	sessionData,
-	hydraData,
-	kratosRelease,
-	hydraRelease,
-	hydraEnabled,
-}: UseSecurityInsightsParams): { alerts: SecurityAlert[]; isLoading: boolean } {
+export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hydraRelease, hydraEnabled }: UseSecurityInsightsParams): {
+	alerts: SecurityAlert[];
+	isLoading: boolean;
+} {
 	// Fetch GitHub security advisories
 	const kratosAdvisories = useQuery({
 		queryKey: ["github-advisories", "ory/kratos"],

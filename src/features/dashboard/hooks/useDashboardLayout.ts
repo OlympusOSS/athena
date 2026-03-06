@@ -55,7 +55,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 
 					// Keep only widgets that still exist in definitions
 					const widgets = (data.layout.widgets as WidgetLayoutItem[]).filter((w) => validIds.has(w.i));
-					const hiddenWidgets = (data.layout.hiddenWidgets as WidgetId[] || []).filter((id) => validIds.has(id));
+					const hiddenWidgets = ((data.layout.hiddenWidgets as WidgetId[]) || []).filter((id) => validIds.has(id));
 
 					// Any new widgets (not in saved widgets or hidden) go to hiddenWidgets
 					// so the user can add them via the Add Widget dialog
@@ -69,9 +69,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 					set({ layout: reconciledLayout, isReady: true });
 
 					// Persist if reconciliation changed anything
-					const changed =
-						widgets.length !== data.layout.widgets.length ||
-						hiddenWidgets.length !== (data.layout.hiddenWidgets || []).length;
+					const changed = widgets.length !== data.layout.widgets.length || hiddenWidgets.length !== (data.layout.hiddenWidgets || []).length;
 					if (changed) {
 						persistLayout(reconciledLayout);
 					}

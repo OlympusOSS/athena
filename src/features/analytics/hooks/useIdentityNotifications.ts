@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import type { IconName } from "@olympusoss/canvas";
+import { useMemo } from "react";
 import type { IdentityAnalytics, SessionAnalytics } from "../types";
 import type { ServiceVersionInfo } from "./useGitHubReleases";
 
