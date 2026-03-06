@@ -13,28 +13,25 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-	const [sidebarOpen, setSidebarOpen] = useState(true);
+	const [sidebarExpanded, setSidebarExpanded] = useState(true);
 	const _pathname = usePathname();
 
 	return (
 		<ProtectedRoute>
 			<div className="flex h-screen overflow-hidden bg-background">
-				{/* Sidebar */}
-				<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+				{/* Sidebar — always visible, toggles between expanded (w-60) and collapsed (w-14) */}
+				<Sidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded(!sidebarExpanded)} />
 
 				{/* Main content area */}
-				<div className={cn("flex flex-1 flex-col overflow-hidden transition-all duration-300", sidebarOpen ? "md:ml-60" : "ml-0")}>
+				<div className={cn("flex flex-1 flex-col overflow-hidden transition-all duration-300", sidebarExpanded ? "md:ml-60" : "md:ml-14")}>
 					{/* Header */}
-					<Header sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+					<Header />
 
 					{/* Page content */}
-					<main className="flex-1 overflow-y-auto">
+					<main className="flex-1 overflow-y-auto styled-scrollbar">
 						<div className="p-6">{children}</div>
 					</main>
 				</div>
-
-				{/* Mobile overlay */}
-				{sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />}
 			</div>
 		</ProtectedRoute>
 	);

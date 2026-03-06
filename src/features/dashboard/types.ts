@@ -6,15 +6,14 @@ export type WidgetId =
 	| "stat-active-sessions"
 	| "stat-avg-session"
 	| "stat-user-growth"
-	| "stat-kratos-health"
-	| "stat-hydra-health"
 	| "chart-combined-activity"
 	| "chart-users-by-schema"
 	| "chart-verification-gauge"
 	| "chart-peak-hours"
 	| "chart-activity-feed"
 	| "chart-oauth2-grant-types"
-	| "chart-session-locations";
+	| "chart-session-locations"
+	| "chart-security-insights";
 
 /**
  * Layout item for a widget — based on react-grid-layout's Layout type.
@@ -37,7 +36,6 @@ export interface WidgetLayoutItem {
 export interface DashboardLayout {
 	widgets: WidgetLayoutItem[];
 	hiddenWidgets: WidgetId[];
-	version: number;
 }
 
 /**

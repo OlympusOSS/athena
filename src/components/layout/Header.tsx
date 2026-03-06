@@ -21,15 +21,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
-import { APP_TITLE } from "@/lib/constants";
 import { useTheme } from "@/providers/ThemeProvider";
 
-interface HeaderProps {
-	sidebarOpen: boolean;
-	onToggleSidebar: () => void;
-}
-
-export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
+export function Header() {
 	const { theme, toggleTheme } = useTheme();
 	const user = useUser();
 	const logout = useLogout();
@@ -56,22 +50,8 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
 	return (
 		<header className="glass-chrome sticky top-0 z-20 flex h-14 items-center border-b border-border px-6">
 			<div className="flex w-full items-center justify-between gap-4">
-				{/* Left side — toggle + page title */}
+				{/* Left side — page title */}
 				<div className="flex items-center gap-3">
-					<TooltipProvider delayDuration={0}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button variant="ghost" size="icon" onClick={onToggleSidebar}>
-									{sidebarOpen ? <Icon name="panel-left" /> : <Icon name="menu" />}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>{sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-
-					{/* Show app title when sidebar is collapsed, always show page title */}
-					{!sidebarOpen && <span className="text-sm font-semibold text-foreground">{APP_TITLE}</span>}
-					{!sidebarOpen && <Separator orientation="vertical" className="h-5" />}
 					<span className="text-sm font-medium text-foreground">{getPageTitle()}</span>
 				</div>
 

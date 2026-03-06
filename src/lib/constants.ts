@@ -73,7 +73,7 @@ export const VALIDATION = {
  * Set via NEXT_PUBLIC_APP_INSTANCE env var: "CIAM" or "IAM"
  */
 export const APP_INSTANCE = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
-export const APP_TITLE = APP_INSTANCE ? `Olympus ${APP_INSTANCE} Admin` : "Olympus Admin";
+export const APP_TITLE = APP_INSTANCE ? `${APP_INSTANCE} Admin` : "Admin";
 
 /**
  * API configuration
