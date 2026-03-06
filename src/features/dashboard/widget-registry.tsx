@@ -2,15 +2,22 @@ import {
 	ActivityFeed,
 	AnimatedBarChart,
 	AnimatedPieChart,
+	Card,
+	CardContent,
 	ChartCard,
 	ChartCardWithFilter,
+	cn,
 	Icon,
 	MultiSeriesAreaChart,
+	SecurityInsights,
+	Skeleton,
 	StatCard,
 	VerificationGauge,
 	WorldHeatMap,
 	YearlyBarChart,
 } from "@olympusoss/canvas";
+import type { SecurityAlert } from "@olympusoss/canvas";
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import type { WidgetDefinition, WidgetId } from "./types";
 
@@ -27,7 +34,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 		icon: "users",
 		category: "stat",
 		defaultW: 2,
-		defaultH: 2,
+		defaultH: 3,
 	},
 	{
 		id: "stat-active-sessions",
@@ -36,7 +43,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 		icon: "shield",
 		category: "stat",
 		defaultW: 2,
-		defaultH: 2,
+		defaultH: 3,
 	},
 	{
 		id: "stat-avg-session",
@@ -45,7 +52,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 		icon: "time",
 		category: "stat",
 		defaultW: 2,
-		defaultH: 2,
+		defaultH: 3,
 	},
 	{
 		id: "stat-user-growth",
@@ -54,29 +61,20 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 		icon: "trending-up",
 		category: "stat",
 		defaultW: 2,
-		defaultH: 2,
+		defaultH: 3,
 	},
-	{
-		id: "stat-kratos-health",
-		title: "Kratos Health",
-		description: "Kratos system health status",
-		icon: "health",
-		category: "stat",
-		defaultW: 2,
-		defaultH: 2,
-	},
-	{
-		id: "stat-hydra-health",
-		title: "Hydra Health",
-		description: "Hydra system health status",
-		icon: "cloud",
-		category: "stat",
-		defaultW: 2,
-		defaultH: 2,
-		requiresHydra: true,
-	},
-
 	// ── Charts ──────────────────────────────────────────
+	{
+		id: "chart-security-insights",
+		title: "Security Insights",
+		description: "Security advisories, DDoS indicators, and anomaly detection",
+		icon: "shield-alert",
+		category: "chart",
+		defaultW: 4,
+		defaultH: 3,
+		minW: 2,
+		minH: 3,
+	},
 	{
 		id: "chart-combined-activity",
 		title: "Activity Overview",
@@ -84,9 +82,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 		icon: "activity",
 		category: "chart",
 		defaultW: 12,
-		defaultH: 6,
+		defaultH: 4,
 		minW: 4,
-		minH: 3,
+		minH: 2,
 	},
 	{
 		id: "chart-users-by-schema",
@@ -228,6 +226,7 @@ export interface WidgetRenderProps {
 	// Yearly data for stat card bar charts
 	identitiesByYear: Array<{ year: number; count: number }>;
 	activeUsersByYear: Array<{ year: number; count: number }>;
+	avgSessionByQuarter: Array<{ year: number; count: number; label?: string }>;
 	// Session locations (geo-resolved)
 	geoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
 	// Time range filter state
@@ -236,6 +235,13 @@ export interface WidgetRenderProps {
 	// Peak hours time range filter
 	peakHoursTimeRange: string;
 	onPeakHoursTimeRangeChange: (value: string) => void;
+	// Security insights
+	securityAlerts: SecurityAlert[];
+	// Release / version info
+	releases: {
+		kratos: { runningVersion: string | null; updateAvailable: boolean; latestVersion: string | null; releaseUrl?: string; isLoading: boolean };
+		hydra: { runningVersion: string | null; updateAvailable: boolean; latestVersion: string | null; releaseUrl?: string; isLoading: boolean };
+	};
 }
 
 /**
@@ -248,7 +254,8 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 			title="Total Users"
 			value={formatNumber(identity.data?.totalIdentities || 0)}
 			icon={<Icon name="users" />}
-			sparkline={identitiesByYear.length > 0 ? <YearlyBarChart data={identitiesByYear} height={28} color="primary" /> : undefined}
+			layout="vertical"
+			sparkline={identitiesByYear.length > 0 ? <YearlyBarChart data={identitiesByYear} color="primary" /> : undefined}
 		/>
 	),
 
@@ -258,17 +265,19 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 			title="Active Users"
 			value={formatNumber(session.data?.totalActiveUsers || 0)}
 			icon={<Icon name="shield" />}
-			sparkline={activeUsersByYear.length > 0 ? <YearlyBarChart data={activeUsersByYear} height={28} color="chart-1" /> : undefined}
+			layout="vertical"
+			sparkline={activeUsersByYear.length > 0 ? <YearlyBarChart data={activeUsersByYear} color="chart-1" /> : undefined}
 		/>
 	),
 
-	"stat-avg-session": ({ session, formatDuration }) => (
+	"stat-avg-session": ({ session, formatDuration, avgSessionByQuarter }) => (
 		<StatCard
 			colorVariant="purple"
 			title="Avg Session"
 			value={formatDuration(session.data?.averageSessionDuration || 0)}
-			subtitle={`${session.data?.activeSessions || 0} active now`}
 			icon={<Icon name="time" />}
+			layout="vertical"
+			sparkline={avgSessionByQuarter.length > 0 ? <YearlyBarChart data={avgSessionByQuarter} color="chart-3" minBarWidth={32} /> : undefined}
 		/>
 	),
 
@@ -282,31 +291,12 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 				title="User Growth"
 				value={totalGrowth4Weeks}
 				icon={<Icon name="trending-up" />}
+				layout="vertical"
 				trend={growthTrend ? { value: growthTrend.value, direction: growthTrend.direction } : undefined}
-				sparkline={barData.length > 0 ? <YearlyBarChart data={barData} height={28} color="success" minBarWidth={32} /> : undefined}
+				sparkline={barData.length > 0 ? <YearlyBarChart data={barData} color="success" minBarWidth={32} /> : undefined}
 			/>
 		);
 	},
-
-	"stat-kratos-health": ({ system }) => (
-		<StatCard
-			colorVariant="success"
-			title="Kratos Health"
-			value={system.data?.systemHealth === "healthy" ? "\u2713 Healthy" : system.data?.systemHealth || "Unknown"}
-			subtitle={system.data?.systemHealth || "Unknown"}
-			icon={<Icon name="health" />}
-		/>
-	),
-
-	"stat-hydra-health": ({ hydra }) => (
-		<StatCard
-			colorVariant="success"
-			title="Hydra Health"
-			value={hydra.data?.systemHealth === "healthy" ? "\u2713 Healthy" : hydra.data?.systemHealth === "error" ? "\u2717 Error" : "Unknown"}
-			subtitle={hydra.data?.systemHealth || "Unknown"}
-			icon={<Icon name="cloud" />}
-		/>
-	),
 
 	"chart-combined-activity": ({ combinedActivitySeries, activityTimeRange, onActivityTimeRangeChange }) => (
 		<ChartCardWithFilter
@@ -358,6 +348,12 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 			<AnimatedPieChart data={grantTypesPieData} height="100%" innerRadius={25} outerRadius={55} />
 		</ChartCard>
 	),
+
+	"chart-security-insights": ({ securityAlerts }) => (
+		<ChartCard title="Security Insights">
+			<SecurityInsights alerts={securityAlerts} />
+		</ChartCard>
+	),
 };
 
 /**
@@ -366,7 +362,6 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 export function buildDefaultLayout(): {
 	widgets: Array<{ i: WidgetId; x: number; y: number; w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number }>;
 	hiddenWidgets: WidgetId[];
-	version: number;
 } {
 	const widgets: Array<{ i: WidgetId; x: number; y: number; w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number }> = [];
 	const _currentX = 0;
@@ -414,6 +409,5 @@ export function buildDefaultLayout(): {
 	return {
 		widgets,
 		hiddenWidgets: [],
-		version: 17,
 	};
 }

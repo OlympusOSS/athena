@@ -2,8 +2,6 @@ import { create } from "zustand";
 import type { DashboardLayout, WidgetId, WidgetLayoutItem } from "../types";
 import { buildDefaultLayout, WIDGET_DEFINITIONS } from "../widget-registry";
 
-const LAYOUT_VERSION = 17;
-
 interface DashboardLayoutState {
 	layout: DashboardLayout;
 	isReady: boolean;
@@ -49,8 +47,34 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			const res = await fetch("/api/dashboard/layout");
 			if (res.ok) {
 				const data = await res.json();
-				if (data.layout && data.layout.version === LAYOUT_VERSION && Array.isArray(data.layout.widgets)) {
-					set({ layout: data.layout, isReady: true });
+				if (data.layout && Array.isArray(data.layout.widgets)) {
+					// Reconcile saved layout with current widget definitions
+					const validIds = new Set<WidgetId>(WIDGET_DEFINITIONS.map((d) => d.id));
+					const savedWidgetIds = new Set(data.layout.widgets.map((w: WidgetLayoutItem) => w.i));
+					const savedHiddenIds = new Set<WidgetId>(data.layout.hiddenWidgets || []);
+
+					// Keep only widgets that still exist in definitions
+					const widgets = (data.layout.widgets as WidgetLayoutItem[]).filter((w) => validIds.has(w.i));
+					const hiddenWidgets = (data.layout.hiddenWidgets as WidgetId[] || []).filter((id) => validIds.has(id));
+
+					// Any new widgets (not in saved widgets or hidden) go to hiddenWidgets
+					// so the user can add them via the Add Widget dialog
+					for (const def of WIDGET_DEFINITIONS) {
+						if (!savedWidgetIds.has(def.id) && !savedHiddenIds.has(def.id)) {
+							hiddenWidgets.push(def.id);
+						}
+					}
+
+					const reconciledLayout: DashboardLayout = { widgets, hiddenWidgets };
+					set({ layout: reconciledLayout, isReady: true });
+
+					// Persist if reconciliation changed anything
+					const changed =
+						widgets.length !== data.layout.widgets.length ||
+						hiddenWidgets.length !== (data.layout.hiddenWidgets || []).length;
+					if (changed) {
+						persistLayout(reconciledLayout);
+					}
 					return;
 				}
 			}
@@ -58,7 +82,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			console.error("Failed to load dashboard layout:", err);
 		}
 
-		// No saved layout or version mismatch — use default
+		// No saved layout — use default
 		const defaultLayout = buildDefaultLayout();
 		set({ layout: defaultLayout, isReady: true });
 		persistLayout(defaultLayout);

@@ -6,10 +6,13 @@ import {
 	Alert,
 	AlertDescription,
 	Button,
+	cn,
 	DashboardGrid,
 	ErrorState,
 	Icon,
 	LoadingState,
+	NotificationList,
+	Skeleton,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
@@ -19,8 +22,8 @@ import {
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { PageHeader, ProtectedPage } from "@/components/layout";
-import { useAnalytics } from "@/features/analytics/hooks";
+import { ProtectedPage } from "@/components/layout";
+import { useAnalytics, useGitHubReleases, useIdentityNotifications, useSecurityInsights } from "@/features/analytics/hooks";
 import { UserRole, useUser } from "@/features/auth";
 import type { WidgetId, WidgetRenderProps } from "@/features/dashboard";
 import { useDashboardLayoutStore, WIDGET_DEFINITIONS, WIDGET_RENDERERS } from "@/features/dashboard";
@@ -36,6 +39,7 @@ function getGreeting(): string {
 
 export default function Dashboard() {
 	const { identity, session, system, hydra, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
+	const releases = useGitHubReleases(hydraEnabled);
 	const { formatNumber, formatDuration, formatRelativeTime } = useFormatters();
 	const router = useRouter();
 	const user = useUser();
@@ -183,6 +187,7 @@ export default function Dashboard() {
 	// Yearly data for stat card bar charts
 	const identitiesByYear = useMemo(() => identity.data?.identitiesByYear || [], [identity.data?.identitiesByYear]);
 	const activeUsersByYear = useMemo(() => session.data?.activeUsersByYear || [], [session.data?.activeUsersByYear]);
+	const avgSessionByQuarter = useMemo(() => session.data?.avgSessionByQuarter || [], [session.data?.avgSessionByQuarter]);
 
 	// Growth bar data — [previous week, current week] for mini bar chart
 	const growthBarData = useMemo(() => {
@@ -202,6 +207,29 @@ export default function Dashboard() {
 	}, [identityChartData, sessionChartData, activityTimeRange]);
 
 	const geoPoints = useMemo(() => session.data?.sessionGeoPoints || [], [session.data?.sessionGeoPoints]);
+
+	// ── Notifications & Security ──────────────────────────
+
+	const kratosHealthy = system.data?.systemHealth === "healthy";
+	const hydraHealthy = hydra.data?.systemHealth === "healthy";
+
+	const identityNotifications = useIdentityNotifications({
+		kratosHealthy: kratosHealthy ?? false,
+		hydraHealthy: hydraHealthy ?? false,
+		hydraEnabled,
+		identityData: identity.data,
+		sessionData: session.data,
+		kratosRelease: releases.kratos,
+		hydraRelease: releases.hydra,
+	});
+
+	const { alerts: securityAlerts } = useSecurityInsights({
+		sessionData: session.data,
+		hydraData: hydra.data,
+		kratosRelease: releases.kratos,
+		hydraRelease: releases.hydra,
+		hydraEnabled,
+	});
 
 	// ── Widget render props ──────────────────────────────
 
@@ -227,12 +255,30 @@ export default function Dashboard() {
 			totalGrowth4Weeks,
 			identitiesByYear,
 			activeUsersByYear,
+			avgSessionByQuarter,
 			combinedActivitySeries,
 			geoPoints,
 			activityTimeRange,
 			onActivityTimeRangeChange: setActivityTimeRange,
 			peakHoursTimeRange,
 			onPeakHoursTimeRangeChange: setPeakHoursTimeRange,
+			securityAlerts,
+			releases: {
+				kratos: {
+					runningVersion: releases.kratos.runningVersion,
+					updateAvailable: releases.kratos.updateAvailable,
+					latestVersion: releases.kratos.latestRelease?.version ?? null,
+					releaseUrl: releases.kratos.latestRelease?.htmlUrl,
+					isLoading: releases.kratos.isLoading,
+				},
+				hydra: {
+					runningVersion: releases.hydra.runningVersion,
+					updateAvailable: releases.hydra.updateAvailable,
+					latestVersion: releases.hydra.latestRelease?.version ?? null,
+					releaseUrl: releases.hydra.latestRelease?.htmlUrl,
+					isLoading: releases.hydra.isLoading,
+				},
+			},
 		}),
 		[
 			identity,
@@ -255,10 +301,13 @@ export default function Dashboard() {
 			totalGrowth4Weeks,
 			identitiesByYear,
 			activeUsersByYear,
+			avgSessionByQuarter,
 			combinedActivitySeries,
 			geoPoints,
 			activityTimeRange,
 			peakHoursTimeRange,
+			securityAlerts,
+			releases,
 		],
 	);
 
@@ -285,7 +334,15 @@ export default function Dashboard() {
 					};
 				});
 
-			updateLayout(updatedWidgets);
+			// Only persist if something actually changed (avoid overwriting saved layout on grid mount)
+			const hasChanges = updatedWidgets.some((w) => {
+				const old = widgetMap.get(w.i);
+				return old && (old.x !== w.x || old.y !== w.y || old.w !== w.w || old.h !== w.h);
+			});
+
+			if (hasChanges) {
+				updateLayout(updatedWidgets);
+			}
 		},
 		[updateLayout],
 	);
@@ -421,77 +478,156 @@ export default function Dashboard() {
 
 	return (
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
-			<PageHeader
-				title="Dashboard"
-				actions={
-					<>
-						{/* Refresh — always visible */}
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button variant="outline" size="icon" onClick={refetchAll} aria-label="Refresh data">
-										<Icon name="refresh" />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>Refresh Data</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-						{/* Add Widget — edit mode only */}
-						{isEditMode && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button variant="outline" size="icon" onClick={() => setAddWidgetOpen(true)} aria-label="Add widget">
-											<Icon name="add" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Add Widget</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-
-						{/* Reset Layout — edit mode only */}
-						{isEditMode && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button variant="outline" size="icon" onClick={resetToDefault} aria-label="Reset layout">
-											<Icon name="reset" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Reset Layout</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-
-						{/* Edit toggle */}
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button
-										variant={isEditMode ? "default" : "outline"}
-										size="icon"
-										onClick={() => setIsEditMode((prev) => !prev)}
-										aria-label={isEditMode ? "Done editing" : "Edit layout"}
-									>
-										<Icon name={isEditMode ? "check" : "edit"} />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>{isEditMode ? "Done Editing" : "Edit Layout"}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					</>
-				}
-			/>
-
-			{/* Welcome Banner */}
+			{/* Welcome Banner — greeting | notifications (spanning cols 2-3) */}
 			<WelcomeBanner
 				greeting={getGreeting()}
 				userName={user?.displayName || "there"}
 				subtitle="Here's your identity platform overview"
-				className="mb-4"
-			/>
+			>
+				<NotificationList
+					notifications={identityNotifications}
+					maxHeight="140px"
+					emptyMessage="All systems operational"
+				/>
+			</WelcomeBanner>
+
+			<div className="my-4 flex items-center justify-between">
+				{/* Health status — always visible */}
+				<div className="flex items-center gap-6">
+					{/* Kratos */}
+					<div className="flex flex-col gap-0">
+						<div className="flex items-center gap-2">
+							<span className="relative flex h-2 w-2 shrink-0">
+								{kratosHealthy && (
+									<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />
+								)}
+								<span className={cn("relative inline-flex h-2 w-2 rounded-full", kratosHealthy ? "bg-success" : "bg-destructive")} />
+							</span>
+							<span className={cn("text-sm font-medium", kratosHealthy ? "text-success" : "text-destructive")}>
+								Kratos (Identity)
+							</span>
+						</div>
+						<div className="ml-4 flex items-center gap-1">
+							{releases.kratos.isLoading ? (
+								<Skeleton className="h-3 w-20" />
+							) : (
+								<>
+									<span className="text-[11px] text-muted-foreground">
+										{releases.kratos.runningVersion ? `v${releases.kratos.runningVersion.replace(/^v/, "")}` : "Unknown"}
+									</span>
+									{releases.kratos.updateAvailable && releases.kratos.latestRelease ? (
+										<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+											<Icon name="trending-up" className="h-2.5 w-2.5" />
+											v{releases.kratos.latestRelease.version.replace(/^v/, "")}
+										</span>
+									) : (
+										<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+											<Icon name="success-filled" className="h-2.5 w-2.5 text-success" />
+											Up to date
+										</span>
+									)}
+								</>
+							)}
+						</div>
+					</div>
+					{/* Hydra */}
+					<div className="flex flex-col gap-0">
+						<div className="flex items-center gap-2">
+							<span className="relative flex h-2 w-2 shrink-0">
+								{hydraHealthy && (
+									<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />
+								)}
+								<span className={cn("relative inline-flex h-2 w-2 rounded-full", hydraHealthy ? "bg-success" : "bg-destructive")} />
+							</span>
+							<span className={cn("text-sm font-medium", hydraHealthy ? "text-success" : "text-destructive")}>
+								Hydra (OAuth2)
+							</span>
+						</div>
+						<div className="ml-4 flex items-center gap-1">
+							{releases.hydra.isLoading ? (
+								<Skeleton className="h-3 w-20" />
+							) : (
+								<>
+									<span className="text-[11px] text-muted-foreground">
+										{releases.hydra.runningVersion ? `v${releases.hydra.runningVersion.replace(/^v/, "")}` : "Unknown"}
+									</span>
+									{releases.hydra.updateAvailable && releases.hydra.latestRelease ? (
+										<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+											<Icon name="trending-up" className="h-2.5 w-2.5" />
+											v{releases.hydra.latestRelease.version.replace(/^v/, "")}
+										</span>
+									) : (
+										<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+											<Icon name="success-filled" className="h-2.5 w-2.5 text-success" />
+											Up to date
+										</span>
+									)}
+								</>
+							)}
+						</div>
+					</div>
+				</div>
+
+				{/* Toolbar buttons */}
+				<div className="flex gap-2">
+				{/* Refresh — always visible */}
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button variant="outline" size="icon" onClick={refetchAll} aria-label="Refresh data">
+								<Icon name="refresh" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Refresh Data</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+
+				{/* Add Widget — edit mode only */}
+				{isEditMode && (
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button variant="outline" size="icon" onClick={() => setAddWidgetOpen(true)} aria-label="Add widget">
+									<Icon name="add" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Add Widget</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				)}
+
+				{/* Reset Layout — edit mode only */}
+				{isEditMode && (
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button variant="outline" size="icon" onClick={resetToDefault} aria-label="Reset layout">
+									<Icon name="reset" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Reset Layout</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				)}
+
+				{/* Edit toggle */}
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								variant={isEditMode ? "default" : "outline"}
+								size="icon"
+								onClick={() => setIsEditMode((prev) => !prev)}
+								aria-label={isEditMode ? "Done editing" : "Edit layout"}
+							>
+								<Icon name={isEditMode ? "check" : "edit"} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{isEditMode ? "Done Editing" : "Edit Layout"}</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+				</div>
+			</div>
 
 			{/* Hydra not available info banner */}
 			{!isHydraAvailable && (

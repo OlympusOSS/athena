@@ -11,7 +11,7 @@ interface NavItem {
 	title: string;
 	path: string;
 	icon: IconName;
-	/** Zoho-style colored icon background (bg + text color) */
+	/** Icon color class */
 	iconColor: string;
 	requiredRole?: UserRole;
 }
@@ -21,35 +21,35 @@ const mainNavItems: NavItem[] = [
 		title: "Dashboard",
 		path: "/dashboard",
 		icon: "dashboard",
-		iconColor: "bg-blue-500 text-white",
+		iconColor: "text-blue-500",
 		requiredRole: UserRole.VIEWER,
 	},
 	{
 		title: "Identities",
 		path: "/identities",
 		icon: "users",
-		iconColor: "bg-purple-500 text-white",
+		iconColor: "text-purple-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Sessions",
 		path: "/sessions",
 		icon: "shield",
-		iconColor: "bg-emerald-500 text-white",
+		iconColor: "text-emerald-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Messages",
 		path: "/messages",
 		icon: "mail",
-		iconColor: "bg-amber-500 text-white",
+		iconColor: "text-amber-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Schemas",
 		path: "/schemas",
 		icon: "file-text",
-		iconColor: "bg-cyan-500 text-white",
+		iconColor: "text-cyan-500",
 		requiredRole: UserRole.VIEWER,
 	},
 ];
@@ -59,27 +59,26 @@ const hydraNavItems: NavItem[] = [
 		title: "OAuth2 Clients",
 		path: "/clients",
 		icon: "app",
-		iconColor: "bg-rose-500 text-white",
+		iconColor: "text-rose-500",
 	},
 ];
 
-/* ── Nav item — Zoho CRM style with colored icon backgrounds ── */
-function NavLink({ item, active }: { item: NavItem; active: boolean }) {
+/* ── Nav item with colored icons ── */
+function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Link href={item.path} className="relative block">
 					<div
 						className={cn(
-							"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
+							"flex items-center rounded-md text-sm transition-colors duration-150",
+							collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
 							active ? "font-medium" : "opacity-75 hover:opacity-100",
 						)}
 						style={active ? { background: "hsl(var(--sidebar-active))", color: "#fff" } : { color: "hsl(var(--sidebar-fg))" }}
 					>
-						<div className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded", item.iconColor)}>
-							<Icon name={item.icon} className="h-3.5 w-3.5" />
-						</div>
-						<span>{item.title}</span>
+						<Icon name={item.icon} className={cn("h-4 w-4 shrink-0", active ? "text-white" : item.iconColor)} />
+						{!collapsed && <span>{item.title}</span>}
 					</div>
 				</Link>
 			</TooltipTrigger>
@@ -89,11 +88,11 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 }
 
 interface SidebarProps {
-	open: boolean;
-	onClose: () => void;
+	expanded: boolean;
+	onToggle: () => void;
 }
 
-export function Sidebar({ open, onClose }: SidebarProps) {
+export function Sidebar({ expanded, onToggle }: SidebarProps) {
 	const pathname = usePathname();
 	const logout = useLogout();
 	const user = useUser();
@@ -114,49 +113,73 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 	const filteredHydraNavItems = hydraEnabled ? hydraNavItems.filter((item) => hasRequiredRole(item.requiredRole)) : [];
 
 	return (
-		<aside
-			className={cn(
-				"glass-nav fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-transform duration-300",
-				open ? "translate-x-0" : "-translate-x-full",
-			)}
-		>
-			{/* Sidebar header — logo + title (Zoho CRM style) */}
-			<div className="flex h-14 items-center justify-between px-4">
-				<div className="flex items-center gap-2.5">
-					{/* Olympus visor logo */}
-					<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-5 w-5" aria-label="Olympus">
-							<path
-								fill="#fff"
-								fillRule="evenodd"
-								d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
-							/>
-						</svg>
-					</div>
-					<span className="text-sm font-semibold" style={{ color: "#fff" }}>
-						{APP_TITLE}
-					</span>
+		<TooltipProvider delayDuration={0}>
+			<aside className={cn("glass-nav fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300", expanded ? "w-60" : "w-14")}>
+				{/* Sidebar header — logo + title */}
+				<div className={cn("flex h-14 items-center", expanded ? "justify-between px-4" : "justify-center px-1")}>
+					{expanded ? (
+						<>
+							<div className="flex items-center gap-2.5">
+								{/* Olympus visor logo */}
+								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-5 w-5" aria-label="Olympus">
+										<path
+											fill="#fff"
+											fillRule="evenodd"
+											d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+										/>
+									</svg>
+								</div>
+								<span className="text-sm font-semibold" style={{ color: "#fff" }}>
+									{APP_TITLE}
+								</span>
+							</div>
+							<button
+								onClick={onToggle}
+								type="button"
+								className="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
+								style={{ color: "hsl(var(--sidebar-fg))" }}
+							>
+								<Icon name="panel-left" className="h-4 w-4" />
+							</button>
+						</>
+					) : (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<button
+									onClick={onToggle}
+									type="button"
+									className="group relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="332 290 736 440"
+										className="h-5 w-5 transition-opacity duration-200 group-hover:opacity-0"
+										aria-label="Olympus"
+									>
+										<path
+											fill="#fff"
+											fillRule="evenodd"
+											d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+										/>
+									</svg>
+									<Icon
+										name="panel-left"
+										className="absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+									/>
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right">Expand sidebar</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
-				<button
-					onClick={onClose}
-					type="button"
-					className="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
-					style={{ color: "hsl(var(--sidebar-fg))" }}
-				>
-					<Icon name="chevron-left" className="h-4 w-4" />
-				</button>
-			</div>
 
-			{/* Divider */}
-			<div className="mx-3" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
-
-			{/* Navigation */}
-			<ScrollArea className="flex-1 px-2.5 py-2">
-				<nav className="flex flex-col gap-0.5">
-					<TooltipProvider delayDuration={0}>
+				{/* Navigation */}
+				<ScrollArea className={cn("flex-1 py-2", expanded ? "px-2.5" : "px-1.5")}>
+					<nav className="flex flex-col gap-0.5">
 						{/* Main nav */}
 						{filteredMainNavItems.map((item) => (
-							<NavLink key={item.path} item={item} active={isActive(item.path)} />
+							<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} />
 						))}
 
 						{/* Hydra nav */}
@@ -164,30 +187,36 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 							<>
 								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
 								{filteredHydraNavItems.map((item) => (
-									<NavLink key={item.path} item={item} active={isActive(item.path)} />
+									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} />
 								))}
 							</>
 						)}
-					</TooltipProvider>
-				</nav>
-			</ScrollArea>
+					</nav>
+				</ScrollArea>
 
-			{/* Bottom section */}
-			<div className="mx-3" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
-			<div className="p-2.5">
-				<button
-					onClick={() => logout()}
-					type="button"
-					className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm opacity-60 transition-all duration-150 hover:opacity-100"
-					style={{ color: "hsl(var(--sidebar-fg))" }}
-				>
-					<div className="h-4 w-4 shrink-0">
-						<Icon name="logout" className="h-4 w-4" />
-					</div>
-					<span>Logout</span>
-				</button>
-			</div>
-		</aside>
+				{/* Bottom section */}
+				<div className="mx-3" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
+				<div className={cn("p-2.5", !expanded && "px-1.5")}>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<button
+								onClick={() => logout()}
+								type="button"
+								className={cn(
+									"flex w-full items-center rounded-md text-sm opacity-60 transition-all duration-150 hover:opacity-100",
+									expanded ? "gap-3 px-3 py-2" : "justify-center px-2 py-2",
+								)}
+								style={{ color: "hsl(var(--sidebar-fg))" }}
+							>
+								<Icon name="logout" className="h-4 w-4 shrink-0" />
+								{expanded && <span>Logout</span>}
+							</button>
+						</TooltipTrigger>
+						<TooltipContent side="right">Logout</TooltipContent>
+					</Tooltip>
+				</div>
+			</aside>
+		</TooltipProvider>
 	);
 }
 

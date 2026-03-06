@@ -89,9 +89,15 @@ export const useIdentityAnalytics = (isKratosHealthy: boolean) => {
 				{} as Record<number, number>,
 			);
 
+			// Ensure current year and previous 3 years always appear
+			const currentYear = new Date().getFullYear();
+			for (let y = currentYear - 3; y <= currentYear; y++) {
+				if (!yearGroups[y]) yearGroups[y] = 0;
+			}
+
 			const identitiesByYear = Object.entries(yearGroups)
 				.map(([year, count]) => ({ year: Number(year), count: count as number }))
-				.sort((a, b) => b.year - a.year); // Latest year first
+				.sort((a, b) => b.year - a.year); // Newest first (right-to-left chronological)
 
 			// Group by schema
 			const schemaGroups = allIdentities.reduce(
@@ -264,9 +270,36 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				activeUserYearSets[year].add(session.identity.id);
 			});
 
+			// Ensure current year and previous 3 years always appear
+			const currentYear = new Date().getFullYear();
+			for (let y = currentYear - 3; y <= currentYear; y++) {
+				if (!activeUserYearSets[y]) activeUserYearSets[y] = new Set();
+			}
+
 			const activeUsersByYear = Object.entries(activeUserYearSets)
 				.map(([year, ids]) => ({ year: Number(year), count: ids.size }))
-				.sort((a, b) => b.year - a.year); // Latest year first
+				.sort((a, b) => b.year - a.year); // Newest first (right-to-left chronological)
+
+			// Average session duration by quarter (current year)
+			const quarterDurations: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [] };
+			sessions.forEach((session) => {
+				if (!session.authenticated_at) return;
+				const authDate = new Date(session.authenticated_at);
+				if (authDate.getFullYear() !== currentYear) return;
+				const quarter = Math.ceil((authDate.getMonth() + 1) / 3);
+				const authenticated = authDate.getTime();
+				const expiresAt = session.expires_at ? new Date(session.expires_at).getTime() : currentTime;
+				const endTime = expiresAt < currentTime ? expiresAt : currentTime;
+				const durationMinutes = Math.max(0, endTime - authenticated) / (1000 * 60);
+				quarterDurations[quarter].push(durationMinutes);
+			});
+
+			const avgSessionByQuarter = [1, 2, 3, 4].map((q) => {
+				const durations = quarterDurations[q];
+				const avgMinutes = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+				const avgHours = Math.round((avgMinutes / 60) * 10) / 10; // 1 decimal place
+				return { year: q, count: avgHours, label: `Q${q}` };
+			});
 
 			// Total unique active users (across all years)
 			const allActiveUserIds = new Set<string>();
@@ -340,6 +373,7 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				activeSessions,
 				totalActiveUsers,
 				activeUsersByYear,
+				avgSessionByQuarter,
 				sessionsByDay,
 				averageSessionDuration: Math.round(averageSessionDuration),
 				sessionsLast7Days,

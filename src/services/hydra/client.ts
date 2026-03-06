@@ -56,7 +56,7 @@ export const getPublicOAuth2Api = (): OAuth2Api => {
 
 export const getHydraMetadataApi = (): HydraMetadataApi => {
 	if (!hydraMetadataApiInstance) {
-		hydraMetadataApiInstance = new HydraMetadataApi(getPublicConfiguration());
+		hydraMetadataApiInstance = new HydraMetadataApi(getAdminConfiguration());
 	}
 	return hydraMetadataApiInstance;
 };
