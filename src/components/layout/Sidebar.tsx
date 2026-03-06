@@ -163,10 +163,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
 											d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
 										/>
 									</svg>
-									<Icon
-										name="panel-left"
-										className="absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-									/>
+									<Icon name="panel-left" className="absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent side="right">Expand sidebar</TooltipContent>

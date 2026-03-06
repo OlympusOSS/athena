@@ -1,23 +1,18 @@
+import type { SecurityAlert } from "@olympusoss/canvas";
 import {
 	ActivityFeed,
 	AnimatedBarChart,
 	AnimatedPieChart,
-	Card,
-	CardContent,
 	ChartCard,
 	ChartCardWithFilter,
-	cn,
 	Icon,
 	MultiSeriesAreaChart,
 	SecurityInsights,
-	Skeleton,
 	StatCard,
 	VerificationGauge,
 	WorldHeatMap,
 	YearlyBarChart,
 } from "@olympusoss/canvas";
-import type { SecurityAlert } from "@olympusoss/canvas";
-import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import type { WidgetDefinition, WidgetId } from "./types";
 

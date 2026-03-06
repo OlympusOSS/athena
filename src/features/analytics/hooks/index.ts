@@ -1,4 +1,4 @@
 export * from "./useAnalytics";
-export { useGitHubReleases, type ServiceVersionInfo, type UseGitHubReleasesReturn } from "./useGitHubReleases";
-export { useIdentityNotifications, type DashboardNotification } from "./useIdentityNotifications";
+export { type ServiceVersionInfo, type UseGitHubReleasesReturn, useGitHubReleases } from "./useGitHubReleases";
+export { type DashboardNotification, useIdentityNotifications } from "./useIdentityNotifications";
 export { useSecurityInsights } from "./useSecurityInsights";

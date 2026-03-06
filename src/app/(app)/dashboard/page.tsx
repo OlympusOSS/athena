@@ -479,16 +479,8 @@ export default function Dashboard() {
 	return (
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
 			{/* Welcome Banner — greeting | notifications (spanning cols 2-3) */}
-			<WelcomeBanner
-				greeting={getGreeting()}
-				userName={user?.displayName || "there"}
-				subtitle="Here's your identity platform overview"
-			>
-				<NotificationList
-					notifications={identityNotifications}
-					maxHeight="140px"
-					emptyMessage="All systems operational"
-				/>
+			<WelcomeBanner greeting={getGreeting()} userName={user?.displayName || "there"} subtitle="Here's your identity platform overview">
+				<NotificationList notifications={identityNotifications} maxHeight="140px" emptyMessage="All systems operational" />
 			</WelcomeBanner>
 
 			<div className="my-4 flex items-center justify-between">
@@ -498,14 +490,10 @@ export default function Dashboard() {
 					<div className="flex flex-col gap-0">
 						<div className="flex items-center gap-2">
 							<span className="relative flex h-2 w-2 shrink-0">
-								{kratosHealthy && (
-									<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />
-								)}
+								{kratosHealthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 								<span className={cn("relative inline-flex h-2 w-2 rounded-full", kratosHealthy ? "bg-success" : "bg-destructive")} />
 							</span>
-							<span className={cn("text-sm font-medium", kratosHealthy ? "text-success" : "text-destructive")}>
-								Kratos (Identity)
-							</span>
+							<span className={cn("text-sm font-medium", kratosHealthy ? "text-success" : "text-destructive")}>Kratos (Identity)</span>
 						</div>
 						<div className="ml-4 flex items-center gap-1">
 							{releases.kratos.isLoading ? (
@@ -517,8 +505,7 @@ export default function Dashboard() {
 									</span>
 									{releases.kratos.updateAvailable && releases.kratos.latestRelease ? (
 										<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
-											<Icon name="trending-up" className="h-2.5 w-2.5" />
-											v{releases.kratos.latestRelease.version.replace(/^v/, "")}
+											<Icon name="trending-up" className="h-2.5 w-2.5" />v{releases.kratos.latestRelease.version.replace(/^v/, "")}
 										</span>
 									) : (
 										<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
@@ -534,14 +521,10 @@ export default function Dashboard() {
 					<div className="flex flex-col gap-0">
 						<div className="flex items-center gap-2">
 							<span className="relative flex h-2 w-2 shrink-0">
-								{hydraHealthy && (
-									<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />
-								)}
+								{hydraHealthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 								<span className={cn("relative inline-flex h-2 w-2 rounded-full", hydraHealthy ? "bg-success" : "bg-destructive")} />
 							</span>
-							<span className={cn("text-sm font-medium", hydraHealthy ? "text-success" : "text-destructive")}>
-								Hydra (OAuth2)
-							</span>
+							<span className={cn("text-sm font-medium", hydraHealthy ? "text-success" : "text-destructive")}>Hydra (OAuth2)</span>
 						</div>
 						<div className="ml-4 flex items-center gap-1">
 							{releases.hydra.isLoading ? (
@@ -553,8 +536,7 @@ export default function Dashboard() {
 									</span>
 									{releases.hydra.updateAvailable && releases.hydra.latestRelease ? (
 										<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
-											<Icon name="trending-up" className="h-2.5 w-2.5" />
-											v{releases.hydra.latestRelease.version.replace(/^v/, "")}
+											<Icon name="trending-up" className="h-2.5 w-2.5" />v{releases.hydra.latestRelease.version.replace(/^v/, "")}
 										</span>
 									) : (
 										<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
@@ -570,62 +552,62 @@ export default function Dashboard() {
 
 				{/* Toolbar buttons */}
 				<div className="flex gap-2">
-				{/* Refresh — always visible */}
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button variant="outline" size="icon" onClick={refetchAll} aria-label="Refresh data">
-								<Icon name="refresh" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Refresh Data</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-
-				{/* Add Widget — edit mode only */}
-				{isEditMode && (
+					{/* Refresh — always visible */}
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button variant="outline" size="icon" onClick={() => setAddWidgetOpen(true)} aria-label="Add widget">
-									<Icon name="add" />
+								<Button variant="outline" size="icon" onClick={refetchAll} aria-label="Refresh data">
+									<Icon name="refresh" />
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent>Add Widget</TooltipContent>
+							<TooltipContent>Refresh Data</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>
-				)}
 
-				{/* Reset Layout — edit mode only */}
-				{isEditMode && (
+					{/* Add Widget — edit mode only */}
+					{isEditMode && (
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button variant="outline" size="icon" onClick={() => setAddWidgetOpen(true)} aria-label="Add widget">
+										<Icon name="add" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Add Widget</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					)}
+
+					{/* Reset Layout — edit mode only */}
+					{isEditMode && (
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button variant="outline" size="icon" onClick={resetToDefault} aria-label="Reset layout">
+										<Icon name="reset" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Reset Layout</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					)}
+
+					{/* Edit toggle */}
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button variant="outline" size="icon" onClick={resetToDefault} aria-label="Reset layout">
-									<Icon name="reset" />
+								<Button
+									variant={isEditMode ? "default" : "outline"}
+									size="icon"
+									onClick={() => setIsEditMode((prev) => !prev)}
+									aria-label={isEditMode ? "Done editing" : "Edit layout"}
+								>
+									<Icon name={isEditMode ? "check" : "edit"} />
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent>Reset Layout</TooltipContent>
+							<TooltipContent>{isEditMode ? "Done Editing" : "Edit Layout"}</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>
-				)}
-
-				{/* Edit toggle */}
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								variant={isEditMode ? "default" : "outline"}
-								size="icon"
-								onClick={() => setIsEditMode((prev) => !prev)}
-								aria-label={isEditMode ? "Done editing" : "Edit layout"}
-							>
-								<Icon name={isEditMode ? "check" : "edit"} />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>{isEditMode ? "Done Editing" : "Edit Layout"}</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
 				</div>
 			</div>
 

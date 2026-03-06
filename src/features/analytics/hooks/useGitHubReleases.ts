@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getKratosVersion } from "@/services/kratos/endpoints/health";
 import { getHydraVersion } from "@/services/hydra/endpoints/health";
+import { getKratosVersion } from "@/services/kratos/endpoints/health";
 
 interface GitHubRelease {
 	tagName: string;
