@@ -213,12 +213,16 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 				isReady: true,
 			});
 			// Fetch CAPTCHA status from server config (non-blocking)
-			fetchServerDefaults().then((defaults) => {
-				set({
-					captchaEnabled: defaults.captchaEnabled,
-					captchaSiteKey: defaults.captchaSiteKey,
+			fetchServerDefaults()
+				.then((defaults) => {
+					set({
+						captchaEnabled: defaults.captchaEnabled,
+						captchaSiteKey: defaults.captchaSiteKey,
+					});
+				})
+				.catch(() => {
+					/* CAPTCHA status is best-effort */
 				});
-			}).catch(() => { /* CAPTCHA status is best-effort */ });
 			return;
 		}
 

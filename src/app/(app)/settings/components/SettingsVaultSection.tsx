@@ -70,10 +70,7 @@ export function SettingsVaultSection() {
 		try {
 			setLoading(true);
 			setError(null);
-			const url =
-				filterCategory !== "all"
-					? `/api/settings?category=${filterCategory}`
-					: "/api/settings";
+			const url = filterCategory !== "all" ? `/api/settings?category=${filterCategory}` : "/api/settings";
 			const res = await fetch(url);
 			if (!res.ok) throw new Error("Failed to fetch settings");
 			const data = await res.json();
@@ -172,15 +169,12 @@ export function SettingsVaultSection() {
 	};
 
 	// Group settings by category
-	const grouped = settings.reduce<Record<string, VaultSetting[]>>(
-		(acc, s) => {
-			const cat = s.category || "general";
-			if (!acc[cat]) acc[cat] = [];
-			acc[cat].push(s);
-			return acc;
-		},
-		{},
-	);
+	const grouped = settings.reduce<Record<string, VaultSetting[]>>((acc, s) => {
+		const cat = s.category || "general";
+		if (!acc[cat]) acc[cat] = [];
+		acc[cat].push(s);
+		return acc;
+	}, {});
 
 	return (
 		<Card>
@@ -188,10 +182,7 @@ export function SettingsVaultSection() {
 				<div className="flex items-center justify-between">
 					<CardTitle className="text-base">Application Settings</CardTitle>
 					<div className="flex items-center gap-2">
-						<Select
-							value={filterCategory}
-							onValueChange={setFilterCategory}
-						>
+						<Select value={filterCategory} onValueChange={setFilterCategory}>
 							<SelectTrigger className="w-[140px] h-8 text-xs">
 								<SelectValue placeholder="Filter..." />
 							</SelectTrigger>
@@ -215,13 +206,9 @@ export function SettingsVaultSection() {
 
 							<DialogContent>
 								<DialogHeader>
-									<DialogTitle>
-										{editingKey ? "Edit Setting" : "Add Setting"}
-									</DialogTitle>
+									<DialogTitle>{editingKey ? "Edit Setting" : "Add Setting"}</DialogTitle>
 									<DialogDescription>
-										{editingKey
-											? `Update the value for "${editingKey}".`
-											: "Add a new key-value setting to the vault."}
+										{editingKey ? `Update the value for "${editingKey}".` : "Add a new key-value setting to the vault."}
 									</DialogDescription>
 								</DialogHeader>
 
@@ -246,11 +233,7 @@ export function SettingsVaultSection() {
 										</Label>
 										<Input
 											id="setting-value"
-											placeholder={
-												formEncrypted
-													? "Enter secret value (will be encrypted)"
-													: "Enter value"
-											}
+											placeholder={formEncrypted ? "Enter secret value (will be encrypted)" : "Enter value"}
 											value={formValue}
 											onChange={(e) => setFormValue(e.target.value)}
 											type={formEncrypted ? "password" : "text"}
@@ -262,10 +245,7 @@ export function SettingsVaultSection() {
 										<Label htmlFor="setting-category" className="text-xs">
 											Category
 										</Label>
-										<Select
-											value={formCategory}
-											onValueChange={setFormCategory}
-										>
+										<Select value={formCategory} onValueChange={setFormCategory}>
 											<SelectTrigger className="text-sm">
 												<SelectValue />
 											</SelectTrigger>
@@ -281,17 +261,10 @@ export function SettingsVaultSection() {
 
 									<div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
 										<div className="space-y-0.5">
-											<Label className="text-xs font-medium">
-												Encrypt value
-											</Label>
-											<p className="text-[11px] text-muted-foreground">
-												Store this value encrypted at rest (AES-256-GCM)
-											</p>
+											<Label className="text-xs font-medium">Encrypt value</Label>
+											<p className="text-[11px] text-muted-foreground">Store this value encrypted at rest (AES-256-GCM)</p>
 										</div>
-										<Switch
-											checked={formEncrypted}
-											onCheckedChange={setFormEncrypted}
-										/>
+										<Switch checked={formEncrypted} onCheckedChange={setFormEncrypted} />
 									</div>
 								</div>
 
@@ -301,11 +274,7 @@ export function SettingsVaultSection() {
 											Cancel
 										</Button>
 									</DialogClose>
-									<Button
-										size="sm"
-										onClick={handleSave}
-										disabled={!formKey.trim() || saving}
-									>
+									<Button size="sm" onClick={handleSave} disabled={!formKey.trim() || saving}>
 										{saving ? "Saving..." : "Save"}
 									</Button>
 								</DialogFooter>
@@ -316,11 +285,7 @@ export function SettingsVaultSection() {
 			</CardHeader>
 
 			<CardContent className="pt-0">
-				{error && (
-					<div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-						{error}
-					</div>
-				)}
+				{error && <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
 
 				{loading ? (
 					<div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
@@ -329,31 +294,20 @@ export function SettingsVaultSection() {
 					</div>
 				) : settings.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-8 text-center">
-						<Icon
-							name="settings"
-							className="mb-2 h-8 w-8 text-muted-foreground/50"
-						/>
-						<p className="text-sm text-muted-foreground">
-							No settings configured yet
-						</p>
-						<p className="text-xs text-muted-foreground/70">
-							Add your first setting to get started
-						</p>
+						<Icon name="settings" className="mb-2 h-8 w-8 text-muted-foreground/50" />
+						<p className="text-sm text-muted-foreground">No settings configured yet</p>
+						<p className="text-xs text-muted-foreground/70">Add your first setting to get started</p>
 					</div>
 				) : (
 					<div className="space-y-4">
 						{Object.entries(grouped).map(([category, items]) => (
 							<div key={category}>
 								<div className="mb-2 flex items-center gap-2">
-									<Badge
-										variant="secondary"
-										className="text-[10px] px-1.5 py-0 uppercase"
-									>
+									<Badge variant="secondary" className="text-[10px] px-1.5 py-0 uppercase">
 										{category}
 									</Badge>
 									<span className="text-[11px] text-muted-foreground">
-										{items.length}{" "}
-										{items.length === 1 ? "setting" : "settings"}
+										{items.length} {items.length === 1 ? "setting" : "settings"}
 									</span>
 								</div>
 								<Table>
@@ -361,55 +315,32 @@ export function SettingsVaultSection() {
 										<TableRow>
 											<TableHead className="text-xs w-[30%]">Key</TableHead>
 											<TableHead className="text-xs w-[35%]">Value</TableHead>
-											<TableHead className="text-xs w-[15%]">
-												Updated
-											</TableHead>
-											<TableHead className="text-xs w-[20%] text-right">
-												Actions
-											</TableHead>
+											<TableHead className="text-xs w-[15%]">Updated</TableHead>
+											<TableHead className="text-xs w-[20%] text-right">Actions</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{items.map((setting) => (
 											<TableRow key={setting.key}>
-												<TableCell className="text-sm font-mono">
-													{setting.key}
-												</TableCell>
+												<TableCell className="text-sm font-mono">{setting.key}</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-1.5">
-														{setting.encrypted && (
-															<Icon
-																name="lock"
-																className="h-3 w-3 text-muted-foreground"
-															/>
-														)}
+														{setting.encrypted && <Icon name="lock" className="h-3 w-3 text-muted-foreground" />}
 														<code
 															className={cn(
 																"rounded bg-muted px-1.5 py-0.5 text-xs",
-																setting.encrypted
-																	? "text-muted-foreground"
-																	: "text-foreground",
+																setting.encrypted ? "text-muted-foreground" : "text-foreground",
 															)}
 														>
 															{setting.value}
 														</code>
 													</div>
 												</TableCell>
-												<TableCell className="text-xs text-muted-foreground">
-													{formatDate(setting.updated_at)}
-												</TableCell>
+												<TableCell className="text-xs text-muted-foreground">{formatDate(setting.updated_at)}</TableCell>
 												<TableCell className="text-right">
 													<div className="flex items-center justify-end gap-1">
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() => handleOpenEdit(setting)}
-															className="h-7 w-7 p-0"
-														>
-															<Icon
-																name="edit"
-																className="h-3.5 w-3.5"
-															/>
+														<Button variant="ghost" size="sm" onClick={() => handleOpenEdit(setting)} className="h-7 w-7 p-0">
+															<Icon name="edit" className="h-3.5 w-3.5" />
 														</Button>
 														<Button
 															variant="ghost"
@@ -420,10 +351,7 @@ export function SettingsVaultSection() {
 															}}
 															className="h-7 w-7 p-0 text-destructive hover:text-destructive"
 														>
-															<Icon
-																name="delete"
-																className="h-3.5 w-3.5"
-															/>
+															<Icon name="delete" className="h-3.5 w-3.5" />
 														</Button>
 													</div>
 												</TableCell>
@@ -442,11 +370,8 @@ export function SettingsVaultSection() {
 						<DialogHeader>
 							<DialogTitle>Delete Setting</DialogTitle>
 							<DialogDescription>
-								Are you sure you want to delete{" "}
-								<code className="rounded bg-muted px-1 py-0.5 text-xs font-bold">
-									{deletingKey}
-								</code>
-								? This action cannot be undone.
+								Are you sure you want to delete <code className="rounded bg-muted px-1 py-0.5 text-xs font-bold">{deletingKey}</code>? This action
+								cannot be undone.
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
@@ -455,12 +380,7 @@ export function SettingsVaultSection() {
 									Cancel
 								</Button>
 							</DialogClose>
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={handleDelete}
-								disabled={deleting}
-							>
+							<Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
 								{deleting ? "Deleting..." : "Delete"}
 							</Button>
 						</DialogFooter>

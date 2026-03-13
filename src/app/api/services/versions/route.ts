@@ -52,10 +52,7 @@ async function fetchLatestGHCRVersion(image: string): Promise<GHCRVersionResult>
 }
 
 export async function GET() {
-	const [athena, hera] = await Promise.all([
-		fetchLatestGHCRVersion("olympusoss/athena"),
-		fetchLatestGHCRVersion("olympusoss/hera"),
-	]);
+	const [athena, hera] = await Promise.all([fetchLatestGHCRVersion("olympusoss/athena"), fetchLatestGHCRVersion("olympusoss/hera")]);
 
 	return NextResponse.json({ athena, hera });
 }
