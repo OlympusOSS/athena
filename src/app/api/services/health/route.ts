@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-async function checkService(
-	url: string | undefined,
-	healthPath: string,
-): Promise<{ isHealthy: boolean; version: string | null; error?: string }> {
+async function checkService(url: string | undefined, healthPath: string): Promise<{ isHealthy: boolean; version: string | null; error?: string }> {
 	if (!url) {
 		return { isHealthy: false, version: null, error: "Not configured" };
 	}

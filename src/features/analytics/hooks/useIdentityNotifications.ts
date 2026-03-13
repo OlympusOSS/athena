@@ -1,8 +1,8 @@
 import type { IconName } from "@olympusoss/canvas";
 import { useMemo } from "react";
 import type { IdentityAnalytics, SessionAnalytics } from "../types";
-import type { ServiceVersionInfo } from "./useGitHubReleases";
 import type { ServicesHealthData } from "./useAnalytics";
+import type { ServiceVersionInfo } from "./useGitHubReleases";
 
 export interface DashboardNotification {
 	id: string;
