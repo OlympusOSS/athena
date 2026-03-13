@@ -38,7 +38,7 @@ function getGreeting(): string {
 }
 
 export default function Dashboard() {
-	const { identity, session, system, hydra, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
+	const { identity, session, system, hydra, serviceHealth, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
 	const releases = useGitHubReleases(hydraEnabled);
 	const { formatNumber, formatDuration, formatRelativeTime } = useFormatters();
 	const router = useRouter();
@@ -221,6 +221,7 @@ export default function Dashboard() {
 		sessionData: session.data,
 		kratosRelease: releases.kratos,
 		hydraRelease: releases.hydra,
+		serviceHealthData: serviceHealth.data,
 	});
 
 	const { alerts: securityAlerts } = useSecurityInsights({
@@ -480,7 +481,7 @@ export default function Dashboard() {
 		<ProtectedPage requiredRole={UserRole.VIEWER}>
 			{/* Welcome Banner — greeting | notifications (spanning cols 2-3) */}
 			<WelcomeBanner greeting={getGreeting()} userName={user?.displayName || "there"} subtitle="Here's your identity platform overview">
-				<NotificationList notifications={identityNotifications} maxHeight="140px" emptyMessage="All systems operational" />
+				<NotificationList notifications={identityNotifications} maxHeight="140px" emptyMessage="All systems nominal" />
 			</WelcomeBanner>
 
 			<div className="my-4 flex items-center justify-between">
@@ -548,6 +549,98 @@ export default function Dashboard() {
 							)}
 						</div>
 					</div>
+					{/* CIAM Athena */}
+					{(() => {
+						const healthy = serviceHealth.data?.ciamAthena?.isHealthy ?? false;
+						const version = serviceHealth.data?.ciamAthena?.version;
+						return (
+							<div className="flex flex-col gap-0">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2 w-2 shrink-0">
+										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
+										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
+									</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>CIAM Admin</span>
+								</div>
+								<div className="ml-4 flex items-center gap-1">
+									{serviceHealth.isLoading ? (
+										<Skeleton className="h-3 w-20" />
+									) : (
+										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+									)}
+								</div>
+							</div>
+						);
+					})()}
+					{/* IAM Athena */}
+					{(() => {
+						const healthy = serviceHealth.data?.iamAthena?.isHealthy ?? false;
+						const version = serviceHealth.data?.iamAthena?.version;
+						return (
+							<div className="flex flex-col gap-0">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2 w-2 shrink-0">
+										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
+										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
+									</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>IAM Admin</span>
+								</div>
+								<div className="ml-4 flex items-center gap-1">
+									{serviceHealth.isLoading ? (
+										<Skeleton className="h-3 w-20" />
+									) : (
+										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+									)}
+								</div>
+							</div>
+						);
+					})()}
+					{/* CIAM Hera */}
+					{(() => {
+						const healthy = serviceHealth.data?.ciamHera?.isHealthy ?? false;
+						const version = serviceHealth.data?.ciamHera?.version;
+						return (
+							<div className="flex flex-col gap-0">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2 w-2 shrink-0">
+										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
+										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
+									</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>CIAM Auth</span>
+								</div>
+								<div className="ml-4 flex items-center gap-1">
+									{serviceHealth.isLoading ? (
+										<Skeleton className="h-3 w-20" />
+									) : (
+										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+									)}
+								</div>
+							</div>
+						);
+					})()}
+					{/* IAM Hera */}
+					{(() => {
+						const healthy = serviceHealth.data?.iamHera?.isHealthy ?? false;
+						const version = serviceHealth.data?.iamHera?.version;
+						return (
+							<div className="flex flex-col gap-0">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2 w-2 shrink-0">
+										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
+										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
+									</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>IAM Auth</span>
+								</div>
+								<div className="ml-4 flex items-center gap-1">
+									{serviceHealth.isLoading ? (
+										<Skeleton className="h-3 w-20" />
+									) : (
+										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+									)}
+								</div>
+							</div>
+						);
+					})()}
 				</div>
 
 				{/* Toolbar buttons */}
