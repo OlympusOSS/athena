@@ -560,7 +560,7 @@ export default function Dashboard() {
 										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
 									</span>
-									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Admin</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Athena (Admin)</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
 									{serviceHealth.isLoading ? (
@@ -583,7 +583,7 @@ export default function Dashboard() {
 										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
 									</span>
-									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Auth</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Hera (Login)</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
 									{serviceHealth.isLoading ? (
