@@ -470,7 +470,7 @@ export const useHydraAnalytics = (isHydraHealthy: boolean) => {
 	});
 };
 
-// Service health check for Athena and Hera instances (CIAM + IAM)
+// Service health check for Athena and Hera in the current stack
 export type ServiceHealth = {
 	isHealthy: boolean;
 	version: string | null;
@@ -478,10 +478,8 @@ export type ServiceHealth = {
 };
 
 export type ServicesHealthData = {
-	ciamAthena: ServiceHealth;
-	iamAthena: ServiceHealth;
-	ciamHera: ServiceHealth;
-	iamHera: ServiceHealth;
+	athena: ServiceHealth;
+	hera: ServiceHealth;
 };
 
 const useServiceHealthChecks = (isSettingsLoaded: boolean) => {

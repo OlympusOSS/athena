@@ -69,41 +69,23 @@ export function useIdentityNotifications({
 			});
 		}
 
-		// ── Athena & Hera service health alerts ──
+		// ── Athena & Hera service health alerts (own stack) ──
 		if (serviceHealthData) {
-			if (!serviceHealthData.ciamAthena.isHealthy) {
+			if (!serviceHealthData.athena.isHealthy) {
 				notifications.push({
-					id: "health-ciam-athena-down",
+					id: "health-athena-down",
 					severity: "critical",
-					title: "CIAM Admin service is down",
-					description: serviceHealthData.ciamAthena.error || "CIAM Athena is unreachable",
+					title: "Admin service is down",
+					description: serviceHealthData.athena.error || "Athena is unreachable",
 					icon: "heart-broken",
 				});
 			}
-			if (!serviceHealthData.iamAthena.isHealthy) {
+			if (!serviceHealthData.hera.isHealthy) {
 				notifications.push({
-					id: "health-iam-athena-down",
+					id: "health-hera-down",
 					severity: "critical",
-					title: "IAM Admin service is down",
-					description: serviceHealthData.iamAthena.error || "IAM Athena is unreachable",
-					icon: "heart-broken",
-				});
-			}
-			if (!serviceHealthData.ciamHera.isHealthy) {
-				notifications.push({
-					id: "health-ciam-hera-down",
-					severity: "critical",
-					title: "CIAM Auth service is down",
-					description: serviceHealthData.ciamHera.error || "CIAM Hera is unreachable",
-					icon: "heart-broken",
-				});
-			}
-			if (!serviceHealthData.iamHera.isHealthy) {
-				notifications.push({
-					id: "health-iam-hera-down",
-					severity: "critical",
-					title: "IAM Auth service is down",
-					description: serviceHealthData.iamHera.error || "IAM Hera is unreachable",
+					title: "Auth service is down",
+					description: serviceHealthData.hera.error || "Hera is unreachable",
 					icon: "heart-broken",
 				});
 			}

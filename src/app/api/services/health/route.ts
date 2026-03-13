@@ -22,12 +22,10 @@ async function checkService(url: string | undefined, healthPath: string): Promis
 }
 
 export async function GET() {
-	const [ciamAthena, iamAthena, ciamHera, iamHera] = await Promise.all([
-		checkService(process.env.CIAM_ATHENA_INTERNAL_URL, "/api/health"),
-		checkService(process.env.IAM_ATHENA_INTERNAL_URL, "/api/health"),
-		checkService(process.env.CIAM_HERA_INTERNAL_URL, "/health"),
-		checkService(process.env.IAM_HERA_INTERNAL_URL, "/health"),
+	const [athena, hera] = await Promise.all([
+		checkService(process.env.ATHENA_INTERNAL_URL, "/api/health"),
+		checkService(process.env.HERA_INTERNAL_URL, "/health"),
 	]);
 
-	return NextResponse.json({ ciamAthena, iamAthena, ciamHera, iamHera });
+	return NextResponse.json({ athena, hera });
 }
