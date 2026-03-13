@@ -5,6 +5,7 @@ import { buildDefaultLayout, WIDGET_DEFINITIONS } from "../widget-registry";
 interface DashboardLayoutState {
 	layout: DashboardLayout;
 	isReady: boolean;
+	isDirty: boolean;
 	isSaving: boolean;
 	initialize: () => Promise<void>;
 	updateLayout: (newWidgets: WidgetLayoutItem[]) => void;
@@ -12,32 +13,29 @@ interface DashboardLayoutState {
 	addWidget: (widgetId: WidgetId) => void;
 	resizeWidget: (widgetId: WidgetId, w: number, h: number) => void;
 	resetToDefault: () => void;
+	/** Persist the current layout to the server. Only called on explicit user action (e.g. clicking "Done editing"). */
+	saveLayout: () => Promise<void>;
 }
 
-// Debounce timer for API saves
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
-
 /**
- * Persist layout to the server (debounced).
+ * Persist layout to the server.
  */
-function persistLayout(layout: DashboardLayout) {
-	if (saveTimer) clearTimeout(saveTimer);
-	saveTimer = setTimeout(async () => {
-		try {
-			await fetch("/api/dashboard/layout", {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ layout }),
-			});
-		} catch (err) {
-			console.error("Failed to persist dashboard layout:", err);
-		}
-	}, 300);
+async function persistLayout(layout: DashboardLayout) {
+	try {
+		await fetch("/api/dashboard/layout", {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ layout }),
+		});
+	} catch (err) {
+		console.error("Failed to persist dashboard layout:", err);
+	}
 }
 
 export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get) => ({
 	layout: buildDefaultLayout(),
 	isReady: false,
+	isDirty: false,
 	isSaving: false,
 
 	initialize: async () => {
@@ -68,22 +66,27 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 					const reconciledLayout: DashboardLayout = { widgets, hiddenWidgets };
 					set({ layout: reconciledLayout, isReady: true });
 
-					// Persist if reconciliation changed anything
+					// Persist if reconciliation changed anything (new/removed widget definitions)
 					const changed = widgets.length !== data.layout.widgets.length || hiddenWidgets.length !== (data.layout.hiddenWidgets || []).length;
 					if (changed) {
-						persistLayout(reconciledLayout);
+						await persistLayout(reconciledLayout);
 					}
 					return;
 				}
+
+				// Server responded OK but no saved layout exists yet — use default and persist
+				const defaultLayout = buildDefaultLayout();
+				set({ layout: defaultLayout, isReady: true });
+				await persistLayout(defaultLayout);
+				return;
 			}
 		} catch (err) {
 			console.error("Failed to load dashboard layout:", err);
 		}
 
-		// No saved layout — use default
-		const defaultLayout = buildDefaultLayout();
-		set({ layout: defaultLayout, isReady: true });
-		persistLayout(defaultLayout);
+		// Fetch failed (network error, Kratos not ready, etc.) — use default
+		// but do NOT persist so we don't overwrite the user's saved layout
+		set({ layout: buildDefaultLayout(), isReady: true });
 	},
 
 	updateLayout: (newWidgets: WidgetLayoutItem[]) => {
@@ -94,8 +97,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			...current,
 			widgets: newWidgets.filter((w) => !hiddenSet.has(w.i)),
 		};
-		set({ layout: updatedLayout });
-		persistLayout(updatedLayout);
+		set({ layout: updatedLayout, isDirty: true });
 	},
 
 	removeWidget: (widgetId: WidgetId) => {
@@ -105,8 +107,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			widgets: current.widgets.filter((w) => w.i !== widgetId),
 			hiddenWidgets: [...current.hiddenWidgets, widgetId],
 		};
-		set({ layout: updatedLayout });
-		persistLayout(updatedLayout);
+		set({ layout: updatedLayout, isDirty: true });
 	},
 
 	addWidget: (widgetId: WidgetId) => {
@@ -134,8 +135,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			widgets: [...current.widgets, newWidget],
 			hiddenWidgets: current.hiddenWidgets.filter((id) => id !== widgetId),
 		};
-		set({ layout: updatedLayout });
-		persistLayout(updatedLayout);
+		set({ layout: updatedLayout, isDirty: true });
 	},
 
 	resizeWidget: (widgetId: WidgetId, w: number, h: number) => {
@@ -144,14 +144,20 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 			...current,
 			widgets: current.widgets.map((widget) => (widget.i === widgetId ? { ...widget, w, h } : widget)),
 		};
-		set({ layout: updatedLayout });
-		persistLayout(updatedLayout);
+		set({ layout: updatedLayout, isDirty: true });
 	},
 
 	resetToDefault: () => {
 		const defaultLayout = buildDefaultLayout();
-		set({ layout: defaultLayout });
-		persistLayout(defaultLayout);
+		set({ layout: defaultLayout, isDirty: true });
+	},
+
+	saveLayout: async () => {
+		const { layout, isDirty } = get();
+		if (!isDirty) return;
+		set({ isSaving: true });
+		await persistLayout(layout);
+		set({ isSaving: false, isDirty: false });
 	},
 }));
 
@@ -163,3 +169,4 @@ export const useUpdateDashboardLayout = () => useDashboardLayoutStore((state) =>
 export const useRemoveDashboardWidget = () => useDashboardLayoutStore((state) => state.removeWidget);
 export const useAddDashboardWidget = () => useDashboardLayoutStore((state) => state.addWidget);
 export const useResetDashboardLayout = () => useDashboardLayoutStore((state) => state.resetToDefault);
+export const useSaveDashboardLayout = () => useDashboardLayoutStore((state) => state.saveLayout);

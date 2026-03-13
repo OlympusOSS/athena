@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { encryptApiKey } from "@/lib/crypto";
+import { getSettingOrDefault } from "@olympusoss/sdk";
 
 export const dynamic = "force-dynamic";
+
+/** Read a vault setting with env var fallback. Silently falls back on errors. */
+async function vaultOrEnv(key: string, envFallback: string): Promise<string> {
+	try {
+		return await getSettingOrDefault(key, envFallback);
+	} catch {
+		return envFallback;
+	}
+}
 
 export async function GET() {
 	// Get API keys from env and encrypt them
@@ -11,6 +21,10 @@ export async function GET() {
 	// HYDRA_ENABLED defaults to true for backwards compatibility
 	// Set to "false" to disable Hydra integration
 	const hydraEnabled = process.env.HYDRA_ENABLED !== "false";
+
+	// CAPTCHA — vault value takes priority over env var
+	const captchaEnabled = await vaultOrEnv("captcha.enabled", process.env.CAPTCHA_ENABLED || "false");
+	const captchaSiteKey = await vaultOrEnv("captcha.site_key", process.env.CAPTCHA_SITE_KEY || "");
 
 	const config = {
 		kratosPublicUrl: process.env.KRATOS_PUBLIC_URL || "http://localhost:3100",
@@ -22,6 +36,8 @@ export async function GET() {
 		isOryNetwork: process.env.IS_ORY_NETWORK === "true",
 		hydraEnabled,
 		defaultClientId: process.env.DEFAULT_CLIENT_ID || "",
+		captchaEnabled: captchaEnabled === "true",
+		captchaSiteKey,
 	};
 
 	return NextResponse.json(config);

@@ -9,6 +9,7 @@ import {
 	getIdentity,
 	listIdentities,
 	patchIdentity,
+	updateIdentityPassword,
 } from "@/services/kratos";
 
 // Identity list hook with pagination
@@ -313,6 +314,25 @@ export const useRecoverIdentity = () => {
 			}
 			const { data } = await createRecoveryLink(id);
 			return data;
+		},
+	});
+};
+
+// Admin password reset mutation — directly sets a new password via admin API
+export const useResetIdentityPassword = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async ({ id, password }: { id: string; password: string }) => {
+			const { data: identity } = await getIdentity({ id });
+			if (isDemoIdentity(identity)) {
+				throw new Error("Password reset is disabled for demo accounts.");
+			}
+			const { data } = await updateIdentityPassword(id, password);
+			return data;
+		},
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: ["identity", variables.id] });
 		},
 	});
 };

@@ -75,6 +75,35 @@ export async function createRecoveryLink(identityId: string) {
 	}, "Kratos");
 }
 
+// Admin password reset — sets a new password on an identity via admin API
+export async function updateIdentityPassword(identityId: string, newPassword: string) {
+	return withApiErrorHandling(async () => {
+		const adminApi = getAdminApi();
+
+		// Fetch current identity to preserve existing data
+		const { data: identity } = await adminApi.getIdentity({ id: identityId });
+
+		// Update identity with new password credential
+		return await adminApi.updateIdentity({
+			id: identityId,
+			updateIdentityBody: {
+				schema_id: identity.schema_id,
+				traits: identity.traits,
+				state: identity.state as "active" | "inactive",
+				metadata_public: identity.metadata_public || undefined,
+				metadata_admin: identity.metadata_admin || undefined,
+				credentials: {
+					password: {
+						config: {
+							password: newPassword,
+						},
+					},
+				},
+			},
+		});
+	}, "Kratos");
+}
+
 // Get all identities with automatic pagination handling
 export async function getAllIdentities(options?: {
 	maxPages?: number;

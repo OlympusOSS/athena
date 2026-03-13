@@ -42,7 +42,7 @@ import {
 	useSetKratosEndpoints,
 } from "@/features/settings/hooks/useSettings";
 import { useTheme } from "@/providers/ThemeProvider";
-import { ServiceConfigSection } from "./components";
+import { ServiceConfigSection, SettingsVaultSection } from "./components";
 import { useServiceSettingsForm } from "./hooks";
 
 /* ── Inline helper: a single row in the General settings card ── */
@@ -215,6 +215,9 @@ export default function SettingsPage() {
 						)}
 					</CardContent>
 				</Card>
+
+				{/* ── Application Settings (Vault) ── */}
+				<SettingsVaultSection />
 
 				{/* ── API Endpoints ── */}
 				<Card>
