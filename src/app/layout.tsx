@@ -8,22 +8,24 @@ const inter = Inter({
 	display: "swap",
 });
 
-const appInstance = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
-const appTitle = appInstance ? `Olympus ${appInstance} Admin` : "Olympus Admin";
+export async function generateMetadata(): Promise<Metadata> {
+	const appInstance = process.env.APP_INSTANCE || process.env.NEXT_PUBLIC_APP_INSTANCE || "";
+	const appTitle = appInstance ? `Olympus ${appInstance} Admin` : "Olympus Admin";
 
-export const metadata: Metadata = {
-	title: appTitle,
-	description: "Admin interface for Ory identity services",
-	icons: {
-		icon: [
-			{ url: "/favicon.svg", type: "image/svg+xml" },
-			{ url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-			{ url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-		],
-		apple: { url: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
-		other: [{ rel: "icon", url: "/favicon.ico" }],
-	},
-};
+	return {
+		title: appTitle,
+		description: "Admin interface for Ory identity services",
+		icons: {
+			icon: [
+				{ url: "/favicon.svg", type: "image/svg+xml" },
+				{ url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+				{ url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+			],
+			apple: { url: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
+			other: [{ rel: "icon", url: "/favicon.ico" }],
+		},
+	};
+}
 
 export default function RootLayout({
 	children,
