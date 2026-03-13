@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
   repository_dispatch:
-    types: [canvas-updated]
+    types: [canvas-updated, sdk-updated]
 
 env:
   REGISTRY: ghcr.io
