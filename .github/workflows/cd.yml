@@ -158,18 +158,18 @@ jobs:
       - name: Pull updated images
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && docker compose pull ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.prod.yml pull ${{ env.SERVICES }}"
 
       - name: Restart services
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && docker compose up -d --force-recreate ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.prod.yml up -d --force-recreate ${{ env.SERVICES }}"
 
       - name: Wait for healthy
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'cd ${{ env.DEPLOY_PATH }} && \
             for i in $(seq 1 20); do \
-              HEALTH=$(docker compose ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
+              HEALTH=$(docker compose -f docker-compose.prod.yml ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
               echo "[${i}/20] ${HEALTH}"; \
               if echo "${HEALTH}" | grep -qv "healthy"; then \
                 sleep 5; \
@@ -179,7 +179,7 @@ jobs:
               fi; \
             done; \
             echo "WARNING: Not all services healthy after 100s"; \
-            docker compose ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
+            docker compose -f docker-compose.prod.yml ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
             exit 1'
 
       - name: Cleanup SSH key
