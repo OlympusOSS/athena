@@ -468,7 +468,12 @@ export default function IdentityDetailPage() {
 				<IdentityRecoveryDialog open={recoveryDialogOpen} onClose={closeRecoveryDialog} identity={identity} />
 
 				{/* Reset Password Dialog */}
-				<IdentityResetPasswordDialog open={resetPasswordDialogOpen} onClose={closeResetPasswordDialog} identity={identity} onSuccess={() => refetch()} />
+				<IdentityResetPasswordDialog
+					open={resetPasswordDialogOpen}
+					onClose={closeResetPasswordDialog}
+					identity={identity}
+					onSuccess={() => refetch()}
+				/>
 
 				{/* Delete Dialog */}
 				<IdentityDeleteDialog open={deleteDialogOpen} onClose={closeDeleteDialog} identity={identity} onSuccess={handleDeleteSuccess} />

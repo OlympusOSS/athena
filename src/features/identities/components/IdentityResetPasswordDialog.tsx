@@ -25,12 +25,7 @@ interface IdentityResetPasswordDialogProps {
 	onSuccess?: () => void;
 }
 
-export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogProps> = ({
-	open,
-	onClose,
-	identity,
-	onSuccess,
-}) => {
+export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogProps> = ({ open, onClose, identity, onSuccess }) => {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [showSuccess, setShowSuccess] = useState(false);
@@ -69,13 +64,8 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 
 	// Validation
 	const passwordTooShort = password.length > 0 && password.length < 12;
-	const passwordsMismatch =
-		confirmPassword.length > 0 && password !== confirmPassword;
-	const canSubmit =
-		password.length >= 12 &&
-		password === confirmPassword &&
-		!isDemo &&
-		!resetPasswordMutation.isPending;
+	const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+	const canSubmit = password.length >= 12 && password === confirmPassword && !isDemo && !resetPasswordMutation.isPending;
 
 	return (
 		<Dialog
@@ -90,9 +80,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 						<Icon name="key-round" />
 						Reset Password
 					</DialogTitle>
-					<DialogDescription>
-						Set a new password for this identity. The password will take effect immediately.
-					</DialogDescription>
+					<DialogDescription>Set a new password for this identity. The password will take effect immediately.</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4">
@@ -103,9 +91,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 					{isDemo && (
 						<Alert>
 							<Icon name="lock" />
-							<AlertDescription>
-								Password reset is disabled for demo accounts.
-							</AlertDescription>
+							<AlertDescription>Password reset is disabled for demo accounts.</AlertDescription>
 						</Alert>
 					)}
 
@@ -122,11 +108,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 									autoComplete="new-password"
 									disabled={resetPasswordMutation.isPending}
 								/>
-								{passwordTooShort && (
-									<p className="text-sm text-destructive">
-										Password must be at least 12 characters
-									</p>
-								)}
+								{passwordTooShort && <p className="text-sm text-destructive">Password must be at least 12 characters</p>}
 							</div>
 
 							<div className="space-y-2">
@@ -140,11 +122,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 									autoComplete="new-password"
 									disabled={resetPasswordMutation.isPending}
 								/>
-								{passwordsMismatch && (
-									<p className="text-sm text-destructive">
-										Passwords do not match
-									</p>
-								)}
+								{passwordsMismatch && <p className="text-sm text-destructive">Passwords do not match</p>}
 							</div>
 
 							{/* Password strength indicator */}
@@ -154,49 +132,32 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 										<div
 											key={threshold}
 											className={`h-1 flex-1 rounded-full transition-colors ${
-												password.length >= threshold
-													? i < 2
-														? "bg-amber-500"
-														: "bg-green-500"
-													: "bg-muted"
+												password.length >= threshold ? (i < 2 ? "bg-amber-500" : "bg-green-500") : "bg-muted"
 											}`}
 										/>
 									))}
 								</div>
-								<p className="text-xs text-muted-foreground">
-									{password.length === 0
-										? "Minimum 12 characters"
-										: `${password.length} characters`}
-								</p>
+								<p className="text-xs text-muted-foreground">{password.length === 0 ? "Minimum 12 characters" : `${password.length} characters`}</p>
 							</div>
 						</div>
 					)}
 
 					{resetPasswordMutation.isError && (
 						<Alert variant="destructive">
-							<AlertDescription>
-								Failed to reset password:{" "}
-								{(resetPasswordMutation.error as Error)?.message || "Unknown error"}
-							</AlertDescription>
+							<AlertDescription>Failed to reset password: {(resetPasswordMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 						</Alert>
 					)}
 
 					{showSuccess && (
 						<Alert>
 							<Icon name="success" />
-							<AlertDescription>
-								Password has been reset successfully.
-							</AlertDescription>
+							<AlertDescription>Password has been reset successfully.</AlertDescription>
 						</Alert>
 					)}
 				</div>
 
 				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={handleClose}
-						disabled={resetPasswordMutation.isPending}
-					>
+					<Button variant="outline" onClick={handleClose} disabled={resetPasswordMutation.isPending}>
 						{showSuccess ? "Close" : "Cancel"}
 					</Button>
 					{!showSuccess && (

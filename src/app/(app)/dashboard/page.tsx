@@ -38,7 +38,8 @@ function getGreeting(): string {
 }
 
 export default function Dashboard() {
-	const { identity, session, system, hydra, serviceHealth, ghcrVersions, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
+	const { identity, session, system, hydra, serviceHealth, ghcrVersions, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } =
+		useAnalytics();
 	const releases = useGitHubReleases(hydraEnabled);
 	const { formatNumber, formatDuration, formatRelativeTime } = useFormatters();
 	const router = useRouter();
@@ -571,7 +572,9 @@ export default function Dashboard() {
 										<Skeleton className="h-3 w-20" />
 									) : (
 										<>
-											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>{running ? `v${running}` : "Unknown"}</span>
+											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>
+												{running ? `v${running}` : "Unknown"}
+											</span>
 											{behind ? (
 												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
 													<Icon name="trending-up" className="h-2.5 w-2.5" />v{latest}
@@ -613,7 +616,9 @@ export default function Dashboard() {
 										<Skeleton className="h-3 w-20" />
 									) : (
 										<>
-											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>{running ? `v${running}` : "Unknown"}</span>
+											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>
+												{running ? `v${running}` : "Unknown"}
+											</span>
 											{behind ? (
 												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
 													<Icon name="trending-up" className="h-2.5 w-2.5" />v{latest}
@@ -686,9 +691,9 @@ export default function Dashboard() {
 									variant={isEditMode ? "default" : "outline"}
 									size="icon"
 									onClick={() => {
-									if (isEditMode) saveLayout();
-									setIsEditMode((prev) => !prev);
-								}}
+										if (isEditMode) saveLayout();
+										setIsEditMode((prev) => !prev);
+									}}
 									aria-label={isEditMode ? "Done editing" : "Edit layout"}
 								>
 									<Icon name={isEditMode ? "check" : "edit"} />

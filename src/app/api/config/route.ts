@@ -1,6 +1,6 @@
+import { getSettingOrDefault } from "@olympusoss/sdk";
 import { NextResponse } from "next/server";
 import { encryptApiKey } from "@/lib/crypto";
-import { getSettingOrDefault } from "@olympusoss/sdk";
 
 export const dynamic = "force-dynamic";
 
