@@ -6,7 +6,7 @@ const { version } = JSON.parse(readFileSync("./package.json", "utf8"));
 const nextConfig: NextConfig = {
 	output: "standalone",
 	reactStrictMode: true,
-	transpilePackages: ["@olympusoss/canvas"],
+	transpilePackages: ["@olympusoss/canvas", "@olympusoss/sdk"],
 	env: {
 		APP_VERSION: version,
 	},
