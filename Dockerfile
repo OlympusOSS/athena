@@ -1,11 +1,11 @@
-FROM oven/bun:1-alpine AS deps
+FROM oven/bun:1.2-alpine AS deps
 WORKDIR /app
 ARG CACHE_BUST
 COPY package.json ./
 RUN --mount=type=secret,id=npmrc,target=/app/.npmrc \
     bun install --production
 
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1.2-alpine AS builder
 WORKDIR /app
 ARG CACHE_BUST
 COPY package.json ./
@@ -15,7 +15,7 @@ RUN --mount=type=secret,id=npmrc,target=/app/.npmrc \
 COPY . .
 RUN bun run build
 
-FROM oven/bun:1-alpine AS runner
+FROM oven/bun:1.2-alpine AS runner
 WORKDIR /app
 RUN apk --no-cache add wget
 RUN addgroup --system --gid 1001 nodejs
