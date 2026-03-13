@@ -470,6 +470,33 @@ export const useHydraAnalytics = (isHydraHealthy: boolean) => {
 	});
 };
 
+// Service health check for Athena and Hera instances (CIAM + IAM)
+export type ServiceHealth = {
+	isHealthy: boolean;
+	version: string | null;
+	error?: string;
+};
+
+export type ServicesHealthData = {
+	ciamAthena: ServiceHealth;
+	iamAthena: ServiceHealth;
+	ciamHera: ServiceHealth;
+	iamHera: ServiceHealth;
+};
+
+const useServiceHealthChecks = (isSettingsLoaded: boolean) => {
+	return useQuery<ServicesHealthData>({
+		queryKey: ["health", "services"],
+		queryFn: async () => {
+			const res = await fetch("/api/services/health");
+			return res.json();
+		},
+		enabled: isSettingsLoaded,
+		staleTime: 2 * 60 * 1000,
+		retry: 1,
+	});
+};
+
 // Combined analytics hook
 export const useAnalytics = () => {
 	// Get Ory Network flag, settings loaded state, and Hydra enabled flag
@@ -480,6 +507,7 @@ export const useAnalytics = () => {
 	// Check health first (waits for settings to load)
 	const kratosHealth = useKratosHealthCheck(isOryNetwork, isSettingsLoaded);
 	const hydraHealth = useHydraHealthCheck(isOryNetwork, isSettingsLoaded, hydraEnabled);
+	const serviceHealth = useServiceHealthChecks(isSettingsLoaded);
 
 	const isKratosHealthy = kratosHealth.data?.isHealthy ?? false;
 	const isHydraHealthy = hydraHealth.data?.isHealthy ?? false;
@@ -529,12 +557,18 @@ export const useAnalytics = () => {
 		},
 		system: { ...systemAnalytics, error: firstError || systemAnalytics.error },
 		hydra: { ...hydraAnalytics, error: hydraAnalytics.error },
+		serviceHealth: {
+			data: serviceHealth.data,
+			isLoading: serviceHealth.isLoading,
+			isError: serviceHealth.isError,
+		},
 		isLoading,
 		isError,
 		isHydraAvailable,
 		hydraEnabled,
 		refetchAll: () => {
 			kratosHealth.refetch();
+			serviceHealth.refetch();
 			if (hydraEnabled) {
 				hydraHealth.refetch();
 			}

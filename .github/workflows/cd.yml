@@ -25,25 +25,18 @@ jobs:
       new_version: ${{ steps.bump.outputs.new_version }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Bump version
+      - name: Read version from package.json
         id: bump
         run: |
-          LATEST=$(git tag --list 'v*' --sort=-v:refname | head -n1)
-          if [ -z "$LATEST" ]; then LATEST="v0.0.0"; fi
-          MAJOR=$(echo $LATEST | cut -d. -f1 | tr -d v)
-          MINOR=$(echo $LATEST | cut -d. -f2)
-          PATCH=$(echo $LATEST | cut -d. -f3)
-          NEW="v${MAJOR}.${MINOR}.$((PATCH + 1))"
-          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
-          echo "Bumping $LATEST → $NEW"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: v${VERSION}"
 
-      - name: Create and push tag
+      - name: Create tag (if not exists)
         run: |
-          git tag ${{ steps.bump.outputs.new_version }}
-          git push origin ${{ steps.bump.outputs.new_version }}
+          git tag ${{ steps.bump.outputs.new_version }} 2>/dev/null || true
+          git push origin ${{ steps.bump.outputs.new_version }} 2>/dev/null || true
 
   build:
     needs: version

@@ -2,6 +2,7 @@ import type { IconName } from "@olympusoss/canvas";
 import { useMemo } from "react";
 import type { IdentityAnalytics, SessionAnalytics } from "../types";
 import type { ServiceVersionInfo } from "./useGitHubReleases";
+import type { ServicesHealthData } from "./useAnalytics";
 
 export interface DashboardNotification {
 	id: string;
@@ -20,6 +21,7 @@ interface UseIdentityNotificationsParams {
 	sessionData: SessionAnalytics | undefined;
 	kratosRelease: ServiceVersionInfo;
 	hydraRelease: ServiceVersionInfo;
+	serviceHealthData?: ServicesHealthData;
 }
 
 /** Haversine distance between two lat/lng points in kilometers */
@@ -41,6 +43,7 @@ export function useIdentityNotifications({
 	sessionData,
 	kratosRelease,
 	hydraRelease,
+	serviceHealthData,
 }: UseIdentityNotificationsParams): DashboardNotification[] {
 	return useMemo(() => {
 		const notifications: DashboardNotification[] = [];
@@ -64,6 +67,46 @@ export function useIdentityNotifications({
 				description: "Hydra is unreachable or unhealthy",
 				icon: "heart-broken",
 			});
+		}
+
+		// ── Athena & Hera service health alerts ──
+		if (serviceHealthData) {
+			if (!serviceHealthData.ciamAthena.isHealthy) {
+				notifications.push({
+					id: "health-ciam-athena-down",
+					severity: "critical",
+					title: "CIAM Admin service is down",
+					description: serviceHealthData.ciamAthena.error || "CIAM Athena is unreachable",
+					icon: "heart-broken",
+				});
+			}
+			if (!serviceHealthData.iamAthena.isHealthy) {
+				notifications.push({
+					id: "health-iam-athena-down",
+					severity: "critical",
+					title: "IAM Admin service is down",
+					description: serviceHealthData.iamAthena.error || "IAM Athena is unreachable",
+					icon: "heart-broken",
+				});
+			}
+			if (!serviceHealthData.ciamHera.isHealthy) {
+				notifications.push({
+					id: "health-ciam-hera-down",
+					severity: "critical",
+					title: "CIAM Auth service is down",
+					description: serviceHealthData.ciamHera.error || "CIAM Hera is unreachable",
+					icon: "heart-broken",
+				});
+			}
+			if (!serviceHealthData.iamHera.isHealthy) {
+				notifications.push({
+					id: "health-iam-hera-down",
+					severity: "critical",
+					title: "IAM Auth service is down",
+					description: serviceHealthData.iamHera.error || "IAM Hera is unreachable",
+					icon: "heart-broken",
+				});
+			}
 		}
 
 		// ── Version update warnings ──
@@ -137,5 +180,5 @@ export function useIdentityNotifications({
 		notifications.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
 		return notifications;
-	}, [kratosHealthy, hydraHealthy, hydraEnabled, identityData, sessionData, kratosRelease, hydraRelease]);
+	}, [kratosHealthy, hydraHealthy, hydraEnabled, identityData, sessionData, kratosRelease, hydraRelease, serviceHealthData]);
 }
