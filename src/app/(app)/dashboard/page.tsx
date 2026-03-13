@@ -38,7 +38,7 @@ function getGreeting(): string {
 }
 
 export default function Dashboard() {
-	const { identity, session, system, hydra, serviceHealth, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
+	const { identity, session, system, hydra, serviceHealth, ghcrVersions, isLoading, isError, isHydraAvailable, hydraEnabled, refetchAll } = useAnalytics();
 	const releases = useGitHubReleases(hydraEnabled);
 	const { formatNumber, formatDuration, formatRelativeTime } = useFormatters();
 	const router = useRouter();
@@ -56,6 +56,7 @@ export default function Dashboard() {
 	const removeWidget = useDashboardLayoutStore((s) => s.removeWidget);
 	const addWidget = useDashboardLayoutStore((s) => s.addWidget);
 	const resetToDefault = useDashboardLayoutStore((s) => s.resetToDefault);
+	const saveLayout = useDashboardLayoutStore((s) => s.saveLayout);
 
 	// Initialize layout on mount
 	useEffect(() => {
@@ -501,7 +502,7 @@ export default function Dashboard() {
 								<Skeleton className="h-3 w-20" />
 							) : (
 								<>
-									<span className="text-[11px] text-muted-foreground">
+									<span className={cn("text-[11px]", releases.kratos.updateAvailable ? "text-destructive font-medium" : "text-muted-foreground")}>
 										{releases.kratos.runningVersion ? `v${releases.kratos.runningVersion.replace(/^v/, "")}` : "Unknown"}
 									</span>
 									{releases.kratos.updateAvailable && releases.kratos.latestRelease ? (
@@ -532,7 +533,7 @@ export default function Dashboard() {
 								<Skeleton className="h-3 w-20" />
 							) : (
 								<>
-									<span className="text-[11px] text-muted-foreground">
+									<span className={cn("text-[11px]", releases.hydra.updateAvailable ? "text-destructive font-medium" : "text-muted-foreground")}>
 										{releases.hydra.runningVersion ? `v${releases.hydra.runningVersion.replace(/^v/, "")}` : "Unknown"}
 									</span>
 									{releases.hydra.updateAvailable && releases.hydra.latestRelease ? (
@@ -552,7 +553,10 @@ export default function Dashboard() {
 					{/* Athena (Admin) — own stack */}
 					{(() => {
 						const healthy = serviceHealth.data?.athena?.isHealthy ?? false;
-						const version = serviceHealth.data?.athena?.version;
+						const running = serviceHealth.data?.athena?.version?.replace(/^v/, "") || null;
+						const latest = ghcrVersions.data?.athena?.latest?.replace(/^v/, "") || null;
+						const behind = running && latest && latest > running;
+						const ahead = running && latest && running > latest;
 						return (
 							<div className="flex flex-col gap-0">
 								<div className="flex items-center gap-2">
@@ -563,10 +567,26 @@ export default function Dashboard() {
 									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Athena (Admin)</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
-									{serviceHealth.isLoading ? (
+									{serviceHealth.isLoading || ghcrVersions.isLoading ? (
 										<Skeleton className="h-3 w-20" />
 									) : (
-										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+										<>
+											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>{running ? `v${running}` : "Unknown"}</span>
+											{behind ? (
+												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+													<Icon name="trending-up" className="h-2.5 w-2.5" />v{latest}
+												</span>
+											) : ahead ? (
+												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+													v{latest}
+												</span>
+											) : running && latest ? (
+												<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+													<Icon name="success-filled" className="h-2.5 w-2.5 text-success" />
+													Up to date
+												</span>
+											) : null}
+										</>
 									)}
 								</div>
 							</div>
@@ -575,7 +595,10 @@ export default function Dashboard() {
 					{/* Hera (Auth) — own stack */}
 					{(() => {
 						const healthy = serviceHealth.data?.hera?.isHealthy ?? false;
-						const version = serviceHealth.data?.hera?.version;
+						const running = serviceHealth.data?.hera?.version?.replace(/^v/, "") || null;
+						const latest = ghcrVersions.data?.hera?.latest?.replace(/^v/, "") || null;
+						const behind = running && latest && latest > running;
+						const ahead = running && latest && running > latest;
 						return (
 							<div className="flex flex-col gap-0">
 								<div className="flex items-center gap-2">
@@ -586,10 +609,26 @@ export default function Dashboard() {
 									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Hera (Login)</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
-									{serviceHealth.isLoading ? (
+									{serviceHealth.isLoading || ghcrVersions.isLoading ? (
 										<Skeleton className="h-3 w-20" />
 									) : (
-										<span className="text-[11px] text-muted-foreground">{version ? `v${version.replace(/^v/, "")}` : "Unknown"}</span>
+										<>
+											<span className={cn("text-[11px]", behind ? "text-destructive font-medium" : "text-muted-foreground")}>{running ? `v${running}` : "Unknown"}</span>
+											{behind ? (
+												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+													<Icon name="trending-up" className="h-2.5 w-2.5" />v{latest}
+												</span>
+											) : ahead ? (
+												<span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1 py-px text-[10px] font-medium text-amber-500">
+													v{latest}
+												</span>
+											) : running && latest ? (
+												<span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+													<Icon name="success-filled" className="h-2.5 w-2.5 text-success" />
+													Up to date
+												</span>
+											) : null}
+										</>
 									)}
 								</div>
 							</div>
@@ -646,7 +685,10 @@ export default function Dashboard() {
 								<Button
 									variant={isEditMode ? "default" : "outline"}
 									size="icon"
-									onClick={() => setIsEditMode((prev) => !prev)}
+									onClick={() => {
+									if (isEditMode) saveLayout();
+									setIsEditMode((prev) => !prev);
+								}}
 									aria-label={isEditMode ? "Done editing" : "Edit layout"}
 								>
 									<Icon name={isEditMode ? "check" : "edit"} />

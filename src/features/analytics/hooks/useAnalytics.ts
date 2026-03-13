@@ -495,6 +495,27 @@ const useServiceHealthChecks = (isSettingsLoaded: boolean) => {
 	});
 };
 
+// GHCR latest versions for Athena and Hera
+export type GHCRVersionsData = {
+	athena: { latest: string | null; error?: string };
+	hera: { latest: string | null; error?: string };
+};
+
+const useGHCRVersions = (isSettingsLoaded: boolean) => {
+	return useQuery<GHCRVersionsData>({
+		queryKey: ["ghcr", "versions"],
+		queryFn: async () => {
+			const res = await fetch("/api/services/versions");
+			return res.json();
+		},
+		enabled: isSettingsLoaded,
+		staleTime: 30 * 60 * 1000, // 30 minutes
+		refetchInterval: 60 * 60 * 1000, // 1 hour
+		refetchOnWindowFocus: false,
+		retry: 1,
+	});
+};
+
 // Combined analytics hook
 export const useAnalytics = () => {
 	// Get Ory Network flag, settings loaded state, and Hydra enabled flag
@@ -506,6 +527,7 @@ export const useAnalytics = () => {
 	const kratosHealth = useKratosHealthCheck(isOryNetwork, isSettingsLoaded);
 	const hydraHealth = useHydraHealthCheck(isOryNetwork, isSettingsLoaded, hydraEnabled);
 	const serviceHealth = useServiceHealthChecks(isSettingsLoaded);
+	const ghcrVersions = useGHCRVersions(isSettingsLoaded);
 
 	const isKratosHealthy = kratosHealth.data?.isHealthy ?? false;
 	const isHydraHealthy = hydraHealth.data?.isHealthy ?? false;
@@ -560,6 +582,10 @@ export const useAnalytics = () => {
 			isLoading: serviceHealth.isLoading,
 			isError: serviceHealth.isError,
 		},
+		ghcrVersions: {
+			data: ghcrVersions.data,
+			isLoading: ghcrVersions.isLoading,
+		},
 		isLoading,
 		isError,
 		isHydraAvailable,
@@ -567,6 +593,7 @@ export const useAnalytics = () => {
 		refetchAll: () => {
 			kratosHealth.refetch();
 			serviceHealth.refetch();
+			ghcrVersions.refetch();
 			if (hydraEnabled) {
 				hydraHealth.refetch();
 			}

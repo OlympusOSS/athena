@@ -19,6 +19,8 @@ export interface SettingsStoreState {
 	isOryNetwork: boolean;
 	hydraEnabled: boolean;
 	defaultClientId: string;
+	captchaEnabled: boolean;
+	captchaSiteKey: string;
 	isReady: boolean;
 	setKratosEndpoints: (endpoints: KratosEndpoints) => Promise<void>;
 	setHydraEndpoints: (endpoints: HydraEndpoints) => Promise<void>;
@@ -68,6 +70,8 @@ async function fetchServerDefaults(): Promise<{
 	isOryNetwork: boolean;
 	hydraEnabled: boolean;
 	defaultClientId: string;
+	captchaEnabled: boolean;
+	captchaSiteKey: string;
 }> {
 	try {
 		const response = await fetch("/api/config");
@@ -87,6 +91,8 @@ async function fetchServerDefaults(): Promise<{
 				isOryNetwork: config.isOryNetwork || false,
 				hydraEnabled: config.hydraEnabled ?? true,
 				defaultClientId: config.defaultClientId || "",
+				captchaEnabled: config.captchaEnabled || false,
+				captchaSiteKey: config.captchaSiteKey || "",
 			};
 		}
 	} catch (error) {
@@ -106,6 +112,8 @@ async function fetchServerDefaults(): Promise<{
 		isOryNetwork: false,
 		hydraEnabled: true,
 		defaultClientId: "",
+		captchaEnabled: false,
+		captchaSiteKey: "",
 	};
 }
 
@@ -182,6 +190,8 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 	isOryNetwork: false,
 	hydraEnabled: true,
 	defaultClientId: "",
+	captchaEnabled: false,
+	captchaSiteKey: "",
 	isReady: false,
 
 	initialize: async () => {
@@ -193,6 +203,7 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 
 		if (cookieSettings) {
 			// Cookies exist - use them and mark ready immediately
+			// CAPTCHA is always server-derived (env vars), so fetch it in the background
 			set({
 				kratosEndpoints: cookieSettings.kratos,
 				hydraEndpoints: cookieSettings.hydra,
@@ -201,6 +212,13 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 				defaultClientId: cookieSettings.defaultClientId,
 				isReady: true,
 			});
+			// Fetch CAPTCHA status from server config (non-blocking)
+			fetchServerDefaults().then((defaults) => {
+				set({
+					captchaEnabled: defaults.captchaEnabled,
+					captchaSiteKey: defaults.captchaSiteKey,
+				});
+			}).catch(() => { /* CAPTCHA status is best-effort */ });
 			return;
 		}
 
@@ -217,6 +235,8 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 			isOryNetwork: defaults.isOryNetwork,
 			hydraEnabled: defaults.hydraEnabled,
 			defaultClientId: defaults.defaultClientId,
+			captchaEnabled: defaults.captchaEnabled,
+			captchaSiteKey: defaults.captchaSiteKey,
 			isReady: true,
 		});
 	},
@@ -326,6 +346,8 @@ export const useDefaultClientId = () => useSettingsStore((state) => state.defaul
 export const useSetDefaultClientId = () => useSettingsStore((state) => state.setDefaultClientId);
 export const useResetSettings = () => useSettingsStore((state) => state.resetToDefaults);
 export const useIsValidUrl = () => useSettingsStore((state) => state.isValidUrl);
+export const useCaptchaEnabled = () => useSettingsStore((state) => state.captchaEnabled);
+export const useCaptchaSiteKey = () => useSettingsStore((state) => state.captchaSiteKey);
 
 // Backwards compatibility - useSettingsLoaded now uses the same logic as isReady
 export const useSettingsLoaded = () => useSettingsStore((state) => state.isReady);

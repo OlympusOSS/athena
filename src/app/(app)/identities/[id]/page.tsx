@@ -32,6 +32,7 @@ import { CredentialDeleteDialog } from "@/features/identities/components/Credent
 import { IdentityDeleteDialog } from "@/features/identities/components/IdentityDeleteDialog";
 import { IdentityEditModal } from "@/features/identities/components/IdentityEditModal";
 import { IdentityRecoveryDialog } from "@/features/identities/components/IdentityRecoveryDialog";
+import { IdentityResetPasswordDialog } from "@/features/identities/components/IdentityResetPasswordDialog";
 import { useIdentity, usePatchIdentity } from "@/features/identities/hooks";
 import { SessionDetailDialog } from "@/features/sessions/components/SessionDetailDialog";
 import { SessionsTable } from "@/features/sessions/components/SessionsTable";
@@ -67,6 +68,7 @@ export default function IdentityDetailPage() {
 	const { isOpen: editModalOpen, open: openEditModal, close: closeEditModal } = useDialog();
 	const { isOpen: deleteDialogOpen, open: openDeleteDialog, close: closeDeleteDialog } = useDialog();
 	const { isOpen: recoveryDialogOpen, open: openRecoveryDialog, close: closeRecoveryDialog } = useDialog();
+	const { isOpen: resetPasswordDialogOpen, open: openResetPasswordDialog, close: closeResetPasswordDialog } = useDialog();
 	const { isOpen: deleteSessionsDialogOpen, open: openDeleteSessionsDialog, close: closeDeleteSessionsDialog } = useDialog();
 	const { isOpen: stateDialogOpen, open: openStateDialog, close: closeStateDialog } = useDialog();
 
@@ -100,6 +102,10 @@ export default function IdentityDetailPage() {
 
 	const handleRecover = () => {
 		openRecoveryDialog();
+	};
+
+	const handleResetPassword = () => {
+		openResetPasswordDialog();
 	};
 
 	const handleDeleteAllSessions = () => {
@@ -204,6 +210,10 @@ export default function IdentityDetailPage() {
 							<Button variant="outline" onClick={handleRecover} disabled={isDemo}>
 								<Icon name="link" />
 								Recover
+							</Button>
+							<Button variant="outline" onClick={handleResetPassword} disabled={isDemo}>
+								<Icon name="key-round" />
+								Reset Password
 							</Button>
 							<Button
 								variant={identity.state === "active" ? "outline" : "default"}
@@ -456,6 +466,9 @@ export default function IdentityDetailPage() {
 
 				{/* Recovery Dialog */}
 				<IdentityRecoveryDialog open={recoveryDialogOpen} onClose={closeRecoveryDialog} identity={identity} />
+
+				{/* Reset Password Dialog */}
+				<IdentityResetPasswordDialog open={resetPasswordDialogOpen} onClose={closeResetPasswordDialog} identity={identity} onSuccess={() => refetch()} />
 
 				{/* Delete Dialog */}
 				<IdentityDeleteDialog open={deleteDialogOpen} onClose={closeDeleteDialog} identity={identity} onSuccess={handleDeleteSuccess} />
