@@ -13,6 +13,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,7 +26,9 @@ jobs:
         with:
           bun-version: latest
       - name: Configure npm for GitHub Packages
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+        run: |
+          echo "@olympusoss:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
       - run: bun install
       - run: bun run lint
       - run: bun run typecheck
