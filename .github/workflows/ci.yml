@@ -6,7 +6,7 @@ on:
       - 'src/**'
       - 'package.json'
       - 'bun.lock'
-      - 'Dockerfile'
+      - 'Containerfile'
       - 'next.config.*'
       - '.github/workflows/**'
   pull_request:

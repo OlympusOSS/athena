@@ -80,7 +80,7 @@ Athena is part of the [OlympusOSS Identity Platform](https://github.com/OlympusO
 
 ```
 Olympus/
-├── platform/    # Infrastructure & Docker Compose — start here
+├── platform/    # Infrastructure & Podman Compose — start here
 ├── athena/      # Admin dashboard (this repo)
 ├── hera/        # Auth & consent UI
 ├── site/        # Brochure site & OAuth2 playground
@@ -91,16 +91,15 @@ Olympus/
 ### Start the development environment
 
 ```bash
-cd platform/dev
-docker compose up -d
+octl dev
 ```
 
-Wait for the seed to complete, then open:
+The CLI installs Podman (if needed), starts all containers, and seeds test data. Once complete, open:
 
 - **IAM Athena** — [http://localhost:4003](http://localhost:4003) (employee admin)
 - **CIAM Athena** — [http://localhost:3003](http://localhost:3003) (customer admin)
 
-Athena is volume-mounted into Docker for **live reload** — edit files locally and changes reflect immediately.
+Athena is volume-mounted into Podman for **live reload** — edit files locally and changes reflect immediately.
 
 ### Standalone (without platform)
 

@@ -55,47 +55,36 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
       - name: Log in to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.IMAGE_NAME }}
-
-      - name: Create .npmrc for Docker build
+      - name: Create .npmrc for build
         run: |
-          echo "@olympusoss:registry=https://npm.pkg.github.com" > /tmp/.docker-npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> /tmp/.docker-npmrc
+          echo "@olympusoss:registry=https://npm.pkg.github.com" > /tmp/.build-npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> /tmp/.build-npmrc
 
-      - name: Build and push by digest
+      - name: Build image
         id: build
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
-          build-args: |
-            CACHE_BUST=${{ github.run_id }}
-          secret-files: |
-            npmrc=/tmp/.docker-npmrc
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=gha,scope=athena-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=athena-${{ matrix.platform }}
+        run: |
+          podman build \
+            --secret id=npmrc,src=/tmp/.build-npmrc \
+            --build-arg CACHE_BUST=${{ github.run_id }} \
+            --layers=true \
+            -f ./Containerfile \
+            -t ${{ env.IMAGE_NAME }}:build-${{ github.sha }}-${{ strategy.job-index }} \
+            .
+
+      - name: Push image by digest
+        id: push
+        run: |
+          DIGEST=$(podman push --digestfile /tmp/digest ${{ env.IMAGE_NAME }}:build-${{ github.sha }}-${{ strategy.job-index }} && cat /tmp/digest)
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "Pushed digest: ${DIGEST}"
 
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${{ steps.push.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
@@ -120,34 +109,32 @@ jobs:
           pattern: digests-*
           merge-multiple: true
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
       - name: Log in to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ needs.version.outputs.new_version }}
-            type=sha,prefix=sha-
+      - name: Compute tags
+        id: tags
+        run: |
+          TAGS="${{ env.IMAGE_NAME }}:${{ needs.version.outputs.new_version }}"
+          TAGS="${TAGS} ${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}"
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TAGS="${TAGS} ${{ env.IMAGE_NAME }}:latest"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
+          podman manifest create ${{ env.IMAGE_NAME }}:manifest
+          for digest in *; do
+            podman manifest add ${{ env.IMAGE_NAME }}:manifest ${{ env.IMAGE_NAME }}@sha256:${digest}
+          done
+          for tag in ${{ steps.tags.outputs.tags }}; do
+            podman manifest push ${{ env.IMAGE_NAME }}:manifest ${tag}
+          done
 
       - name: Inspect image
-        run: docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:latest
+        run: podman manifest inspect ${{ env.IMAGE_NAME }}:latest || true
 
   deploy:
     needs: [version, merge]
@@ -173,23 +160,23 @@ jobs:
       - name: Login to GHCR on server
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u ${{ vars.GHCR_USERNAME }} --password-stdin"
+            "echo '${{ secrets.GHCR_PAT }}' | podman login ghcr.io -u ${{ vars.GHCR_USERNAME }} --password-stdin"
 
       - name: Pull updated images
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.prod.yml pull ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && podman compose -f compose.prod.yml pull ${{ env.SERVICES }}"
 
       - name: Restart services
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.prod.yml up -d --force-recreate ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && podman compose -f compose.prod.yml up -d --force-recreate ${{ env.SERVICES }}"
 
       - name: Wait for healthy
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'cd ${{ env.DEPLOY_PATH }} && \
             for i in $(seq 1 20); do \
-              HEALTH=$(docker compose -f docker-compose.prod.yml ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
+              HEALTH=$(podman compose -f compose.prod.yml ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
               echo "[${i}/20] ${HEALTH}"; \
               if echo "${HEALTH}" | grep -qv "healthy"; then \
                 sleep 5; \
@@ -199,7 +186,7 @@ jobs:
               fi; \
             done; \
             echo "WARNING: Not all services healthy after 100s"; \
-            docker compose -f docker-compose.prod.yml ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
+            podman compose -f compose.prod.yml ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
             exit 1'
 
       - name: Cleanup SSH key
