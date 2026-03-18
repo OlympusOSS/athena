@@ -486,9 +486,9 @@ export default function Dashboard() {
 				<NotificationList notifications={identityNotifications} maxHeight="140px" emptyMessage="All systems nominal" />
 			</WelcomeBanner>
 
-			<div className="my-4 flex items-center justify-between">
+			<div className="my-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				{/* Health status — always visible */}
-				<div className="flex items-center gap-6">
+				<div className="grid grid-cols-2 gap-4 sm:flex sm:items-center sm:gap-6">
 					{/* Kratos */}
 					<div className="flex flex-col gap-0">
 						<div className="flex items-center gap-2">
@@ -642,7 +642,7 @@ export default function Dashboard() {
 				</div>
 
 				{/* Toolbar buttons */}
-				<div className="flex gap-2">
+				<div className="flex gap-2 self-end sm:self-auto">
 					{/* Refresh — always visible */}
 					<TooltipProvider>
 						<Tooltip>
