@@ -1,6 +1,6 @@
 {
 	"name": "@olympus/athena",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --webpack",
@@ -20,7 +20,7 @@
 		"@nivo/core": "^0.99.0",
 		"@nivo/line": "^0.99.0",
 		"@nivo/pie": "^0.99.0",
-		"@olympusoss/canvas": "^1.0.0",
+		"@olympusoss/canvas": "^1.0.7",
 		"@olympusoss/sdk": "^0.1.0",
 		"@ory/hydra-client": "^25.4.0",
 		"@ory/kratos-client": "^25.4.0",
