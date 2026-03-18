@@ -4,8 +4,6 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
-  repository_dispatch:
-    types: [canvas-updated, sdk-updated]
 
 env:
   REGISTRY: ghcr.io
@@ -112,9 +110,7 @@ jobs:
         run: |
           TAGS="${{ env.IMAGE_NAME }}:${{ needs.version.outputs.new_version }}"
           TAGS="${TAGS} ${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}"
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            TAGS="${TAGS} ${{ env.IMAGE_NAME }}:latest"
-          fi
+          TAGS="${TAGS} ${{ env.IMAGE_NAME }}:latest"
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Create manifest list and push
