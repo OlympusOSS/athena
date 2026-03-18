@@ -177,6 +177,12 @@ jobs:
              done && \
              podman compose -f compose.prod.yml up -d ${{ env.SERVICES }}"
 
+      - name: Reload Caddy
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
+            "podman exec prod_caddy_1 caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile 2>/dev/null || \
+             podman restart prod_caddy_1 2>/dev/null || true"
+
       - name: Wait for healthy
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'echo "Waiting for services to stabilize..." && \
