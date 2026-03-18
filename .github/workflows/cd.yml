@@ -170,7 +170,12 @@ jobs:
       - name: Restart services
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
-            "cd ${{ env.DEPLOY_PATH }} && podman compose -f compose.prod.yml up -d --force-recreate ${{ env.SERVICES }}"
+            "cd ${{ env.DEPLOY_PATH }} && \
+             for svc in ${{ env.SERVICES }}; do \
+               podman stop \"prod_\${svc}_1\" 2>/dev/null || true; \
+               podman rm \"prod_\${svc}_1\" 2>/dev/null || true; \
+             done && \
+             podman compose -f compose.prod.yml up -d ${{ env.SERVICES }}"
 
       - name: Wait for healthy
         run: |
