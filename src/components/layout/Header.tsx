@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
 import { useTheme } from "@/providers/ThemeProvider";
 
-export function Header() {
+export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void }) {
 	const { theme, toggleTheme } = useTheme();
 	const user = useUser();
 	const logout = useLogout();
@@ -48,10 +48,15 @@ export function Header() {
 	};
 
 	return (
-		<header className="glass-chrome sticky top-0 z-20 flex h-14 items-center border-b border-border px-6">
+		<header className="glass-chrome sticky top-0 z-20 flex h-14 items-center border-b border-border px-4 sm:px-6">
 			<div className="flex w-full items-center justify-between gap-4">
-				{/* Left side — page title */}
+				{/* Left side — mobile menu + page title */}
 				<div className="flex items-center gap-3">
+					{onMobileMenuToggle && (
+						<Button variant="ghost" size="icon" onClick={onMobileMenuToggle} className="md:hidden">
+							<Icon name="menu" />
+						</Button>
+					)}
 					<span className="text-sm font-medium text-foreground">{getPageTitle()}</span>
 				</div>
 
