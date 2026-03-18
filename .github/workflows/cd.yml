@@ -174,19 +174,19 @@ jobs:
 
       - name: Wait for healthy
         run: |
-          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'cd ${{ env.DEPLOY_PATH }} && \
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} 'echo "Waiting for services to stabilize..." && \
+            sleep 10 && \
             for i in $(seq 1 20); do \
-              HEALTH=$(podman compose -f compose.prod.yml ps --format "{{.Name}} {{.Health}}" | grep -E "ciam-athena|iam-athena"); \
+              HEALTH=$(podman ps --filter "name=athena" --format "{{.Names}} {{.Status}}"); \
               echo "[${i}/20] ${HEALTH}"; \
-              if echo "${HEALTH}" | grep -qv "healthy"; then \
-                sleep 5; \
-              else \
+              if echo "${HEALTH}" | grep -q "(healthy)"; then \
                 echo "All services healthy!"; \
                 exit 0; \
               fi; \
+              sleep 5; \
             done; \
             echo "WARNING: Not all services healthy after 100s"; \
-            podman compose -f compose.prod.yml ps --format "table {{.Name}}\t{{.Status}}" | grep -E "NAME|athena"; \
+            podman ps --filter "name=athena" --format "table {{.Names}}\t{{.Status}}"; \
             exit 1'
 
       - name: Cleanup SSH key
