@@ -43,6 +43,11 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 
 		try {
 			const res = await fetch("/api/dashboard/layout");
+			if (res.status === 401) {
+				// Not authenticated (e.g. CIAM instance) — use defaults without persisting
+				set({ layout: buildDefaultLayout(), isReady: true });
+				return;
+			}
 			if (res.ok) {
 				const data = await res.json();
 				if (data.layout && Array.isArray(data.layout.widgets)) {
