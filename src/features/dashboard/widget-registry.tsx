@@ -150,6 +150,12 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 	},
 ];
 
+/** Location mode options for Session Locations */
+const LOCATION_MODE_OPTIONS = [
+	{ value: "ip", label: "IP Location" },
+	{ value: "browser", label: "Browser Location" },
+];
+
 /** Time range options for Activity Overview */
 const ACTIVITY_TIME_RANGE_OPTIONS = [
 	{ value: "7d", label: "Last 7 Days" },
@@ -224,6 +230,10 @@ export interface WidgetRenderProps {
 	avgSessionByQuarter: Array<{ year: number; count: number; label?: string }>;
 	// Session locations (geo-resolved)
 	geoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
+	browserGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
+	// Location mode filter
+	locationMode: string;
+	onLocationModeChange: (value: string) => void;
 	// Time range filter state
 	activityTimeRange: string;
 	onActivityTimeRangeChange: (value: string) => void;
@@ -330,7 +340,16 @@ export const WIDGET_RENDERERS: Record<WidgetId, (props: WidgetRenderProps) => Re
 		</ChartCardWithFilter>
 	),
 
-	"chart-session-locations": ({ geoPoints }) => <WorldHeatMap data={geoPoints} color="chart-1" title="Session Locations" />,
+	"chart-session-locations": ({ geoPoints, browserGeoPoints, locationMode, onLocationModeChange }) => (
+		<ChartCardWithFilter
+			title="Session Locations"
+			timeRangeOptions={LOCATION_MODE_OPTIONS}
+			selectedTimeRange={locationMode}
+			onTimeRangeChange={onLocationModeChange}
+		>
+			<WorldHeatMap data={locationMode === "browser" ? browserGeoPoints : geoPoints} color="chart-1" />
+		</ChartCardWithFilter>
+	),
 
 	"chart-activity-feed": ({ activityFeedItems, formatRelativeTime }) => (
 		<ChartCard title="Recent Activity">

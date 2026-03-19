@@ -195,7 +195,7 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				pageSize: 250,
 				active: undefined, // Get all sessions (active and inactive)
 				untilDate: oneYearAgo,
-				expand: ["identity", "devices"],
+				expand: ["identity"],
 				onProgress: (count, page) => console.log(`Analytics: Fetched ${count} sessions (page ${page})`),
 			});
 
@@ -343,32 +343,22 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 					identityId: session.identity?.id || "",
 				}));
 
-			// Location breakdown — resolve device IPs to lat/lng coordinates
-			const allIPs: string[] = [];
-			sessions.forEach((session) => {
-				const devices = (session as any).devices || [];
-				devices.forEach((device: any) => {
-					if (device.ip_address) {
-						allIPs.push(device.ip_address);
-					}
-				});
-			});
-
+			// Location breakdown — fetch from session_locations table (populated by Hera on login)
 			let sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }> = [];
-			if (allIPs.length > 0) {
-				try {
-					const res = await fetch("/api/geo", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ ips: allIPs }),
-					});
-					if (res.ok) {
-						const data = await res.json();
-						sessionGeoPoints = data.points || [];
-					}
-				} catch (err) {
-					console.warn("[analytics] IP geolocation failed:", err);
+			let browserGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }> = [];
+
+			try {
+				const [ipRes, browserRes] = await Promise.all([fetch("/api/session-locations?source=ip"), fetch("/api/session-locations?source=browser")]);
+				if (ipRes.ok) {
+					const data = await ipRes.json();
+					sessionGeoPoints = data.points || [];
 				}
+				if (browserRes.ok) {
+					const data = await browserRes.json();
+					browserGeoPoints = data.points || [];
+				}
+			} catch (err) {
+				console.warn("[analytics] Session location fetch failed:", err);
 			}
 
 			// Collect session timestamps for client-side peak hours filtering
@@ -388,6 +378,7 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 				sessionTimestamps,
 				recentLogins,
 				sessionGeoPoints,
+				browserGeoPoints,
 			};
 		},
 		enabled: isKratosHealthy, // Only fetch when Kratos is healthy

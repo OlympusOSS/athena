@@ -48,6 +48,7 @@ export default function Dashboard() {
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [activityTimeRange, setActivityTimeRange] = useState("30d");
 	const [peakHoursTimeRange, setPeakHoursTimeRange] = useState("1y");
+	const [locationMode, setLocationMode] = useState("ip");
 
 	// Dashboard layout state
 	const layout = useDashboardLayoutStore((s) => s.layout);
@@ -209,6 +210,7 @@ export default function Dashboard() {
 	}, [identityChartData, sessionChartData, activityTimeRange]);
 
 	const geoPoints = useMemo(() => session.data?.sessionGeoPoints || [], [session.data?.sessionGeoPoints]);
+	const browserGeoPoints = useMemo(() => session.data?.browserGeoPoints || [], [session.data?.browserGeoPoints]);
 
 	// ── Notifications & Security ──────────────────────────
 
@@ -261,6 +263,9 @@ export default function Dashboard() {
 			avgSessionByQuarter,
 			combinedActivitySeries,
 			geoPoints,
+			browserGeoPoints,
+			locationMode,
+			onLocationModeChange: setLocationMode,
 			activityTimeRange,
 			onActivityTimeRangeChange: setActivityTimeRange,
 			peakHoursTimeRange,
@@ -307,6 +312,8 @@ export default function Dashboard() {
 			avgSessionByQuarter,
 			combinedActivitySeries,
 			geoPoints,
+			browserGeoPoints,
+			locationMode,
 			activityTimeRange,
 			peakHoursTimeRange,
 			securityAlerts,
