@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { APP_INSTANCE } from "@/lib/constants";
 import { isDemoIdentity } from "@/lib/demo";
 import type { DeleteIdentityCredentialsTypeEnum } from "@/services/kratos";
 import {
@@ -198,6 +199,10 @@ export const useCreateIdentity = () => {
 				createIdentityBody: {
 					schema_id: schemaId,
 					traits,
+					// IAM: newly created users must reset their password on first login
+					...(APP_INSTANCE === "IAM" && {
+						metadata_admin: { force_password_reset: true },
+					}),
 				},
 			});
 			return data;
