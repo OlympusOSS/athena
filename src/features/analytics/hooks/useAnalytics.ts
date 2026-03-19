@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydraEnabled, useIsOryNetwork, useSettingsLoaded } from "@/features/settings/hooks/useSettings";
-import { clusterGeoResults, resolveIPs } from "@/services/geo";
 import { checkHydraHealth, listOAuth2Clients } from "@/services/hydra";
 import { checkKratosHealth, getAllIdentities, getSessionsUntilDate, listIdentitySchemas, listSessions } from "@/services/kratos";
 import type { HydraAnalytics, IdentityAnalytics, SessionAnalytics, SystemAnalytics } from "../types";
@@ -358,8 +357,15 @@ export const useSessionAnalytics = (isKratosHealthy: boolean) => {
 			let sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }> = [];
 			if (allIPs.length > 0) {
 				try {
-					const geoResults = await resolveIPs(allIPs);
-					sessionGeoPoints = clusterGeoResults(geoResults);
+					const res = await fetch("/api/geo", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ ips: allIPs }),
+					});
+					if (res.ok) {
+						const data = await res.json();
+						sessionGeoPoints = data.points || [];
+					}
 				} catch (err) {
 					console.warn("[analytics] IP geolocation failed:", err);
 				}
