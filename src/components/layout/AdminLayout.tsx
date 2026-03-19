@@ -37,7 +37,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 					<>
 						<div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)} />
 						<div className="fixed inset-y-0 left-0 z-40 md:hidden">
-							<Sidebar expanded onToggle={() => setMobileOpen(false)} />
+							<Sidebar expanded onToggle={() => setMobileOpen(false)} onNavigate={() => setMobileOpen(false)} />
 						</div>
 					</>
 				)}
