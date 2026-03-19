@@ -318,6 +318,9 @@ export default function Dashboard() {
 
 	const handleLayoutChange = useCallback(
 		(_currentLayout: Layout, allLayouts: Layouts) => {
+			// Ignore layout changes before the store has initialized
+			if (!useDashboardLayoutStore.getState().isReady) return;
+
 			// Use the xl breakpoint layout as the source of truth
 			const xlLayout = allLayouts.xl || _currentLayout;
 			// Read latest state directly from the store to avoid stale closures
