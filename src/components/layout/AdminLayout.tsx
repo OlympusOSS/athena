@@ -3,7 +3,7 @@
 import { cn } from "@olympusoss/canvas";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -19,6 +19,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
 	// Close mobile sidebar on route change
 	useEffect(() => {
+		// Reference pathname so the effect re-runs on navigation
+		void pathname;
 		setMobileOpen(false);
 	}, [pathname]);
 
