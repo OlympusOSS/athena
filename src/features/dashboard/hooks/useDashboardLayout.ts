@@ -19,8 +19,14 @@ interface DashboardLayoutState {
 
 /**
  * Persist layout to the server.
+ * Refuses to save a layout with zero visible widgets — that's always a bug,
+ * not an intentional user action (prevents accidental wipe during race conditions).
  */
 async function persistLayout(layout: DashboardLayout) {
+	if (layout.widgets.length === 0) {
+		console.warn("Refusing to persist empty dashboard layout (likely a race condition)");
+		return;
+	}
 	try {
 		await fetch("/api/dashboard/layout", {
 			method: "PUT",
@@ -66,6 +72,15 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()((set, get)
 						if (!savedWidgetIds.has(def.id) && !savedHiddenIds.has(def.id)) {
 							hiddenWidgets.push(def.id);
 						}
+					}
+
+					// If saved layout has zero visible widgets, treat as corrupt and reset
+					if (widgets.length === 0) {
+						console.warn("Saved layout has zero visible widgets — resetting to default");
+						const defaultLayout = buildDefaultLayout();
+						set({ layout: defaultLayout, isReady: true });
+						await persistLayout(defaultLayout);
+						return;
 					}
 
 					const reconciledLayout: DashboardLayout = { widgets, hiddenWidgets };
