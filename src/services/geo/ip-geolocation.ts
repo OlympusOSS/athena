@@ -25,6 +25,7 @@ const cache = new Map<string, GeoResult | null>();
 /**
  * Resolve an array of IP addresses to geographic coordinates.
  * Returns only successfully resolved results (skips private/localhost IPs).
+ * In local dev where all IPs are private, falls back to the machine's public IP.
  */
 export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
 	// Deduplicate and filter out already-cached + obviously local IPs
@@ -36,6 +37,17 @@ export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
 		}
 		return true;
 	});
+
+	// If every IP was local (dev environment), resolve the machine's public IP
+	// so the heat map has something to display
+	if (unique.length === 0 && ips.length > 0 && !cache.has("__public_ip__")) {
+		const publicIP = await fetchPublicIP();
+		if (publicIP) {
+			unique.push(publicIP);
+		} else {
+			cache.set("__public_ip__", null); // mark as attempted so we don't retry
+		}
+	}
 
 	// Batch resolve uncached IPs
 	for (let i = 0; i < unique.length; i += MAX_BATCH) {
@@ -59,7 +71,7 @@ export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
 
 			for (const r of results) {
 				if (r.status === "success" && r.lat != null && r.lon != null) {
-					cache.set(r.query, {
+					const geo: GeoResult = {
 						ip: r.query,
 						lat: r.lat,
 						lng: r.lon,
@@ -67,7 +79,12 @@ export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
 						country: r.country || "Unknown",
 						countryCode: r.countryCode || "",
 						label: r.city && r.countryCode ? `${r.city}, ${r.countryCode}` : r.country || "Unknown",
-					});
+					};
+					cache.set(r.query, geo);
+					// If this was the public IP fallback, store it for local IP mapping
+					if (!cache.has("__public_ip__") || cache.get("__public_ip__") === null) {
+						cache.set("__public_ip__", geo);
+					}
 				} else {
 					cache.set(r.query, null);
 				}
@@ -81,11 +98,17 @@ export async function resolveIPs(ips: string[]): Promise<GeoResult[]> {
 		}
 	}
 
-	// Return all resolved results for the requested IPs
+	// Return all resolved results for the requested IPs.
+	// For local IPs that had no direct result, fall back to the public IP result.
+	const publicResult = cache.get("__public_ip__");
 	const results: GeoResult[] = [];
 	for (const ip of ips) {
 		const r = cache.get(ip);
-		if (r) results.push(r);
+		if (r) {
+			results.push(r);
+		} else if (isLocalIP(ip) && publicResult) {
+			results.push({ ...publicResult, ip });
+		}
 	}
 	return results;
 }
@@ -117,6 +140,18 @@ export function clusterGeoResults(results: GeoResult[]): Array<{ lat: number; ln
 	}
 
 	return [...clusters.values()].sort((a, b) => b.count - a.count);
+}
+
+/** Fetch the machine's public IP via a lightweight API */
+async function fetchPublicIP(): Promise<string | null> {
+	try {
+		const res = await fetch("https://api.ipify.org?format=json");
+		if (!res.ok) return null;
+		const data: { ip: string } = await res.json();
+		return data.ip || null;
+	} catch {
+		return null;
+	}
 }
 
 /** Check if an IP is local / private / loopback */
