@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveIPs, clusterGeoResults } from "@/services/geo/ip-geolocation";
+import { clusterGeoResults, resolveIPs } from "@/services/geo/ip-geolocation";
 
 /**
  * POST /api/geo — Server-side IP geolocation resolver.
