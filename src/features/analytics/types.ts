@@ -41,6 +41,7 @@ export interface SessionAnalytics {
 		identityId: string;
 	}>;
 	sessionGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
+	browserGeoPoints: Array<{ lat: number; lng: number; label: string; count: number }>;
 	totalActiveUsers: number;
 	activeUsersByYear: Array<{ year: number; count: number }>;
 	avgSessionByQuarter: Array<{ year: number; count: number; label?: string }>;
