@@ -64,11 +64,11 @@ const hydraNavItems: NavItem[] = [
 ];
 
 /* ── Nav item with colored icons ── */
-function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
+function NavLink({ item, active, collapsed, onNavigate }: { item: NavItem; active: boolean; collapsed: boolean; onNavigate?: () => void }) {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
-				<Link href={item.path} className="relative block">
+				<Link href={item.path} className="relative block" onClick={onNavigate}>
 					<div
 						className={cn(
 							"flex items-center rounded-md text-sm transition-colors duration-150",
@@ -90,9 +90,10 @@ function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; 
 interface SidebarProps {
 	expanded: boolean;
 	onToggle: () => void;
+	onNavigate?: () => void;
 }
 
-export function Sidebar({ expanded, onToggle }: SidebarProps) {
+export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 	const pathname = usePathname();
 	const logout = useLogout();
 	const user = useUser();
@@ -176,7 +177,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
 					<nav className="flex flex-col gap-0.5">
 						{/* Main nav */}
 						{filteredMainNavItems.map((item) => (
-							<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} />
+							<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
 						))}
 
 						{/* Hydra nav */}
@@ -184,7 +185,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
 							<>
 								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
 								{filteredHydraNavItems.map((item) => (
-									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} />
+									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
 								))}
 							</>
 						)}
