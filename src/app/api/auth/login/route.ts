@@ -3,10 +3,7 @@ import { getSettingOrDefault } from "@olympusoss/sdk";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)
-	const hydraPublicUrl = process.env.NEXT_PUBLIC_AUTH_HYDRA_URL
-		|| process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL
-		|| "http://localhost:4102";
+	const hydraPublicUrl = process.env.NEXT_PUBLIC_AUTH_HYDRA_URL || process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
 
 	let clientId: string;
 	try {
@@ -17,7 +14,6 @@ export async function GET() {
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
-	// Generate CSRF state parameter
 	const state = randomBytes(32).toString("hex");
 
 	const authUrl = new URL("/oauth2/auth", hydraPublicUrl);
@@ -29,11 +25,10 @@ export async function GET() {
 
 	const response = NextResponse.redirect(authUrl.toString());
 
-	// Store state in httpOnly cookie for CSRF verification
 	response.cookies.set("oauth_state", state, {
 		httpOnly: true,
 		path: "/",
-		maxAge: 300, // 5 minutes
+		maxAge: 300,
 		sameSite: "lax",
 	});
 
