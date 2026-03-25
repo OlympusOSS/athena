@@ -96,8 +96,8 @@ octl dev
 
 The CLI installs Podman (if needed), starts all containers, and seeds test data. Once complete, open:
 
-- **IAM Athena** — [http://localhost:4003](http://localhost:4003) (employee admin)
-- **CIAM Athena** — [http://localhost:3003](http://localhost:3003) (customer admin)
+- **IAM Athena** — [http://localhost:4001](http://localhost:4001) (employee admin)
+- **CIAM Athena** — [http://localhost:3001](http://localhost:3001) (customer admin)
 
 Athena is volume-mounted into Podman for **live reload** — edit files locally and changes reflect immediately.
 

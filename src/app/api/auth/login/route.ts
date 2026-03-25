@@ -1,10 +1,20 @@
 import { randomBytes } from "node:crypto";
+import { getSettingOrDefault } from "@olympusoss/sdk";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-	const hydraPublicUrl = process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
-	const clientId = process.env.OAUTH_CLIENT_ID || "athena-iam-client";
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4003";
+	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)
+	const hydraPublicUrl = process.env.NEXT_PUBLIC_AUTH_HYDRA_URL
+		|| process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL
+		|| "http://localhost:4102";
+
+	let clientId: string;
+	try {
+		clientId = await getSettingOrDefault("oauth.client_id", "");
+	} catch {
+		clientId = "";
+	}
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
 	// Generate CSRF state parameter

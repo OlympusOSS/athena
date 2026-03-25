@@ -82,15 +82,6 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 							<TooltipContent>Settings</TooltipContent>
 						</Tooltip>
 
-						{/* Theme toggle */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button variant="ghost" size="icon" onClick={toggleTheme}>
-									{theme === "dark" ? <Icon name="sun" /> : <Icon name="moon" />}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Switch to {theme === "dark" ? "light" : "dark"} mode</TooltipContent>
-						</Tooltip>
 					</TooltipProvider>
 
 					<Separator orientation="vertical" className="mx-2 h-6" />
@@ -119,6 +110,10 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 									<Icon name="user" className="mr-2 h-4 w-4" />
 									Profile
 								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={toggleTheme}>
+								<Icon name={theme === "dark" ? "sun" : "moon"} className="mr-2 h-4 w-4" />
+								{theme === "dark" ? "Light mode" : "Dark mode"}
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive">

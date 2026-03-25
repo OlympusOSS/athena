@@ -8,8 +8,8 @@
         "@nivo/core": "^0.99.0",
         "@nivo/line": "^0.99.0",
         "@nivo/pie": "^0.99.0",
-        "@olympusoss/canvas": "^1.0.15",
-        "@olympusoss/sdk": "^1.0.15",
+        "@olympusoss/canvas": "^1.0.17",
+        "@olympusoss/sdk": "^1.0.17",
         "@ory/hydra-client": "^25.4.0",
         "@ory/kratos-client": "^25.4.0",
         "@rjsf/core": "6.4.1",
@@ -192,9 +192,9 @@
 
     "@nivo/voronoi": ["@nivo/voronoi@0.99.0", "", { "dependencies": { "@nivo/core": "0.99.0", "@nivo/theming": "0.99.0", "@nivo/tooltip": "0.99.0", "@types/d3-delaunay": "^6.0.4", "@types/d3-scale": "^4.0.8", "d3-delaunay": "^6.0.4", "d3-scale": "^4.0.2" }, "peerDependencies": { "react": "^16.14 || ^17.0 || ^18.0 || ^19.0" } }, "sha512-KfmMdidbYzhiUCki1FG4X4nHEFT4loK8G5bMBnmCl9U+S78W+gvkfrgD2Aoqp/Q9yKQvr3Y8UcZKSFZnn3HgjQ=="],
 
-    "@olympusoss/canvas": ["@olympusoss/canvas@1.0.15", "https://npm.pkg.github.com/download/@olympusoss/canvas/1.0.15/bae0a0fd41847777ecaa0dbcb5883cef50584da1", { "dependencies": { "@nivo/bar": "^0.99.0", "@nivo/core": "^0.99.0", "@nivo/line": "^0.99.0", "@nivo/pie": "^0.99.0", "@types/leaflet": "^1.9.21", "@types/react-grid-layout": "^2.1.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "leaflet": "^1.9.4", "lucide-react": "^0.577.0", "radix-ui": "^1.4.3", "react-grid-layout": "^2.2.2", "react-leaflet": "^5.0.0", "tailwind-merge": "^3.5.0", "tailwindcss-animate": "^1.0.7" }, "peerDependencies": { "framer-motion": ">=12", "react": ">=19", "react-dom": ">=19" } }, "sha512-j/GuXAtWZ47cZvPnOqtGfURfPUdtX9NWvmftmePIDxZe2lTqeJC8VtzL5ZGh1XtLJ9xOMh0jH0KJIhbY41rk7Q=="],
+    "@olympusoss/canvas": ["@olympusoss/canvas@1.0.17", "https://npm.pkg.github.com/download/@olympusoss/canvas/1.0.17/12fae8011fe8e5be8edcf0b21f8b643e7aadd809", { "dependencies": { "@nivo/bar": "^0.99.0", "@nivo/core": "^0.99.0", "@nivo/line": "^0.99.0", "@nivo/pie": "^0.99.0", "@types/leaflet": "^1.9.21", "@types/react-grid-layout": "^2.1.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "leaflet": "^1.9.4", "lucide-react": "^0.577.0", "radix-ui": "^1.4.3", "react-grid-layout": "^2.2.2", "react-leaflet": "^5.0.0", "tailwind-merge": "^3.5.0", "tailwindcss-animate": "^1.0.7" }, "peerDependencies": { "framer-motion": ">=12", "react": ">=19", "react-dom": ">=19" } }, "sha512-SCa9mkKPAdN7HmvbaA5VI92yGZ4vqpwrs32f+nQdIwJ+UZbJ9zmUHr8tNzl6YDVaI2LFWYbF0xHw6j6Xfznfuw=="],
 
-    "@olympusoss/sdk": ["@olympusoss/sdk@1.0.15", "https://npm.pkg.github.com/download/@olympusoss/sdk/1.0.15/d7a6a51f1f5362c0db18ab3b034a4707850e5be8", { "dependencies": { "postgres": "^3.4.7" } }, "sha512-6pN8bu1KntjNajlK4a3hL1lZ92dNmSvQxqhqrX/35k1BZ0uOHerS3qLGz+d0OxEkB6FmxLVFQr4b8LP/Eaz/wQ=="],
+    "@olympusoss/sdk": ["@olympusoss/sdk@1.0.17", "https://npm.pkg.github.com/download/@olympusoss/sdk/1.0.17/f95c556f72d9e42c4a0ad3ac522298a4a36ddbed", { "dependencies": { "postgres": "^3.4.7" } }, "sha512-0xJSm9lm1hjq40F8gm8GltIyYqmnF50fQQGc+g17FLdGNDdANQBo4uWy4EhY3qN7K4hI5zDaXuZAI5XPUMOnDA=="],
 
     "@ory/hydra-client": ["@ory/hydra-client@25.4.0", "", { "dependencies": { "axios": "^1.6.1" } }, "sha512-BxffFJlOnhUkXOjtISimmaITCWWJrNo4Y1+HopdTUI8qUFfPHLMi0twKQN9y69qUS5jn3dvh5M2Vd2vPyoV1Ww=="],
 
