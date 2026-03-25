@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, Icon, Input, Label, cn } from "@olympusoss/canvas";
+import { Alert, AlertDescription, Card, CardContent, CardHeader, CardTitle, Icon, Input, Label } from "@olympusoss/canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface OAuthSettings {
@@ -79,7 +79,9 @@ export function OAuthConfigSection() {
 					{error && <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
 
 					<div className="space-y-1.5">
-						<Label htmlFor="oauth-client-id" className="text-xs">Client ID</Label>
+						<Label htmlFor="oauth-client-id" className="text-xs">
+							Client ID
+						</Label>
 						<div className="relative">
 							<Icon name="user" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
@@ -100,7 +102,9 @@ export function OAuthConfigSection() {
 					</div>
 
 					<div className="space-y-1.5">
-						<Label htmlFor="oauth-client-secret" className="text-xs">Client Secret</Label>
+						<Label htmlFor="oauth-client-secret" className="text-xs">
+							Client Secret
+						</Label>
 						<div className="relative">
 							<Icon name="lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
@@ -122,7 +126,9 @@ export function OAuthConfigSection() {
 					</div>
 
 					<Alert className="py-2">
-						<AlertDescription className="text-xs">Client secret is encrypted before storage (AES-256-GCM). Env vars are used as fallback when vault values are not set.</AlertDescription>
+						<AlertDescription className="text-xs">
+							Client secret is encrypted before storage (AES-256-GCM). Env vars are used as fallback when vault values are not set.
+						</AlertDescription>
 					</Alert>
 				</CardContent>
 			</Card>
