@@ -1,10 +1,11 @@
+import { getSecretSetting, getSettingOrDefault } from "@olympusoss/sdk";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
 	const code = request.nextUrl.searchParams.get("code");
 	const state = request.nextUrl.searchParams.get("state");
 
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4003";
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 
 	if (!code) {
 		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
@@ -17,11 +18,26 @@ export async function GET(request: NextRequest) {
 		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
 	}
 
-	const hydraUrl = process.env.IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
-	const clientId = process.env.OAUTH_CLIENT_ID || "athena-iam-client";
-	const clientSecret = process.env.OAUTH_CLIENT_SECRET || "athena-iam-secret";
+	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)
+	const hydraUrl = process.env.AUTH_HYDRA_URL
+		|| process.env.IAM_HYDRA_PUBLIC_URL
+		|| "http://localhost:4102";
 	const redirectUri = `${appUrl}/api/auth/callback`;
-	const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
+
+	// Read OAuth credentials from vault with env var fallback
+	let clientId: string;
+	let clientSecret: string;
+	try {
+		clientId = await getSettingOrDefault("oauth.client_id", "");
+		const vaultSecret = await getSecretSetting("oauth.client_secret");
+		clientSecret = vaultSecret || "";
+	} catch {
+		clientId = "";
+		clientSecret = "";
+	}
+	const kratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL
+		|| process.env.IAM_KRATOS_ADMIN_URL
+		|| "http://localhost:4101";
 
 	try {
 		// Exchange authorization code for tokens
@@ -63,7 +79,7 @@ export async function GET(request: NextRequest) {
 		let displayName = email;
 		if (sub) {
 			try {
-				const identityRes = await fetch(`${iamKratosAdminUrl}/admin/identities/${sub}`, {
+				const identityRes = await fetch(`${kratosAdminUrl}/admin/identities/${sub}`, {
 					headers: { Accept: "application/json" },
 				});
 
