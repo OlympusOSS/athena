@@ -102,7 +102,9 @@ export default function SettingsPage() {
 	const isValidUrl = useIsValidUrl();
 
 	// OAuth2 clients for default client dropdown
-	const { data: allClientsData } = useAllOAuth2Clients({ enabled: hydraEnabled });
+	const { data: allClientsData } = useAllOAuth2Clients({
+		enabled: hydraEnabled,
+	});
 
 	// Success callback for all save operations
 	const showSuccess = () => showSuccessToast("Settings saved successfully!", "success");
@@ -253,24 +255,24 @@ export default function SettingsPage() {
 
 						{hydraEnabled && (
 							<>
-							<Card>
-								<CardContent className="pt-6">
-									<ServiceConfigSection
-										serviceName="Hydra"
-										form={hydraForm.form}
-										currentEndpoints={hydraEndpoints}
-										publicUrlPlaceholder="http://localhost:3102"
-										adminUrlPlaceholder="http://localhost:3103"
-										publicUrlHelperText="Used for OAuth2/OIDC public endpoints"
-										adminUrlHelperText="Used for OAuth2 client and flow management"
-										onSave={hydraForm.handleSave}
-										validateUrl={validateUrl}
-										isEditingApiKey={hydraForm.isEditingApiKey}
-										onApiKeyEditStart={hydraForm.startEditingApiKey}
-									/>
-								</CardContent>
-							</Card>
-							<OAuthConfigSection />
+								<Card>
+									<CardContent className="pt-6">
+										<ServiceConfigSection
+											serviceName="Hydra"
+											form={hydraForm.form}
+											currentEndpoints={hydraEndpoints}
+											publicUrlPlaceholder="http://localhost:3102"
+											adminUrlPlaceholder="http://localhost:3103"
+											publicUrlHelperText="Used for OAuth2/OIDC public endpoints"
+											adminUrlHelperText="Used for OAuth2 client and flow management"
+											onSave={hydraForm.handleSave}
+											validateUrl={validateUrl}
+											isEditingApiKey={hydraForm.isEditingApiKey}
+											onApiKeyEditStart={hydraForm.startEditingApiKey}
+										/>
+									</CardContent>
+								</Card>
+								<OAuthConfigSection />
 							</>
 						)}
 					</div>
