@@ -81,7 +81,6 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 							</TooltipTrigger>
 							<TooltipContent>Settings</TooltipContent>
 						</Tooltip>
-
 					</TooltipProvider>
 
 					<Separator orientation="vertical" className="mx-2 h-6" />
