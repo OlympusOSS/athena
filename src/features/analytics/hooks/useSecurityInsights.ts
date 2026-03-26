@@ -46,6 +46,41 @@ async function fetchSecurityAdvisories(repo: string): Promise<GitHubAdvisory[]> 
 	}
 }
 
+/** Compare two version strings: -1 if a < b, 0 if equal, 1 if a > b */
+function compareVersions(a: string, b: string): number {
+	const parse = (v: string) => v.replace(/^v/, "").split(".").map(Number);
+	const pa = parse(a);
+	const pb = parse(b);
+	for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+		const na = pa[i] ?? 0;
+		const nb = pb[i] ?? 0;
+		if (Number.isNaN(na) || Number.isNaN(nb)) return 0;
+		if (na < nb) return -1;
+		if (na > nb) return 1;
+	}
+	return 0;
+}
+
+/**
+ * Returns true if `version` falls within a GitHub advisory vulnerable_version_range.
+ * Range format: ">= 1.0, < 2.0" or "< 26.0.0" etc.
+ * Falls back to true (show the advisory) if range is empty/unparseable.
+ */
+function isVersionAffected(version: string, range: string): boolean {
+	const conditions = range.split(",").map((s) => s.trim());
+	for (const cond of conditions) {
+		const match = cond.match(/^([<>]=?)\s*([\d.v]+)$/);
+		if (!match) continue;
+		const [, op, bound] = match;
+		const cmp = compareVersions(version, bound);
+		if (op === "<" && cmp >= 0) return false;
+		if (op === "<=" && cmp > 0) return false;
+		if (op === ">" && cmp <= 0) return false;
+		if (op === ">=" && cmp < 0) return false;
+	}
+	return true;
+}
+
 /** Map GitHub severity to our severity */
 function mapGitHubSeverity(severity: string): "critical" | "warning" | "info" {
 	switch (severity.toLowerCase()) {
@@ -98,8 +133,14 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		const result: SecurityAlert[] = [];
 
 		// ── CVE / Security advisories ──
-		const addAdvisories = (advisories: GitHubAdvisory[], serviceName: string) => {
+		const addAdvisories = (advisories: GitHubAdvisory[], serviceName: string, runningVersion: string | null) => {
 			for (const advisory of advisories) {
+				// Only show advisories that affect the running version.
+				// If runningVersion is unknown, fall back to showing all (conservative).
+				if (runningVersion && advisory.vulnerabilities.length > 0) {
+					const affected = advisory.vulnerabilities.some((v) => isVersionAffected(runningVersion, v.vulnerable_version_range));
+					if (!affected) continue;
+				}
 				result.push({
 					id: `cve-${advisory.ghsa_id}`,
 					severity: mapGitHubSeverity(advisory.severity),
@@ -114,10 +155,10 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		};
 
 		if (kratosAdvisories.data) {
-			addAdvisories(kratosAdvisories.data, "Kratos");
+			addAdvisories(kratosAdvisories.data, "Kratos", kratosRelease.runningVersion);
 		}
 		if (hydraAdvisories.data) {
-			addAdvisories(hydraAdvisories.data, "Hydra");
+			addAdvisories(hydraAdvisories.data, "Hydra", hydraRelease.runningVersion);
 		}
 
 		// ── DDoS indicators — session creation rate spikes ──
@@ -201,7 +242,7 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		result.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
 		return result;
-	}, [kratosAdvisories.data, hydraAdvisories.data, sessionData, hydraData]);
+	}, [kratosAdvisories.data, hydraAdvisories.data, sessionData, hydraData, kratosRelease.runningVersion, hydraRelease.runningVersion]);
 
 	return {
 		alerts,
