@@ -278,7 +278,16 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		result.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
 		return result;
-	}, [kratosAdvisories.data, hydraAdvisories.data, athenaAdvisories.data, heraAdvisories.data, sessionData, hydraData, kratosRelease.runningVersion, hydraRelease.runningVersion]);
+	}, [
+		kratosAdvisories.data,
+		hydraAdvisories.data,
+		athenaAdvisories.data,
+		heraAdvisories.data,
+		sessionData,
+		hydraData,
+		kratosRelease.runningVersion,
+		hydraRelease.runningVersion,
+	]);
 
 	return {
 		alerts,
