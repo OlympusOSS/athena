@@ -12,6 +12,9 @@ export async function GET() {
 	} catch {
 		clientId = process.env.OAUTH_CLIENT_ID || "";
 	}
+	if (!clientId) {
+		clientId = process.env.OAUTH_CLIENT_ID || "";
+	}
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
