@@ -1,6 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { getHydraVersion } from "@/services/hydra/endpoints/health";
-import { getKratosVersion } from "@/services/kratos/endpoints/health";
 
 interface GitHubRelease {
 	tagName: string;
@@ -79,35 +77,20 @@ export function useGitHubReleases(hydraEnabled: boolean): UseGitHubReleasesRetur
 		retry: 1,
 	});
 
-	// Fetch running versions from service endpoints
-	const kratosVersion = useQuery({
-		queryKey: ["service-version", "kratos"],
+	// Fetch running versions via server-side health route (uses internal network URLs)
+	const serviceVersions = useQuery({
+		queryKey: ["service-versions"],
 		queryFn: async () => {
-			try {
-				const data = await getKratosVersion();
-				return (data as any)?.version as string | undefined;
-			} catch {
-				return undefined;
-			}
+			const res = await fetch("/api/services/health");
+			if (!res.ok) return null;
+			return res.json() as Promise<{ kratos?: { version: string | null }; hydra?: { version: string | null } }>;
 		},
 		staleTime: 5 * 60 * 1000,
 		retry: false,
 	});
 
-	const hydraVersion = useQuery({
-		queryKey: ["service-version", "hydra"],
-		queryFn: async () => {
-			try {
-				const result = await getHydraVersion();
-				return (result.data as any)?.version as string | undefined;
-			} catch {
-				return undefined;
-			}
-		},
-		enabled: hydraEnabled,
-		staleTime: 5 * 60 * 1000,
-		retry: false,
-	});
+	const kratosVersion = { data: serviceVersions.data?.kratos?.version ?? undefined, isLoading: serviceVersions.isLoading, error: serviceVersions.error };
+	const hydraVersion = { data: serviceVersions.data?.hydra?.version ?? undefined, isLoading: serviceVersions.isLoading, error: serviceVersions.error };
 
 	const kratosRunning = kratosVersion.data ?? null;
 	const hydraRunning = hydraVersion.data ?? null;
