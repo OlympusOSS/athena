@@ -21,7 +21,7 @@ export interface UseGitHubReleasesReturn {
 	hydra: ServiceVersionInfo;
 }
 
-/** Simple semver comparison — returns true if a > b */
+/** Simple semver comparison â returns true if a > b */
 function isNewerVersion(a: string, b: string): boolean {
 	const clean = (v: string) => v.replace(/^v/, "");
 	const partsA = clean(a).split(".").map(Number);
@@ -89,8 +89,16 @@ export function useGitHubReleases(hydraEnabled: boolean): UseGitHubReleasesRetur
 		retry: false,
 	});
 
-	const kratosVersion = { data: serviceVersions.data?.kratos?.version ?? undefined, isLoading: serviceVersions.isLoading, error: serviceVersions.error };
-	const hydraVersion = { data: serviceVersions.data?.hydra?.version ?? undefined, isLoading: serviceVersions.isLoading, error: serviceVersions.error };
+	const kratosVersion = {
+		data: serviceVersions.data?.kratos?.version ?? undefined,
+		isLoading: serviceVersions.isLoading,
+		error: serviceVersions.error,
+	};
+	const hydraVersion = {
+		data: serviceVersions.data?.hydra?.version ?? undefined,
+		isLoading: serviceVersions.isLoading,
+		error: serviceVersions.error,
+	};
 
 	const kratosRunning = kratosVersion.data ?? null;
 	const hydraRunning = hydraVersion.data ?? null;
