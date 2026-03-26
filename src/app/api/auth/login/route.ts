@@ -8,14 +8,13 @@ export async function GET() {
 
 	let clientId: string;
 	try {
-		clientId = await getSettingOrDefault("oauth.client_id", "");
+		clientId = await getSettingOrDefault("oauth.client_id", process.env.OAUTH_CLIENT_ID || "");
 	} catch {
-		clientId = "";
+		clientId = process.env.OAUTH_CLIENT_ID || "";
 	}
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
-	// Generate CSRF state parameter
 	const state = randomBytes(32).toString("hex");
 
 	const authUrl = new URL("/oauth2/auth", hydraPublicUrl);
@@ -27,11 +26,10 @@ export async function GET() {
 
 	const response = NextResponse.redirect(authUrl.toString());
 
-	// Store state in httpOnly cookie for CSRF verification
 	response.cookies.set("oauth_state", state, {
 		httpOnly: true,
 		path: "/",
-		maxAge: 300, // 5 minutes
+		maxAge: 300,
 		sameSite: "lax",
 	});
 
