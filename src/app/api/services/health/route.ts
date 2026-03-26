@@ -22,10 +22,12 @@ async function checkService(url: string | undefined, healthPath: string): Promis
 }
 
 export async function GET() {
-	const [athena, hera] = await Promise.all([
+	const [athena, hera, kratos, hydra] = await Promise.all([
 		checkService(process.env.ATHENA_INTERNAL_URL, "/api/health"),
 		checkService(process.env.HERA_INTERNAL_URL, "/health"),
+		checkService(process.env.KRATOS_PUBLIC_URL, "/version"),
+		checkService(process.env.HYDRA_PUBLIC_URL, "/version"),
 	]);
 
-	return NextResponse.json({ athena, hera });
+	return NextResponse.json({ athena, hera, kratos, hydra });
 }

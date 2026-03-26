@@ -129,6 +129,24 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		retry: 1,
 	});
 
+	const athenaAdvisories = useQuery({
+		queryKey: ["github-advisories", "OlympusOSS/athena"],
+		queryFn: () => fetchSecurityAdvisories("OlympusOSS/athena"),
+		staleTime: 60 * 60 * 1000,
+		refetchInterval: 2 * 60 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		retry: 1,
+	});
+
+	const heraAdvisories = useQuery({
+		queryKey: ["github-advisories", "OlympusOSS/hera"],
+		queryFn: () => fetchSecurityAdvisories("OlympusOSS/hera"),
+		staleTime: 60 * 60 * 1000,
+		refetchInterval: 2 * 60 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		retry: 1,
+	});
+
 	const alerts = useMemo(() => {
 		const result: SecurityAlert[] = [];
 
@@ -159,6 +177,12 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		}
 		if (hydraAdvisories.data) {
 			addAdvisories(hydraAdvisories.data, "Hydra", hydraRelease.runningVersion);
+		}
+		if (athenaAdvisories.data) {
+			addAdvisories(athenaAdvisories.data, "Athena", null);
+		}
+		if (heraAdvisories.data) {
+			addAdvisories(heraAdvisories.data, "Hera", null);
 		}
 
 		// ── DDoS indicators — session creation rate spikes ──
@@ -242,10 +266,10 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		result.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
 		return result;
-	}, [kratosAdvisories.data, hydraAdvisories.data, sessionData, hydraData, kratosRelease.runningVersion, hydraRelease.runningVersion]);
+	}, [kratosAdvisories.data, hydraAdvisories.data, athenaAdvisories.data, heraAdvisories.data, sessionData, hydraData, kratosRelease.runningVersion, hydraRelease.runningVersion]);
 
 	return {
 		alerts,
-		isLoading: kratosAdvisories.isLoading || (hydraEnabled && hydraAdvisories.isLoading),
+		isLoading: kratosAdvisories.isLoading || (hydraEnabled && hydraAdvisories.isLoading) || athenaAdvisories.isLoading || heraAdvisories.isLoading,
 	};
 }
