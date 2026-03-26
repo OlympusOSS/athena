@@ -25,8 +25,8 @@ export async function GET() {
 	const [athena, hera, kratos, hydra] = await Promise.all([
 		checkService(process.env.ATHENA_INTERNAL_URL, "/api/health"),
 		checkService(process.env.HERA_INTERNAL_URL, "/health"),
-		checkService(process.env.KRATOS_PUBLIC_URL, "/version"),
-		checkService(process.env.HYDRA_PUBLIC_URL, "/version"),
+		checkService(process.env.KRATOS_ADMIN_URL, "/version"),
+		checkService(process.env.HYDRA_ADMIN_URL, "/version"),
 	]);
 
 	return NextResponse.json({ athena, hera, kratos, hydra });

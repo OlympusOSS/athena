@@ -47,8 +47,13 @@ async function fetchSecurityAdvisories(repo: string): Promise<GitHubAdvisory[]> 
 }
 
 /** Compare two version strings: -1 if a < b, 0 if equal, 1 if a > b */
+/** Strip SemVer pre-release and build metadata, leaving only MAJOR.MINOR.PATCH */
+function baseVer(v: string): string {
+	return v.replace(/^v/, "").split(/[-+]/)[0];
+}
+
 function compareVersions(a: string, b: string): number {
-	const parse = (v: string) => v.replace(/^v/, "").split(".").map(Number);
+	const parse = (v: string) => baseVer(v).split(".").map(Number);
 	const pa = parse(a);
 	const pb = parse(b);
 	for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -63,14 +68,21 @@ function compareVersions(a: string, b: string): number {
 
 /**
  * Returns true if `version` falls within a GitHub advisory vulnerable_version_range.
- * Range format: ">= 1.0, < 2.0" or "< 26.0.0" etc.
- * Falls back to true (show the advisory) if range is empty/unparseable.
+ * Handles ranges like ">= 1.0, < 2.0", bare versions like "v25.4.0", and
+ * SemVer pre-release/build strings like "v1.3.2+oryOS.17" or "1.0.0-rc.14".
+ * Falls back to true (show the advisory) if the range is empty/unparseable.
  */
 function isVersionAffected(version: string, range: string): boolean {
 	const conditions = range.split(",").map((s) => s.trim());
 	for (const cond of conditions) {
-		const match = cond.match(/^([<>]=?)\s*([\d.v]+)$/);
-		if (!match) continue;
+		// Match optional operator then version (which may include pre-release/build suffixes)
+		const match = cond.match(/^([<>]=?)\s*v?([\d][\w.+-]*)$/);
+		if (!match) {
+			// Bare version string — exact MAJOR.MINOR.PATCH match
+			const exact = cond.match(/^v?([\d][\w.+-]*)$/);
+			if (exact && compareVersions(version, exact[1]) !== 0) return false;
+			continue;
+		}
 		const [, op, bound] = match;
 		const cmp = compareVersions(version, bound);
 		if (op === "<" && cmp >= 0) return false;
