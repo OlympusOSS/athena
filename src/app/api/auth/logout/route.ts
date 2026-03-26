@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
 	const iamHydraAdminUrl = process.env.AUTH_HYDRA_ADMIN_URL || process.env.IAM_HYDRA_ADMIN_URL || "http://localhost:4103";
 	const iamKratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
-	// Read session to extract subject for server-side session revocations
 	const sessionCookie = request.cookies.get("athena-session")?.value;
 	let subject: string | null = null;
 
@@ -66,7 +65,6 @@ export async function GET(request: NextRequest) {
 			const session = JSON.parse(sessionCookie);
 			subject = session.user?.kratosIdentityId || null;
 
-			// Fallback: decode subject from ID token if not in session data
 			if (!subject && session.idToken) {
 				const parts = session.idToken.split(".");
 				if (parts.length === 3) {
@@ -79,9 +77,6 @@ export async function GET(request: NextRequest) {
 		}
 	}
 
-	// Revoke ALL sessions — Kratos, Hydra login, and Hydra consent — BEFORE
-	// redirecting to Hydra's RP-Initiated Logout. This ensures the user
-	// cannot be auto-logged back in via a lingering ory_kratos_session cookie.
 	if (subject) {
 		await Promise.all([
 			revokeKratosSessions(iamKratosAdminUrl, subject),
@@ -90,8 +85,6 @@ export async function GET(request: NextRequest) {
 		]);
 	}
 
-	// Cookie deletion helper — must match the attributes used when setting the cookie
-	// so the browser recognises it as the same cookie and actually removes it.
 	function clearSessionCookie(response: NextResponse) {
 		response.cookies.set("athena-session", "", {
 			httpOnly: true,
@@ -101,12 +94,6 @@ export async function GET(request: NextRequest) {
 		});
 	}
 
-	// Return a small HTML page that clears the cookie (via Set-Cookie header on
-	// a 200 response) and then redirects client-side.  Using a 200 + meta-refresh
-	// instead of a 307 redirect ensures the browser ALWAYS processes the
-	// Set-Cookie header before navigating away — some browsers can drop
-	// Set-Cookie on rapid redirect chains, which caused the cookie to survive
-	// logout and silently re-authenticate the user.
 	const loginUrl = new URL("/api/auth/login", appUrl).toString();
 	const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${loginUrl}"></head><body></body></html>`;
 	const response = new NextResponse(html, {

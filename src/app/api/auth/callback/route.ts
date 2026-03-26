@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
 		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
 	}
 
-	// Verify CSRF state
 	const storedState = request.cookies.get("oauth_state")?.value;
 	if (!state || state !== storedState) {
 		console.error("OAuth state mismatch");
@@ -22,21 +21,19 @@ export async function GET(request: NextRequest) {
 	const hydraUrl = process.env.AUTH_HYDRA_URL || process.env.IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
-	// Read OAuth credentials from vault with env var fallback
 	let clientId: string;
 	let clientSecret: string;
 	try {
-		clientId = await getSettingOrDefault("oauth.client_id", "");
+		clientId = await getSettingOrDefault("oauth.client_id", process.env.OAUTH_CLIENT_ID || "");
 		const vaultSecret = await getSecretSetting("oauth.client_secret");
-		clientSecret = vaultSecret || "";
+		clientSecret = vaultSecret || process.env.OAUTH_CLIENT_SECRET || "";
 	} catch {
-		clientId = "";
-		clientSecret = "";
+		clientId = process.env.OAUTH_CLIENT_ID || "";
+		clientSecret = process.env.OAUTH_CLIENT_SECRET || "";
 	}
 	const kratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 	try {
-		// Exchange authorization code for tokens
 		const tokenRes = await fetch(`${hydraUrl}/oauth2/token`, {
 			method: "POST",
 			headers: {
@@ -58,7 +55,6 @@ export async function GET(request: NextRequest) {
 
 		const tokens = await tokenRes.json();
 
-		// Decode ID token to get subject (identity ID)
 		let sub = "";
 		let email = "";
 		if (tokens.id_token) {
@@ -70,7 +66,6 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
-		// Fetch full identity from IAM Kratos admin API to get role and name
 		let role = "viewer";
 		let displayName = email;
 		if (sub) {
@@ -93,7 +88,6 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
-		// Build session data
 		const sessionData = {
 			accessToken: tokens.access_token,
 			idToken: tokens.id_token,
@@ -109,7 +103,6 @@ export async function GET(request: NextRequest) {
 
 		const response = NextResponse.redirect(new URL("/dashboard", appUrl));
 
-		// Store session in httpOnly cookie
 		response.cookies.set("athena-session", JSON.stringify(sessionData), {
 			httpOnly: true,
 			path: "/",
@@ -117,7 +110,6 @@ export async function GET(request: NextRequest) {
 			sameSite: "lax",
 		});
 
-		// Clear the OAuth state cookie
 		response.cookies.delete("oauth_state");
 
 		return response;
