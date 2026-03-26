@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription, Button, Card, CardContent, CardHeader, CardTitle, Icon, Input, Label, Switch, cn } from "@olympusoss/canvas";
+import { Alert, AlertDescription, Button, Card, CardContent, CardHeader, CardTitle, cn, Icon, Input, Label, Switch } from "@olympusoss/canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface GeoSettings {
@@ -94,11 +94,14 @@ export function GeoConfigSection() {
 								<Label className="text-xs font-medium">Enable geolocation</Label>
 								<p className="text-[11px] text-muted-foreground">Resolve session IPs to geographic coordinates</p>
 							</div>
-							<Switch checked={settings.enabled} onCheckedChange={(checked) => {
-								setSettings((s) => ({ ...s, enabled: checked, mandatory: checked ? s.mandatory : false }));
-								saveSetting("geo.enabled", String(checked));
-								if (!checked) saveSetting("geo.mandatory", "false");
-							}} />
+							<Switch
+								checked={settings.enabled}
+								onCheckedChange={(checked) => {
+									setSettings((s) => ({ ...s, enabled: checked, mandatory: checked ? s.mandatory : false }));
+									saveSetting("geo.enabled", String(checked));
+									if (!checked) saveSetting("geo.mandatory", "false");
+								}}
+							/>
 						</div>
 
 						{settings.enabled && (
@@ -107,10 +110,13 @@ export function GeoConfigSection() {
 									<Label className="text-xs font-medium">Mandatory geolocation</Label>
 									<p className="text-[11px] text-muted-foreground">Require browser location before sign-in</p>
 								</div>
-								<Switch checked={settings.mandatory} onCheckedChange={(checked) => {
-									setSettings((s) => ({ ...s, mandatory: checked }));
-									saveSetting("geo.mandatory", String(checked));
-								}} />
+								<Switch
+									checked={settings.mandatory}
+									onCheckedChange={(checked) => {
+										setSettings((s) => ({ ...s, mandatory: checked }));
+										saveSetting("geo.mandatory", String(checked));
+									}}
+								/>
 							</div>
 						)}
 					</CardContent>
@@ -126,7 +132,9 @@ export function GeoConfigSection() {
 					</CardHeader>
 					<CardContent className="pt-0 space-y-4">
 						<div className="space-y-1.5">
-							<Label htmlFor="geo-endpoint" className="text-xs">Batch Endpoint</Label>
+							<Label htmlFor="geo-endpoint" className="text-xs">
+								Batch Endpoint
+							</Label>
 							<div className="relative">
 								<Icon name="globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 								<Input
@@ -141,16 +149,22 @@ export function GeoConfigSection() {
 						</div>
 
 						<Alert className="py-2">
-							<AlertDescription className="text-xs">IP-API free tier is rate-limited. For production, consider a paid plan or self-hosted alternative.</AlertDescription>
+							<AlertDescription className="text-xs">
+								IP-API free tier is rate-limited. For production, consider a paid plan or self-hosted alternative.
+							</AlertDescription>
 						</Alert>
 
 						<div className="flex justify-end">
-							<Button size="sm" disabled={settings.endpoint === endpointRef.current || savingEndpoint} onClick={async () => {
-								setSavingEndpoint(true);
-								await saveSetting("geo.endpoint", settings.endpoint);
-								endpointRef.current = settings.endpoint;
-								setSavingEndpoint(false);
-							}}>
+							<Button
+								size="sm"
+								disabled={settings.endpoint === endpointRef.current || savingEndpoint}
+								onClick={async () => {
+									setSavingEndpoint(true);
+									await saveSetting("geo.endpoint", settings.endpoint);
+									endpointRef.current = settings.endpoint;
+									setSavingEndpoint(false);
+								}}
+							>
 								{savingEndpoint ? "Saving..." : "Save Endpoint"}
 							</Button>
 						</div>

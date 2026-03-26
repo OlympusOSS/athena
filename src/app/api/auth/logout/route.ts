@@ -54,12 +54,8 @@ async function revokeHydraConsentSessions(hydraAdminUrl: string, subject: string
 export async function GET(request: NextRequest) {
 	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
 	// Configurable auth Hydra/Kratos admin URLs — defaults to IAM
-	const iamHydraAdminUrl = process.env.AUTH_HYDRA_ADMIN_URL
-		|| process.env.IAM_HYDRA_ADMIN_URL
-		|| "http://localhost:4103";
-	const iamKratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL
-		|| process.env.IAM_KRATOS_ADMIN_URL
-		|| "http://localhost:4101";
+	const iamHydraAdminUrl = process.env.AUTH_HYDRA_ADMIN_URL || process.env.IAM_HYDRA_ADMIN_URL || "http://localhost:4103";
+	const iamKratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 	// Read session to extract subject for server-side session revocations
 	const sessionCookie = request.cookies.get("athena-session")?.value;

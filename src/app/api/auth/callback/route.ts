@@ -19,9 +19,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)
-	const hydraUrl = process.env.AUTH_HYDRA_URL
-		|| process.env.IAM_HYDRA_PUBLIC_URL
-		|| "http://localhost:4102";
+	const hydraUrl = process.env.AUTH_HYDRA_URL || process.env.IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
 	// Read OAuth credentials from vault with env var fallback
@@ -35,9 +33,7 @@ export async function GET(request: NextRequest) {
 		clientId = "";
 		clientSecret = "";
 	}
-	const kratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL
-		|| process.env.IAM_KRATOS_ADMIN_URL
-		|| "http://localhost:4101";
+	const kratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 	try {
 		// Exchange authorization code for tokens
