@@ -117,38 +117,39 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 		<TooltipProvider delayDuration={0}>
 			<aside className={cn("glass-nav fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300", expanded ? "w-60" : "w-14")}>
 				{/* Sidebar header — logo + title */}
-				<div className={cn("relative flex items-center", expanded ? "flex-col pt-6 pb-4 px-4" : "justify-center h-14 px-1")}>
+				<div className={cn("flex h-14 items-center", expanded ? "justify-between px-4" : "justify-center px-1")}>
 					{expanded ? (
 						<>
-							{/* Collapse button — top right */}
+							<div className="flex items-center gap-2.5">
+								{/* Olympus visor logo */}
+								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-5 w-5" aria-label="Olympus">
+										<path
+											fill="#fff"
+											fillRule="evenodd"
+											d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+										/>
+									</svg>
+								</div>
+								<div className="flex flex-col leading-tight">
+									<span className="text-sm font-semibold" style={{ color: "#fff" }}>
+										{APP_TITLE}
+									</span>
+									{APP_SUBTITLE && (
+										<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>
+											{APP_SUBTITLE}
+										</span>
+									)}
+								</div>
+							</div>
 							<button
 								onClick={onToggle}
 								type="button"
-								className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
+								className="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
 								style={{ color: "hsl(var(--sidebar-fg))" }}
 							>
 								<Icon name="panel-left" className="h-4 w-4" />
 							</button>
-							{/* Olympus visor logo */}
-							<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 mb-3">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="332 290 736 440" className="h-6 w-6" aria-label="Olympus">
-									<path
-										fill="#fff"
-										fillRule="evenodd"
-										d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
-									/>
-								</svg>
-							</div>
-							<div className="flex flex-col items-center leading-tight text-center">
-								<span className="text-sm font-semibold" style={{ color: "#fff" }}>
-									{APP_TITLE}
-								</span>
-								{APP_SUBTITLE && (
-									<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>
-										{APP_SUBTITLE}
-									</span>
-								)}
-							</div>
 						</>
 					) : (
 						<Tooltip>
