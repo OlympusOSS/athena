@@ -21,7 +21,7 @@
 		"@nivo/line": "^0.99.0",
 		"@nivo/pie": "^0.99.0",
 		"@olympusoss/canvas": "^1.0.23",
-		"@olympusoss/sdk": "^1.0.23",
+		"@olympusoss/sdk": "^1.0.24",
 		"@ory/hydra-client": "^26.2.0",
 		"@ory/kratos-client": "^26.2.0",
 		"@rjsf/core": "6.4.1",
