@@ -74,7 +74,8 @@ export const VALIDATION = {
  */
 export const APP_INSTANCE = process.env.NEXT_PUBLIC_APP_INSTANCE || "";
 export const APP_TITLE = "Olympus Admin";
-export const APP_SUBTITLE = APP_INSTANCE || "";
+export const APP_SUBTITLE =
+	APP_INSTANCE === "CIAM" ? "Customer Identity & Access Management" : APP_INSTANCE === "IAM" ? "Identity & Access Management" : "";
 
 /**
  * API configuration
