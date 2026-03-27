@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole, useLogout, useUser } from "@/features/auth";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
-import { APP_TITLE } from "@/lib/constants";
+import { APP_SUBTITLE, APP_TITLE } from "@/lib/constants";
 
 interface NavItem {
 	title: string;
@@ -131,9 +131,12 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 										/>
 									</svg>
 								</div>
-								<span className="text-sm font-semibold" style={{ color: "#fff" }}>
-									{APP_TITLE}
-								</span>
+								<div className="flex flex-col leading-tight">
+									<span className="text-sm font-semibold" style={{ color: "#fff" }}>{APP_TITLE}</span>
+									{APP_SUBTITLE && (
+										<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>{APP_SUBTITLE}</span>
+									)}
+								</div>
 							</div>
 							<button
 								onClick={onToggle}
