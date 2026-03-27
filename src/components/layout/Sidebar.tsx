@@ -140,9 +140,13 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 								</svg>
 							</div>
 							<div className="flex flex-col items-center leading-tight text-center">
-								<span className="text-sm font-semibold" style={{ color: "#fff" }}>{APP_TITLE}</span>
+								<span className="text-sm font-semibold" style={{ color: "#fff" }}>
+									{APP_TITLE}
+								</span>
 								{APP_SUBTITLE && (
-									<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>{APP_SUBTITLE}</span>
+									<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>
+										{APP_SUBTITLE}
+									</span>
 								)}
 							</div>
 						</>
