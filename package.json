@@ -1,6 +1,6 @@
 {
 	"name": "@olympus/athena",
-	"version": "1.0.19",
+	"version": "1.0.21",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --webpack",
