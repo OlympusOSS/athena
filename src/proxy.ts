@@ -1,5 +1,38 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { decryptApiKey } from "@/lib/crypto-edge";
+import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
+
+/**
+ * Routes that require the "admin" role.
+ * All other authenticated routes only require a valid session (any role).
+ */
+const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config"];
+
+function isAdminRoute(pathname: string): boolean {
+	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+/**
+ * Routes that skip auth entirely (public auth flow + health check).
+ */
+function isPublicRoute(pathname: string): boolean {
+	return pathname.startsWith("/api/auth") || pathname === "/api/health";
+}
+
+/**
+ * Routes handled by the Ory proxy below — auth is not enforced here
+ * because these proxy to Kratos/Hydra which have their own auth.
+ */
+function isProxyRoute(pathname: string): boolean {
+	return (
+		pathname.startsWith("/api/kratos/") ||
+		pathname.startsWith("/api/kratos-admin/") ||
+		pathname.startsWith("/api/iam-kratos/") ||
+		pathname.startsWith("/api/iam-kratos-admin/") ||
+		pathname.startsWith("/api/hydra/") ||
+		pathname.startsWith("/api/hydra-admin/")
+	);
+}
 
 async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix: string, serviceName: string): Promise<NextResponse> {
 	try {
@@ -123,6 +156,27 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
+	// --- Auth enforcement for non-proxy, non-public API routes ----------------
+	if (pathname.startsWith("/api/") && !isPublicRoute(pathname) && !isProxyRoute(pathname)) {
+		const session = parseSession(request.cookies.get(SESSION_COOKIE)?.value);
+
+		if (!session) {
+			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		}
+
+		if (isAdminRoute(pathname) && !isAdmin(session)) {
+			return NextResponse.json({ error: "Forbidden: admin role required" }, { status: 403 });
+		}
+
+		// Forward user info to downstream route handlers
+		const headers = new Headers(request.headers);
+		headers.set("x-user-email", session.user.email);
+		headers.set("x-user-role", session.user.role);
+		headers.set("x-user-id", session.user.kratosIdentityId);
+
+		return NextResponse.next({ request: { headers } });
+	}
+
 	// Handle Kratos public API proxying
 	if (pathname.startsWith("/api/kratos/")) {
 		const kratosPublicUrlRaw =
@@ -196,5 +250,6 @@ export const config = {
 		"/api/iam-kratos-admin/:path*",
 		"/api/hydra/:path*",
 		"/api/hydra-admin/:path*",
+		"/api/((?!auth|health).*)",
 	],
 };
