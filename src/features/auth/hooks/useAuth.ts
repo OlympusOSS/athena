@@ -28,22 +28,6 @@ export const useAuthStore = create<AuthStoreState>()((set, get) => ({
 	clearError: () => set({ error: null }),
 
 	checkSession: async () => {
-		// Check if login is disabled (for testing/screenshots)
-		const disableLogin = process.env.NEXT_PUBLIC_DISABLE_LOGIN === "true";
-		if (disableLogin) {
-			set({
-				user: {
-					kratosIdentityId: "test-admin",
-					email: "admin@test.local",
-					role: UserRole.ADMIN,
-					displayName: "Test Admin",
-				},
-				isAuthenticated: true,
-				isLoading: false,
-			});
-			return;
-		}
-
 		try {
 			const res = await fetch("/api/auth/session");
 
