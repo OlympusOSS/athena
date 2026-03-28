@@ -1,5 +1,6 @@
 import { getSecretSetting, getSettingOrDefault } from "@olympusoss/sdk";
 import { type NextRequest, NextResponse } from "next/server";
+import { signSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
 	const code = request.nextUrl.searchParams.get("code");
@@ -103,7 +104,8 @@ export async function GET(request: NextRequest) {
 
 		const response = NextResponse.redirect(new URL("/dashboard", appUrl));
 
-		response.cookies.set("athena-session", JSON.stringify(sessionData), {
+		const signedCookie = await signSession(sessionData);
+		response.cookies.set("athena-session", signedCookie, {
 			httpOnly: true,
 			path: "/",
 			maxAge: tokens.expires_in || 3600,

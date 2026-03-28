@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { verifySession } from "@/lib/session";
 
 /**
  * Revoke all Hydra OAuth2 login sessions for a subject via the admin API.
@@ -57,23 +58,22 @@ export async function GET(request: NextRequest) {
 	const iamHydraAdminUrl = process.env.AUTH_HYDRA_ADMIN_URL || process.env.IAM_HYDRA_ADMIN_URL || "http://localhost:4103";
 	const iamKratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
-	const sessionCookie = request.cookies.get("athena-session")?.value;
+	const session = await verifySession(request.cookies.get("athena-session")?.value);
 	let subject: string | null = null;
 
-	if (sessionCookie) {
-		try {
-			const session = JSON.parse(sessionCookie);
-			subject = session.user?.kratosIdentityId || null;
+	if (session) {
+		subject = session.user?.kratosIdentityId || null;
 
-			if (!subject && session.idToken) {
-				const parts = session.idToken.split(".");
-				if (parts.length === 3) {
+		if (!subject && session.idToken) {
+			const parts = session.idToken.split(".");
+			if (parts.length === 3) {
+				try {
 					const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
 					subject = claims.sub || null;
+				} catch (err) {
+					console.error("Failed to parse id_token claims:", err);
 				}
 			}
-		} catch (err) {
-			console.error("Failed to parse session cookie:", err);
 		}
 	}
 

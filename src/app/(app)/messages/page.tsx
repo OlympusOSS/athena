@@ -114,7 +114,7 @@ export default function MessagesPage() {
 				<div className="space-y-6">
 					<PageHeader
 						title="Messages"
-						subtitle="Monitor email and SMS messages sent through Kratos"
+						subtitle="Monitor email and SMS messages sent through the identity service"
 						icon={<Icon name="mail" />}
 						actions={
 							<TooltipProvider delayDuration={0}>

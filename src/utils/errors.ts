@@ -29,7 +29,7 @@ export function parseError(error: unknown): ParsedError {
 		) {
 			return {
 				title: "Connection Failed",
-				message: "Unable to connect to the server. Please check that Kratos and Hydra are running and the endpoint URLs are correct.",
+				message: "Unable to connect to the server. Please check that the identity and OAuth2 services are running and the endpoint URLs are correct.",
 				type: "connection",
 				canRetry: true,
 				suggestSettings: true,

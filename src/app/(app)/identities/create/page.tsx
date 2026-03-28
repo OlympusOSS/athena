@@ -12,7 +12,7 @@ export default function CreateIdentityPage() {
 			<AdminLayout>
 				<PageHeader
 					title="Create New Identity"
-					subtitle="Create a new user identity in your Kratos instance. Select a schema to see the required fields."
+					subtitle="Create a new user identity in your identity service. Select a schema to see the required fields."
 					breadcrumbs={[{ label: "Identities", href: "/identities" }, { label: "Create New" }]}
 				/>
 				<CreateIdentityForm />

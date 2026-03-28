@@ -203,8 +203,8 @@ export default function OAuth2ClientsPage() {
 					<Card>
 						<EmptyState
 							icon={<Icon name="cloud-off" />}
-							title="Hydra Integration Disabled"
-							description="Hydra integration is currently disabled. Enable it in Settings to manage OAuth2 clients."
+							title="OAuth2 Integration Disabled"
+							description="OAuth2 integration is currently disabled. Enable it in Settings to manage OAuth2 clients."
 							action={{
 								label: "Go to Settings",
 								onClick: () => router.push("/settings"),

@@ -204,7 +204,7 @@ export default function SessionsPage() {
 							<h2 className="text-lg font-semibold text-foreground">About Sessions</h2>
 							<p className="text-sm text-muted-foreground">
 								This page shows all active sessions across all identities in the system. Sessions are automatically created when users authenticate
-								and expire based on your Kratos configuration. Use this page to monitor user activity and troubleshoot authentication issues.
+								and expire based on your identity service configuration. Use this page to monitor user activity and troubleshoot authentication issues.
 							</p>
 						</CardContent>
 					</Card>

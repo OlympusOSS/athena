@@ -72,7 +72,7 @@ export function OAuthConfigSection() {
 					<div className="flex items-center gap-2">
 						<Icon name="key" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">OAuth2 Client Credentials</CardTitle>
-						<span className="text-xs text-muted-foreground">&mdash; Used by this Athena instance to authenticate with Hydra</span>
+						<span className="text-xs text-muted-foreground">&mdash; Used by this admin instance to authenticate with the OAuth2 service</span>
 					</div>
 				</CardHeader>
 				<CardContent className="pt-0 space-y-4">
@@ -98,7 +98,7 @@ export function OAuthConfigSection() {
 								className="pl-8 text-sm font-mono"
 							/>
 						</div>
-						<p className="text-xs text-muted-foreground">The OAuth2 client ID registered in Hydra for this admin panel</p>
+						<p className="text-xs text-muted-foreground">The OAuth2 client ID registered in the OAuth2 service for this admin panel</p>
 					</div>
 
 					<div className="space-y-1.5">

@@ -24,10 +24,12 @@ export interface ServiceConfigSectionProps {
 const serviceConfig = {
 	Kratos: {
 		iconName: "shield" as const,
+		displayName: "Identity Service",
 		description: "Identity & User Management",
 	},
 	Hydra: {
 		iconName: "key" as const,
+		displayName: "OAuth2 Service",
 		description: "OAuth2 & OpenID Connect",
 	},
 };
@@ -59,7 +61,7 @@ export function ServiceConfigSection({
 			{/* Service header */}
 			<div className="mb-4 flex items-center gap-2">
 				<Icon name={config.iconName} className="h-4 w-4 text-muted-foreground" />
-				<span className="text-sm font-medium text-foreground">Ory {serviceName}</span>
+				<span className="text-sm font-medium text-foreground">{config.displayName}</span>
 				<span className="text-xs text-muted-foreground">&mdash; {config.description}</span>
 			</div>
 
@@ -135,7 +137,7 @@ export function ServiceConfigSection({
 				{/* Save button */}
 				<div className="flex justify-end">
 					<Button type="submit" size="sm" disabled={(!isDirty && !isEditingApiKey) || isSubmitting}>
-						{isSubmitting ? "Saving..." : `Save ${serviceName} Settings`}
+						{isSubmitting ? "Saving..." : `Save ${config.displayName} Settings`}
 					</Button>
 				</div>
 			</form>
