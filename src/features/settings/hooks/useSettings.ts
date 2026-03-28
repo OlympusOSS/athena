@@ -32,19 +32,6 @@ export interface SettingsStoreState {
 	initialize: () => Promise<void>;
 }
 
-// Cookie helpers - single source of truth
-function getCookie(name: string): string | undefined {
-	if (typeof document === "undefined") return undefined;
-	const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-	return match ? decodeURIComponent(match[2]) : undefined;
-}
-
-function setCookie(name: string, value: string) {
-	if (typeof document === "undefined") return;
-	// biome-ignore lint/suspicious/noDocumentCookie: Intentional cookie manipulation for persisting settings
-	document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict`;
-}
-
 // Helper function to encrypt API key via server
 async function encryptApiKey(apiKey: string | undefined): Promise<string> {
 	if (!apiKey) return "";
@@ -117,62 +104,6 @@ async function fetchServerDefaults(): Promise<{
 	};
 }
 
-// Read all settings from cookies
-function readSettingsFromCookies(): {
-	kratos: KratosEndpoints;
-	hydra: HydraEndpoints;
-	isOryNetwork: boolean;
-	hydraEnabled: boolean;
-	defaultClientId: string;
-} | null {
-	const kratosPublicUrl = getCookie("kratos-public-url");
-	const kratosAdminUrl = getCookie("kratos-admin-url");
-	const hydraPublicUrl = getCookie("hydra-public-url");
-	const hydraAdminUrl = getCookie("hydra-admin-url");
-	const hydraEnabledCookie = getCookie("hydra-enabled");
-
-	// If we don't have the essential URLs, return null
-	if (!kratosPublicUrl || !kratosAdminUrl) {
-		return null;
-	}
-
-	return {
-		kratos: {
-			publicUrl: kratosPublicUrl,
-			adminUrl: kratosAdminUrl,
-			apiKey: getCookie("kratos-api-key") || undefined,
-		},
-		hydra: {
-			publicUrl: hydraPublicUrl || "http://localhost:3102",
-			adminUrl: hydraAdminUrl || "http://localhost:3103",
-			apiKey: getCookie("hydra-api-key") || undefined,
-		},
-		isOryNetwork: getCookie("is-ory-network") === "true",
-		// Default to true if cookie doesn't exist (for backwards compatibility)
-		hydraEnabled: hydraEnabledCookie !== "false",
-		defaultClientId: getCookie("default-client-id") || "",
-	};
-}
-
-// Write all settings to cookies
-function writeSettingsToCookies(settings: {
-	kratos: KratosEndpoints;
-	hydra: HydraEndpoints;
-	isOryNetwork: boolean;
-	hydraEnabled: boolean;
-	defaultClientId: string;
-}) {
-	setCookie("kratos-public-url", settings.kratos.publicUrl);
-	setCookie("kratos-admin-url", settings.kratos.adminUrl);
-	setCookie("kratos-api-key", settings.kratos.apiKey || "");
-	setCookie("hydra-public-url", settings.hydra.publicUrl);
-	setCookie("hydra-admin-url", settings.hydra.adminUrl);
-	setCookie("hydra-api-key", settings.hydra.apiKey || "");
-	setCookie("is-ory-network", settings.isOryNetwork ? "true" : "false");
-	setCookie("hydra-enabled", settings.hydraEnabled ? "true" : "false");
-	setCookie("default-client-id", settings.defaultClientId);
-}
-
 // Initial state - empty until initialized
 const INITIAL_KRATOS_ENDPOINTS: KratosEndpoints = {
 	publicUrl: "",
@@ -198,41 +129,9 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 		// Already initialized
 		if (get().isReady) return;
 
-		// Try to read from cookies first (synchronous)
-		const cookieSettings = readSettingsFromCookies();
-
-		if (cookieSettings) {
-			// Cookies exist - use them and mark ready immediately
-			// CAPTCHA is always server-derived (env vars), so fetch it in the background
-			set({
-				kratosEndpoints: cookieSettings.kratos,
-				hydraEndpoints: cookieSettings.hydra,
-				isOryNetwork: cookieSettings.isOryNetwork,
-				hydraEnabled: cookieSettings.hydraEnabled,
-				defaultClientId: cookieSettings.defaultClientId,
-				isReady: true,
-			});
-			// Fetch CAPTCHA status from server config (non-blocking)
-			fetchServerDefaults()
-				.then((defaults) => {
-					set({
-						captchaEnabled: defaults.captchaEnabled,
-						captchaSiteKey: defaults.captchaSiteKey,
-					});
-				})
-				.catch(() => {
-					/* CAPTCHA status is best-effort */
-				});
-			return;
-		}
-
-		// No cookies - fetch defaults from server
+		// Fetch config from server (env vars / SDK vault only)
 		const defaults = await fetchServerDefaults();
 
-		// Write to cookies FIRST
-		writeSettingsToCookies(defaults);
-
-		// Then update state
 		set({
 			kratosEndpoints: defaults.kratos,
 			hydraEndpoints: defaults.hydra,
@@ -253,12 +152,6 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 			apiKey: encryptedApiKey || undefined,
 		};
 
-		// Write to cookies
-		setCookie("kratos-public-url", endpoints.publicUrl);
-		setCookie("kratos-admin-url", endpoints.adminUrl);
-		setCookie("kratos-api-key", encryptedApiKey);
-
-		// Update state
 		set({ kratosEndpoints: storedEndpoints });
 	},
 
@@ -270,37 +163,24 @@ export const useSettingsStore = create<SettingsStoreState>()((set, get) => ({
 			apiKey: encryptedApiKey || undefined,
 		};
 
-		// Write to cookies
-		setCookie("hydra-public-url", endpoints.publicUrl);
-		setCookie("hydra-admin-url", endpoints.adminUrl);
-		setCookie("hydra-api-key", encryptedApiKey);
-
-		// Update state
 		set({ hydraEndpoints: storedEndpoints });
 	},
 
 	setIsOryNetwork: (value: boolean) => {
-		setCookie("is-ory-network", value ? "true" : "false");
 		set({ isOryNetwork: value });
 	},
 
 	setHydraEnabled: (value: boolean) => {
-		setCookie("hydra-enabled", value ? "true" : "false");
 		set({ hydraEnabled: value });
 	},
 
 	setDefaultClientId: (id: string) => {
-		setCookie("default-client-id", id);
 		set({ defaultClientId: id });
 	},
 
 	resetToDefaults: async () => {
 		const defaults = await fetchServerDefaults();
 
-		// Write to cookies
-		writeSettingsToCookies(defaults);
-
-		// Update state
 		set({
 			kratosEndpoints: defaults.kratos,
 			hydraEndpoints: defaults.hydra,
