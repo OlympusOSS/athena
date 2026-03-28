@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { decryptApiKey } from "@/lib/crypto-edge";
 import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
+import { decryptApiKey } from "@/lib/crypto-edge";
 
 /**
  * Routes that require the "admin" role.
