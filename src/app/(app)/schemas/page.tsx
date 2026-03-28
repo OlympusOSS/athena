@@ -257,7 +257,7 @@ export default function SchemasPage() {
 						<CardContent>
 							<h2 className="text-lg font-semibold text-foreground">About Identity Schemas</h2>
 							<p className="text-sm text-muted-foreground">
-								Identity schemas define the structure of identity data in Ory Kratos. They determine what fields are available for registration,
+								Identity schemas define the structure of identity data in the identity service. They determine what fields are available for registration,
 								login, and profile management. Use schemas to customize the user experience and data collection for your application.
 							</p>
 						</CardContent>

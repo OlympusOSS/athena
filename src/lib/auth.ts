@@ -1,27 +1,15 @@
 /**
  * Shared authentication types and helpers for middleware and API routes.
  *
- * The session cookie ("athena-session") is set in /api/auth/callback and
- * contains an OAuth2 token set plus a user object with role information
- * fetched from Kratos at login time.
+ * The session cookie ("athena-session") is HMAC-signed. Use
+ * `parseSession()` (which delegates to `verifySession()`) to read it —
+ * never JSON.parse the raw cookie value directly.
  */
 
-/** Shape of the user object stored inside the session cookie. */
-export interface SessionUser {
-	kratosIdentityId: string;
-	email: string;
-	role: string;
-	displayName: string;
-}
+import { verifySession } from "./session";
 
-/** Full session payload persisted in the athena-session cookie. */
-export interface SessionData {
-	accessToken: string;
-	idToken: string;
-	refreshToken: string;
-	expiresIn: number;
-	user: SessionUser;
-}
+// Re-export types so existing imports from "@/lib/auth" keep working.
+export type { SessionData, SessionUser } from "./session";
 
 /** Name of the session cookie — must stay in sync with the callback route. */
 export const SESSION_COOKIE = "athena-session";
@@ -30,27 +18,15 @@ export const SESSION_COOKIE = "athena-session";
 const ADMIN_ROLES = new Set(["admin"]);
 
 /**
- * Parse and validate the raw session cookie value.
- * Returns the typed session data, or null if the cookie is missing / malformed.
+ * Parse, verify, and validate the raw session cookie value.
+ * Returns the typed session data, or null if the cookie is missing,
+ * malformed, or the HMAC signature is invalid.
  */
-export function parseSession(raw: string | undefined): SessionData | null {
-	if (!raw) return null;
-
-	try {
-		const data = JSON.parse(raw) as SessionData;
-
-		// Minimum viability check — the callback always sets these fields.
-		if (!data.accessToken || !data.user?.email || !data.user?.role) {
-			return null;
-		}
-
-		return data;
-	} catch {
-		return null;
-	}
+export async function parseSession(raw: string | undefined) {
+	return verifySession(raw);
 }
 
 /** Returns true when the session user holds an admin role. */
-export function isAdmin(session: SessionData): boolean {
+export function isAdmin(session: { user: { role: string } }): boolean {
 	return ADMIN_ROLES.has(session.user.role);
 }

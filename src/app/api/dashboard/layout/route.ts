@@ -1,20 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { verifySession } from "@/lib/session";
 
 const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 /**
- * Reads the logged-in user's kratosIdentityId from the session cookie.
+ * Reads the logged-in user's kratosIdentityId from the signed session cookie.
  */
-function getIdentityIdFromSession(request: NextRequest): string | null {
-	const sessionCookie = request.cookies.get("athena-session")?.value;
-	if (!sessionCookie) return null;
-
-	try {
-		const session = JSON.parse(sessionCookie);
-		return session.user?.kratosIdentityId || null;
-	} catch {
-		return null;
-	}
+async function getIdentityIdFromSession(request: NextRequest): Promise<string | null> {
+	const session = await verifySession(request.cookies.get("athena-session")?.value);
+	return session?.user?.kratosIdentityId || null;
 }
 
 /**
@@ -24,7 +18,7 @@ function getIdentityIdFromSession(request: NextRequest): string | null {
  * Returns null if no layout is saved.
  */
 export async function GET(request: NextRequest) {
-	const identityId = getIdentityIdFromSession(request);
+	const identityId = await getIdentityIdFromSession(request);
 
 	if (!identityId) {
 		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -57,7 +51,7 @@ export async function GET(request: NextRequest) {
  * Preserves any existing metadata_public fields.
  */
 export async function PUT(request: NextRequest) {
-	const identityId = getIdentityIdFromSession(request);
+	const identityId = await getIdentityIdFromSession(request);
 
 	if (!identityId) {
 		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

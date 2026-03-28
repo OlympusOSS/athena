@@ -54,7 +54,7 @@ export function useIdentityNotifications({
 				id: "health-kratos-down",
 				severity: "critical",
 				title: "Identity service is down",
-				description: "Kratos is unreachable or unhealthy",
+				description: "Identity service is unreachable or unhealthy",
 				icon: "heart-broken",
 			});
 		}
@@ -64,7 +64,7 @@ export function useIdentityNotifications({
 				id: "health-hydra-down",
 				severity: "critical",
 				title: "OAuth2 service is down",
-				description: "Hydra is unreachable or unhealthy",
+				description: "OAuth2 service is unreachable or unhealthy",
 				icon: "heart-broken",
 			});
 		}
@@ -76,7 +76,7 @@ export function useIdentityNotifications({
 					id: "health-athena-down",
 					severity: "critical",
 					title: "Admin service is down",
-					description: serviceHealthData.athena.error || "Athena is unreachable",
+					description: serviceHealthData.athena.error || "Admin dashboard is unreachable",
 					icon: "heart-broken",
 				});
 			}
@@ -85,7 +85,7 @@ export function useIdentityNotifications({
 					id: "health-hera-down",
 					severity: "critical",
 					title: "Auth service is down",
-					description: serviceHealthData.hera.error || "Hera is unreachable",
+					description: serviceHealthData.hera.error || "Login portal is unreachable",
 					icon: "heart-broken",
 				});
 			}
@@ -96,7 +96,7 @@ export function useIdentityNotifications({
 			notifications.push({
 				id: "version-kratos-update",
 				severity: "warning",
-				title: "Kratos update available",
+				title: "Identity service update available",
 				description: `v${kratosRelease.latestRelease.version} available (running ${kratosRelease.runningVersion || "unknown"})`,
 				icon: "info",
 			});
@@ -106,7 +106,7 @@ export function useIdentityNotifications({
 			notifications.push({
 				id: "version-hydra-update",
 				severity: "warning",
-				title: "Hydra update available",
+				title: "OAuth2 service update available",
 				description: `v${hydraRelease.latestRelease.version} available (running ${hydraRelease.runningVersion || "unknown"})`,
 				icon: "info",
 			});

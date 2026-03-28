@@ -154,11 +154,11 @@ export default function SettingsPage() {
 					</TabsTrigger>
 					<TabsTrigger value="kratos">
 						<Icon name="shield" className="h-3.5 w-3.5" />
-						Kratos
+						Identity
 					</TabsTrigger>
 					<TabsTrigger value="hydra">
 						<Icon name="key" className="h-3.5 w-3.5" />
-						Hydra
+						OAuth2
 					</TabsTrigger>
 					<TabsTrigger value="geo">
 						<Icon name="globe" className="h-3.5 w-3.5" />
@@ -214,12 +214,12 @@ export default function SettingsPage() {
 					<div className="space-y-6">
 						<Card>
 							<CardHeader>
-								<CardTitle className="text-base">Hydra Integration</CardTitle>
+								<CardTitle className="text-base">OAuth2 Integration</CardTitle>
 							</CardHeader>
 							<CardContent className="pt-0">
 								<SettingRow
 									icon="grid"
-									label="Enable Hydra"
+									label="Enable OAuth2"
 									description={
 										hydraEnabled ? "OAuth2 client management and analytics are available." : "Enable to manage OAuth2 clients and view analytics."
 									}

@@ -154,7 +154,7 @@ export async function proxy(request: NextRequest) {
 
 	// --- Auth enforcement for non-proxy, non-public API routes ----------------
 	if (pathname.startsWith("/api/") && !isPublicRoute(pathname) && !isProxyRoute(pathname)) {
-		const session = parseSession(request.cookies.get(SESSION_COOKIE)?.value);
+		const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
 
 		if (!session) {
 			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

@@ -185,16 +185,16 @@ export function useSecurityInsights({ sessionData, hydraData, kratosRelease, hyd
 		};
 
 		if (kratosAdvisories.data) {
-			addAdvisories(kratosAdvisories.data, "Kratos", kratosRelease.runningVersion);
+			addAdvisories(kratosAdvisories.data, "Identity", kratosRelease.runningVersion);
 		}
 		if (hydraAdvisories.data) {
-			addAdvisories(hydraAdvisories.data, "Hydra", hydraRelease.runningVersion);
+			addAdvisories(hydraAdvisories.data, "OAuth2", hydraRelease.runningVersion);
 		}
 		if (athenaAdvisories.data) {
-			addAdvisories(athenaAdvisories.data, "Athena", null);
+			addAdvisories(athenaAdvisories.data, "Admin", null);
 		}
 		if (heraAdvisories.data) {
-			addAdvisories(heraAdvisories.data, "Hera", null);
+			addAdvisories(heraAdvisories.data, "Login", null);
 		}
 
 		// ── DDoS indicators — session creation rate spikes ──

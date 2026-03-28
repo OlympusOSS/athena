@@ -499,14 +499,14 @@ export default function Dashboard() {
 			<div className="my-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				{/* Health status — always visible */}
 				<div className="grid grid-cols-2 gap-4 sm:flex sm:items-center sm:gap-6">
-					{/* Kratos */}
+					{/* Identity Service */}
 					<div className="flex flex-col gap-0">
 						<div className="flex items-center gap-2">
 							<span className="relative flex h-2 w-2 shrink-0">
 								{kratosHealthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 								<span className={cn("relative inline-flex h-2 w-2 rounded-full", kratosHealthy ? "bg-success" : "bg-destructive")} />
 							</span>
-							<span className={cn("text-sm font-medium", kratosHealthy ? "text-success" : "text-destructive")}>Kratos (Identity)</span>
+							<span className={cn("text-sm font-medium", kratosHealthy ? "text-success" : "text-destructive")}>Identity Service</span>
 						</div>
 						<div className="ml-4 flex items-center gap-1">
 							{releases.kratos.isLoading ? (
@@ -530,14 +530,14 @@ export default function Dashboard() {
 							)}
 						</div>
 					</div>
-					{/* Hydra */}
+					{/* OAuth2 Service */}
 					<div className="flex flex-col gap-0">
 						<div className="flex items-center gap-2">
 							<span className="relative flex h-2 w-2 shrink-0">
 								{hydraHealthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 								<span className={cn("relative inline-flex h-2 w-2 rounded-full", hydraHealthy ? "bg-success" : "bg-destructive")} />
 							</span>
-							<span className={cn("text-sm font-medium", hydraHealthy ? "text-success" : "text-destructive")}>Hydra (OAuth2)</span>
+							<span className={cn("text-sm font-medium", hydraHealthy ? "text-success" : "text-destructive")}>OAuth2 Service</span>
 						</div>
 						<div className="ml-4 flex items-center gap-1">
 							{releases.hydra.isLoading ? (
@@ -561,7 +561,7 @@ export default function Dashboard() {
 							)}
 						</div>
 					</div>
-					{/* Athena (Admin) — own stack */}
+					{/* Admin Dashboard — own stack */}
 					{(() => {
 						const healthy = serviceHealth.data?.athena?.isHealthy ?? false;
 						const running = serviceHealth.data?.athena?.version?.replace(/^v/, "") || null;
@@ -575,7 +575,7 @@ export default function Dashboard() {
 										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
 									</span>
-									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Athena (Admin)</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Admin Dashboard</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
 									{serviceHealth.isLoading || ghcrVersions.isLoading ? (
@@ -605,7 +605,7 @@ export default function Dashboard() {
 							</div>
 						);
 					})()}
-					{/* Hera (Auth) — own stack */}
+					{/* Login Portal — own stack */}
 					{(() => {
 						const healthy = serviceHealth.data?.hera?.isHealthy ?? false;
 						const running = serviceHealth.data?.hera?.version?.replace(/^v/, "") || null;
@@ -619,7 +619,7 @@ export default function Dashboard() {
 										{healthy && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40" />}
 										<span className={cn("relative inline-flex h-2 w-2 rounded-full", healthy ? "bg-success" : "bg-destructive")} />
 									</span>
-									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Hera (Login)</span>
+									<span className={cn("text-sm font-medium", healthy ? "text-success" : "text-destructive")}>Login Portal</span>
 								</div>
 								<div className="ml-4 flex items-center gap-1">
 									{serviceHealth.isLoading || ghcrVersions.isLoading ? (
@@ -715,14 +715,14 @@ export default function Dashboard() {
 				</div>
 			</div>
 
-			{/* Hydra not available info banner */}
+			{/* OAuth2 not available info banner */}
 			{!isHydraAvailable && (
 				<Alert>
 					<Icon name="info" />
 					<AlertDescription>
 						{!hydraEnabled
-							? "Hydra integration is disabled. Enable it in Settings to view OAuth2 analytics."
-							: "Hydra is not available. OAuth2 analytics are hidden. Check your Hydra configuration in Settings."}
+							? "OAuth2 integration is disabled. Enable it in Settings to view OAuth2 analytics."
+							: "OAuth2 service is not available. OAuth2 analytics are hidden. Check your OAuth2 configuration in Settings."}
 					</AlertDescription>
 				</Alert>
 			)}
