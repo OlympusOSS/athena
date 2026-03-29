@@ -127,8 +127,27 @@ jobs:
       - name: Inspect image
         run: podman manifest inspect ${{ env.IMAGE_NAME }}:latest || true
 
-  deploy:
+  release:
     needs: [version, merge]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ needs.version.outputs.new_version }}
+          gh release create "${VERSION}" \
+            --title "${VERSION}" \
+            --generate-notes \
+            --latest \
+            || echo "Release ${VERSION} already exists"
+
+  deploy:
+    needs: [version, release]
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-athena-production
