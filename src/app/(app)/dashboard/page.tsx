@@ -30,6 +30,17 @@ import { useDashboardLayoutStore, WIDGET_DEFINITIONS, WIDGET_RENDERERS } from "@
 import { useFormatters } from "@/hooks";
 import { parseError } from "@/utils/errors";
 
+/** Proper semver comparison — returns positive if a > b, negative if a < b, 0 if equal. */
+function compareSemver(a: string, b: string): number {
+	const pa = a.replace(/^v/, "").split(".").map(Number);
+	const pb = b.replace(/^v/, "").split(".").map(Number);
+	for (let i = 0; i < 3; i++) {
+		const diff = (pa[i] || 0) - (pb[i] || 0);
+		if (diff !== 0) return diff;
+	}
+	return 0;
+}
+
 function getGreeting(): string {
 	const hour = new Date().getHours();
 	if (hour < 12) return "Good morning,";
@@ -566,8 +577,8 @@ export default function Dashboard() {
 						const healthy = serviceHealth.data?.athena?.isHealthy ?? false;
 						const running = serviceHealth.data?.athena?.version?.replace(/^v/, "") || null;
 						const latest = ghcrVersions.data?.athena?.latest?.replace(/^v/, "") || null;
-						const behind = running && latest && latest > running;
-						const ahead = running && latest && running > latest;
+						const behind = running && latest && compareSemver(latest, running) > 0;
+						const ahead = running && latest && compareSemver(running, latest) > 0;
 						return (
 							<div className="flex flex-col gap-0">
 								<div className="flex items-center gap-2">
@@ -610,8 +621,8 @@ export default function Dashboard() {
 						const healthy = serviceHealth.data?.hera?.isHealthy ?? false;
 						const running = serviceHealth.data?.hera?.version?.replace(/^v/, "") || null;
 						const latest = ghcrVersions.data?.hera?.latest?.replace(/^v/, "") || null;
-						const behind = running && latest && latest > running;
-						const ahead = running && latest && running > latest;
+						const behind = running && latest && compareSemver(latest, running) > 0;
+						const ahead = running && latest && compareSemver(running, latest) > 0;
 						return (
 							<div className="flex flex-col gap-0">
 								<div className="flex items-center gap-2">
