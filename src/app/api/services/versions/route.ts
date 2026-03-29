@@ -2,57 +2,34 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-interface GHCRVersionResult {
+interface VersionResult {
 	latest: string | null;
 	error?: string;
 }
 
 /**
- * Fetches the latest semver tag from GHCR for a given package.
- * Uses OCI anonymous token exchange for public packages.
+ * Fetches the latest release version from GitHub Releases.
+ * Uses the public API — no authentication required for public repos.
  */
-async function fetchLatestGHCRVersion(image: string): Promise<GHCRVersionResult> {
+async function fetchLatestRelease(repo: string): Promise<VersionResult> {
 	try {
-		// 1. Get anonymous token for the package
-		const tokenRes = await fetch(`https://ghcr.io/token?scope=repository:${image}:pull`, {
+		const res = await fetch(`https://api.github.com/repos/OlympusOSS/${repo}/releases/latest`, {
+			headers: { Accept: "application/vnd.github.v3+json" },
 			signal: AbortSignal.timeout(5000),
 		});
-		if (!tokenRes.ok) {
-			return { latest: null, error: `Token exchange failed: ${tokenRes.status}` };
+		if (!res.ok) {
+			return { latest: null, error: `GitHub API returned ${res.status}` };
 		}
-		const { token } = await tokenRes.json();
-
-		// 2. List tags via OCI distribution API
-		const tagsRes = await fetch(`https://ghcr.io/v2/${image}/tags/list?n=1000`, {
-			headers: { Authorization: `Bearer ${token}` },
-			signal: AbortSignal.timeout(5000),
-		});
-		if (!tagsRes.ok) {
-			return { latest: null, error: `Tags list failed: ${tagsRes.status}` };
-		}
-		const { tags } = await tagsRes.json();
-
-		// 3. Filter for semver tags (v1.0.0 pattern) and find latest
-		const semverTags = (tags as string[])
-			.filter((t) => /^v?\d+\.\d+\.\d+$/.test(t))
-			.map((t) => t.replace(/^v/, ""))
-			.sort((a, b) => {
-				const pa = a.split(".").map(Number);
-				const pb = b.split(".").map(Number);
-				for (let i = 0; i < 3; i++) {
-					if (pa[i] !== pb[i]) return pb[i] - pa[i];
-				}
-				return 0;
-			});
-
-		return { latest: semverTags[0] || null };
+		const release = await res.json();
+		const tag = (release.tag_name || "").replace(/^v/, "");
+		return { latest: tag || null };
 	} catch (error: any) {
-		return { latest: null, error: error.message || "Failed to fetch GHCR version" };
+		return { latest: null, error: error.message || "Failed to fetch latest release" };
 	}
 }
 
 export async function GET() {
-	const [athena, hera] = await Promise.all([fetchLatestGHCRVersion("olympusoss/athena"), fetchLatestGHCRVersion("olympusoss/hera")]);
+	const [athena, hera] = await Promise.all([fetchLatestRelease("athena"), fetchLatestRelease("hera")]);
 
 	return NextResponse.json({ athena, hera });
 }
