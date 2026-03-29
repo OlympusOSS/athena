@@ -23,7 +23,7 @@ async function fetchLatestGHCRVersion(image: string): Promise<GHCRVersionResult>
 		const { token } = await tokenRes.json();
 
 		// 2. List tags via OCI distribution API
-		const tagsRes = await fetch(`https://ghcr.io/v2/${image}/tags/list`, {
+		const tagsRes = await fetch(`https://ghcr.io/v2/${image}/tags/list?n=1000`, {
 			headers: { Authorization: `Bearer ${token}` },
 			signal: AbortSignal.timeout(5000),
 		});
