@@ -8,9 +8,9 @@
  * Strategy: mock @olympusoss/sdk to avoid DB calls.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET, DELETE } from "../[key]/route";
 import type { Setting } from "@olympusoss/sdk";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DELETE, GET } from "../[key]/route";
 
 const mockListSettings = vi.fn();
 const mockGetSecretSetting = vi.fn();
@@ -25,17 +25,11 @@ vi.mock("@olympusoss/sdk", () => ({
 function buildGetRequest(key: string, params: { decrypt?: boolean } = {}): [Request, { params: Promise<{ key: string }> }] {
 	const url = new URL(`http://localhost:4001/api/settings/${encodeURIComponent(key)}`);
 	if (params.decrypt) url.searchParams.set("decrypt", "true");
-	return [
-		new Request(url.toString()),
-		{ params: Promise.resolve({ key }) },
-	];
+	return [new Request(url.toString()), { params: Promise.resolve({ key }) }];
 }
 
 function buildDeleteRequest(key: string): [Request, { params: Promise<{ key: string }> }] {
-	return [
-		new Request(`http://localhost:4001/api/settings/${encodeURIComponent(key)}`, { method: "DELETE" }),
-		{ params: Promise.resolve({ key }) },
-	];
+	return [new Request(`http://localhost:4001/api/settings/${encodeURIComponent(key)}`, { method: "DELETE" }), { params: Promise.resolve({ key }) }];
 }
 
 const unencryptedSetting: Setting = {

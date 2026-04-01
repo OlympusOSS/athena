@@ -17,8 +17,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { GET } from "../callback/route";
 import { verifySession } from "@/lib/session";
+import { GET } from "../callback/route";
 
 // Mock the SDK to avoid real DB connections
 vi.mock("@olympusoss/sdk", () => ({
@@ -27,12 +27,7 @@ vi.mock("@olympusoss/sdk", () => ({
 }));
 
 // Helper to create a mock NextRequest with cookies and query params
-function buildNextRequest(params: {
-	code?: string;
-	state?: string;
-	oauthStateCookie?: string;
-	pkceVerifierCookie?: string;
-}) {
+function buildNextRequest(params: { code?: string; state?: string; oauthStateCookie?: string; pkceVerifierCookie?: string }) {
 	const url = new URL("http://localhost:4001/api/auth/callback");
 	if (params.code) url.searchParams.set("code", params.code);
 	if (params.state) url.searchParams.set("state", params.state);
@@ -57,12 +52,14 @@ function buildNextRequest(params: {
 }
 
 // Helper to simulate a successful Hydra token response
-function buildTokens(overrides: Partial<{
-	access_token: string;
-	id_token: string;
-	refresh_token: string;
-	expires_in: number;
-}> = {}) {
+function buildTokens(
+	overrides: Partial<{
+		access_token: string;
+		id_token: string;
+		refresh_token: string;
+		expires_in: number;
+	}> = {},
+) {
 	return {
 		access_token: "test-access-token",
 		// id_token is stored in session for downstream use only — never decoded for claims
@@ -167,7 +164,8 @@ describe("F2 / F6: Successful callback with valid state and token exchange", () 
 
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				// 1. Token exchange
 				.mockResolvedValueOnce({
 					ok: true,
@@ -252,7 +250,8 @@ describe("F7: Identity enrichment from Kratos", () => {
 		const userinfo = buildUserinfo({ sub: "user-123", email: "admin@example.com" });
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				// 1. Token exchange
 				.mockResolvedValueOnce({
 					ok: true,
@@ -295,7 +294,8 @@ describe("F8: Kratos fetch fails — falls back gracefully", () => {
 		const userinfo = buildUserinfo({ sub: "user-123", email: "admin@example.com" });
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				// 1. Token exchange
 				.mockResolvedValueOnce({
 					ok: true,
@@ -334,7 +334,8 @@ describe("F9: missing sub from userinfo — empty kratosIdentityId, no Kratos ca
 		const userinfo = buildUserinfo({ sub: "", email: "" });
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				// 1. Token exchange
 				.mockResolvedValueOnce({
 					ok: true,
@@ -361,7 +362,8 @@ describe("S-userinfo: Userinfo endpoint failure — redirects to login, no fallb
 		const tokens = buildTokens();
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				// 1. Token exchange — succeeds
 				.mockResolvedValueOnce({
 					ok: true,
@@ -388,7 +390,8 @@ describe("S-userinfo: Userinfo endpoint failure — redirects to login, no fallb
 		const tokens = buildTokens();
 		vi.stubGlobal(
 			"fetch",
-			vi.fn()
+			vi
+				.fn()
 				.mockResolvedValueOnce({
 					ok: true,
 					json: vi.fn().mockResolvedValue(tokens),
@@ -428,10 +431,7 @@ describe("E1 / E2: Token exchange failure paths", () => {
 	});
 
 	it("E2: Network timeout (fetch throws) — redirects to login, no crash", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn().mockRejectedValueOnce(new TypeError("fetch failed: network timeout")),
-		);
+		vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new TypeError("fetch failed: network timeout")));
 
 		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
 		const res = await GET(req);

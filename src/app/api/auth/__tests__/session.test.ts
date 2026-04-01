@@ -8,9 +8,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { GET } from "../session/route";
-import { signSession } from "@/lib/session";
 import type { SessionData } from "@/lib/session";
+import { signSession } from "@/lib/session";
+import { GET } from "../session/route";
 
 const validSession: SessionData = {
 	accessToken: "access-token",

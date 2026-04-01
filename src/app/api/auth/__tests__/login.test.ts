@@ -6,7 +6,7 @@
  * and redirects to Hydra /oauth2/auth.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../login/route";
 
 // Mock SDK
