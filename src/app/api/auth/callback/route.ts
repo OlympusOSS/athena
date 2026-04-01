@@ -1,4 +1,4 @@
-import { getSecretSetting, getSettingOrDefault } from "@olympusoss/sdk";
+import { getSettingOrDefault } from "@olympusoss/sdk";
 import { type NextRequest, NextResponse } from "next/server";
 import { signSession } from "@/lib/session";
 
@@ -18,33 +18,38 @@ export async function GET(request: NextRequest) {
 		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
 	}
 
+	// PKCE: retrieve the code_verifier stored during the login initiation
+	const codeVerifier = request.cookies.get("pkce_verifier")?.value;
+	if (!codeVerifier) {
+		console.error("PKCE code_verifier cookie missing");
+		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
+	}
+
 	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)
 	const hydraUrl = process.env.AUTH_HYDRA_URL || process.env.IAM_HYDRA_PUBLIC_URL || "http://localhost:4102";
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
 	let clientId: string;
-	let clientSecret: string;
 	try {
 		clientId = await getSettingOrDefault("oauth.client_id", process.env.OAUTH_CLIENT_ID || "");
-		const vaultSecret = await getSecretSetting("oauth.client_secret");
-		clientSecret = vaultSecret || process.env.OAUTH_CLIENT_SECRET || "";
 	} catch {
 		clientId = process.env.OAUTH_CLIENT_ID || "";
-		clientSecret = process.env.OAUTH_CLIENT_SECRET || "";
 	}
 	const kratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
 
 	try {
+		// Public client: no client_secret, no Basic auth header. PKCE code_verifier is sent instead.
 		const tokenRes = await fetch(`${hydraUrl}/oauth2/token`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
-				Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
 			},
 			body: new URLSearchParams({
 				grant_type: "authorization_code",
 				code,
 				redirect_uri: redirectUri,
+				client_id: clientId,
+				code_verifier: codeVerifier,
 			}).toString(),
 		});
 
@@ -56,16 +61,26 @@ export async function GET(request: NextRequest) {
 
 		const tokens = await tokenRes.json();
 
-		let sub = "";
-		let email = "";
-		if (tokens.id_token) {
-			const parts = tokens.id_token.split(".");
-			if (parts.length === 3) {
-				const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
-				sub = claims.sub || "";
-				email = claims.email || "";
-			}
+		// Fetch verified claims from Hydra's userinfo endpoint.
+		// The access_token has already been validated by Hydra at the token endpoint;
+		// presenting it here lets Hydra return authoritative, signature-verified claims.
+		// PROHIBITION: the id_token MUST NOT be decoded for any claim retrieval — all
+		// claims come exclusively from this response. See architecture-brief-jwks-verification.md.
+		const userinfoRes = await fetch(`${hydraUrl}/oauth2/userinfo`, {
+			headers: {
+				Authorization: `Bearer ${tokens.access_token}`,
+			},
+		});
+
+		if (!userinfoRes.ok) {
+			const error = await userinfoRes.text();
+			console.error("Userinfo fetch failed:", error);
+			return NextResponse.redirect(new URL("/api/auth/login", appUrl));
 		}
+
+		const userinfo = await userinfoRes.json();
+		const sub: string = userinfo.sub || "";
+		let email: string = userinfo.email || "";
 
 		let role = "viewer";
 		let displayName = email;
@@ -110,9 +125,11 @@ export async function GET(request: NextRequest) {
 			path: "/",
 			maxAge: tokens.expires_in || 3600,
 			sameSite: "lax",
+			secure: process.env.NODE_ENV === "production",
 		});
 
 		response.cookies.delete("oauth_state");
+		response.cookies.delete("pkce_verifier");
 
 		return response;
 	} catch (err) {
