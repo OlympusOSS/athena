@@ -1,0 +1,227 @@
+import { type NextRequest, NextResponse } from "next/server";
+import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
+import { decryptApiKey } from "@/lib/crypto-edge";
+
+/**
+ * Routes that require the "admin" role.
+ * All other authenticated routes only require a valid session (any role).
+ */
+const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config"];
+
+function isAdminRoute(pathname: string): boolean {
+	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+/**
+ * Routes that skip auth entirely (public auth flow + health check).
+ */
+function isPublicRoute(pathname: string): boolean {
+	return pathname.startsWith("/api/auth") || pathname === "/api/health";
+}
+
+/**
+ * Routes handled by the Ory proxy below — auth is not enforced here
+ * because these proxy to Kratos/Hydra which have their own auth.
+ */
+function isProxyRoute(pathname: string): boolean {
+	return (
+		pathname.startsWith("/api/kratos/") ||
+		pathname.startsWith("/api/kratos-admin/") ||
+		pathname.startsWith("/api/iam-kratos/") ||
+		pathname.startsWith("/api/iam-kratos-admin/") ||
+		pathname.startsWith("/api/hydra/") ||
+		pathname.startsWith("/api/hydra-admin/")
+	);
+}
+
+async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix: string, serviceName: string): Promise<NextResponse> {
+	try {
+		const targetPath = request.nextUrl.pathname.replace(pathPrefix, "");
+		const targetUrl = `${baseUrl}${targetPath}${request.nextUrl.search}`;
+
+		const requestHeaders = new Headers(request.headers);
+
+		["x-forwarded", "x-real-ip"].forEach((prefix) => {
+			for (const key of [...requestHeaders.keys()]) {
+				if (key.startsWith(prefix)) requestHeaders.delete(key);
+			}
+		});
+
+		for (const h of ["host", "connection", "upgrade"]) {
+			requestHeaders.delete(h);
+		}
+
+		let authorizationHeader: string | undefined;
+		if (serviceName === "Kratos") {
+			const kratosApiKeyEncrypted = process.env.KRATOS_API_KEY || undefined;
+			if (kratosApiKeyEncrypted) {
+				const kratosApiKey = await decryptApiKey(kratosApiKeyEncrypted);
+				if (kratosApiKey) {
+					authorizationHeader = `Bearer ${kratosApiKey}`;
+				}
+			}
+		} else if (serviceName === "Hydra") {
+			const hydraApiKeyEncrypted = process.env.HYDRA_API_KEY || undefined;
+			if (hydraApiKeyEncrypted) {
+				const hydraApiKey = await decryptApiKey(hydraApiKeyEncrypted);
+				if (hydraApiKey) {
+					authorizationHeader = `Bearer ${hydraApiKey}`;
+				}
+			}
+		}
+
+		if (authorizationHeader) {
+			requestHeaders.set("Authorization", authorizationHeader);
+		}
+
+		const response = await fetch(targetUrl, {
+			method: request.method,
+			headers: requestHeaders,
+			body: request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined,
+		});
+
+		// Handle different response types
+		if (response.status === 204) {
+			const responseHeaders = new Headers();
+			response.headers.forEach((value, key) => {
+				if (key.toLowerCase() !== "content-encoding" && key.toLowerCase() !== "transfer-encoding") {
+					responseHeaders.set(key, value);
+				}
+			});
+
+			return new NextResponse(null, {
+				status: 204,
+				headers: responseHeaders,
+			});
+		}
+
+		// Handle successful responses with content
+		const responseBody = await response.arrayBuffer();
+		const responseHeaders = new Headers();
+
+		// Copy response headers selectively to avoid Next.js Edge Runtime issues
+		// The 'location' header from Ory Hydra's 201 responses causes "Invalid URL" TypeErrors
+		// in the Edge Runtime, which then returns 500 errors to the frontend. We filter to only
+		// include essential headers that are safe for the Edge Runtime to process.
+		const safeHeaders = ["content-type", "cache-control", "etag", "last-modified", "vary", "link", "set-cookie"];
+		response.headers.forEach((value, key) => {
+			const lowerKey = key.toLowerCase();
+			// Only copy safe headers and custom x-* headers (excluding forwarding headers)
+			if (safeHeaders.includes(lowerKey) || (lowerKey.startsWith("x-") && !lowerKey.startsWith("x-forwarded") && !lowerKey.startsWith("x-real-ip"))) {
+				responseHeaders.set(key, value);
+			}
+		});
+
+		return new NextResponse(responseBody, {
+			status: response.status,
+			statusText: response.statusText,
+			headers: responseHeaders,
+		});
+	} catch (error) {
+		console.error(`[Middleware] Failed to proxy ${request.nextUrl.pathname}:`, error);
+		console.error(`[Middleware] Error details:`, {
+			message: error instanceof Error ? error.message : "Unknown error",
+			stack: error instanceof Error ? error.stack : undefined,
+			name: error instanceof Error ? error.name : undefined,
+		});
+
+		// Handle fetch errors
+		if (error instanceof TypeError && error.message.includes("fetch")) {
+			return NextResponse.json(
+				{
+					error: "Network Error",
+					message: error.message,
+					details: `Unable to reach ${serviceName} at ${baseUrl}. Please check your ${serviceName} configuration.`,
+				},
+				{ status: 502 },
+			);
+		}
+
+		return NextResponse.json(
+			{
+				error: "Proxy Error",
+				message: error instanceof Error ? error.message : "Unknown error",
+				details: `Failed to proxy request to ${serviceName} at ${baseUrl}`,
+				errorType: error instanceof Error ? error.name : "Unknown",
+			},
+			{ status: 500 },
+		);
+	}
+}
+
+export async function middleware(request: NextRequest) {
+	const { pathname } = request.nextUrl;
+
+	// --- Auth enforcement for non-proxy, non-public API routes ----------------
+	if (pathname.startsWith("/api/") && !isPublicRoute(pathname) && !isProxyRoute(pathname)) {
+		const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
+
+		if (!session) {
+			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		}
+
+		if (isAdminRoute(pathname) && !isAdmin(session)) {
+			return NextResponse.json({ error: "Forbidden: admin role required" }, { status: 403 });
+		}
+
+		// Forward user info to downstream route handlers
+		const headers = new Headers(request.headers);
+		headers.set("x-user-email", session.user.email);
+		headers.set("x-user-role", session.user.role);
+		headers.set("x-user-id", session.user.kratosIdentityId);
+
+		return NextResponse.next({ request: { headers } });
+	}
+
+	// Handle Kratos public API proxying
+	if (pathname.startsWith("/api/kratos/")) {
+		const kratosPublicUrl = process.env.KRATOS_PUBLIC_URL || "http://localhost:3100";
+		return proxyToService(request, kratosPublicUrl, "/api/kratos", "Kratos");
+	}
+
+	// Handle Kratos admin API proxying
+	if (pathname.startsWith("/api/kratos-admin/")) {
+		const kratosAdminUrl = process.env.KRATOS_ADMIN_URL || "http://localhost:3101";
+		return proxyToService(request, kratosAdminUrl, "/api/kratos-admin", "Kratos");
+	}
+
+	// Handle IAM Kratos public API proxying (used by IAM Athena for identity management)
+	if (pathname.startsWith("/api/iam-kratos/")) {
+		const iamKratosPublicUrl = process.env.IAM_KRATOS_PUBLIC_URL || "http://localhost:4100";
+
+		return proxyToService(request, iamKratosPublicUrl, "/api/iam-kratos", "Kratos");
+	}
+
+	// Handle IAM Kratos admin API proxying (used by IAM Athena for identity management)
+	if (pathname.startsWith("/api/iam-kratos-admin/")) {
+		const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
+
+		return proxyToService(request, iamKratosAdminUrl, "/api/iam-kratos-admin", "Kratos");
+	}
+
+	// Handle Hydra public API proxying
+	if (pathname.startsWith("/api/hydra/")) {
+		const hydraPublicUrl = process.env.HYDRA_PUBLIC_URL || "http://localhost:3102";
+		return proxyToService(request, hydraPublicUrl, "/api/hydra", "Hydra");
+	}
+
+	// Handle Hydra admin API proxying
+	if (pathname.startsWith("/api/hydra-admin/")) {
+		const hydraAdminUrl = process.env.HYDRA_ADMIN_URL || "http://localhost:3103";
+		return proxyToService(request, hydraAdminUrl, "/api/hydra-admin", "Hydra");
+	}
+
+	return NextResponse.next();
+}
+
+export const config = {
+	matcher: [
+		"/api/kratos/:path*",
+		"/api/kratos-admin/:path*",
+		"/api/iam-kratos/:path*",
+		"/api/iam-kratos-admin/:path*",
+		"/api/hydra/:path*",
+		"/api/hydra-admin/:path*",
+		"/api/((?!auth|health).*)",
+	],
+};
