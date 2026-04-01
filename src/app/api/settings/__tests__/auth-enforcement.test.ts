@@ -11,9 +11,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { middleware } from "@/middleware";
-import { signSession } from "@/lib/session";
 import type { SessionData } from "@/lib/session";
+import { signSession } from "@/lib/session";
+import { middleware } from "@/middleware";
 
 // Mock the crypto-edge module (not available in Node test environment)
 vi.mock("@/lib/crypto-edge", () => ({

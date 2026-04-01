@@ -10,9 +10,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { GET } from "../logout/route";
-import { signSession } from "@/lib/session";
 import type { SessionData } from "@/lib/session";
+import { signSession } from "@/lib/session";
+import { GET } from "../logout/route";
 
 function buildIdToken(claims: Record<string, string>): string {
 	const header = Buffer.from(JSON.stringify({ alg: "RS256" })).toString("base64url");

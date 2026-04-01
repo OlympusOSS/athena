@@ -8,9 +8,9 @@
  * ENCRYPTION_KEY is set to a fixed test value in vitest.config.ts.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { signSession, verifySession } from "../session";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { SessionData } from "../session";
+import { signSession, verifySession } from "../session";
 
 // Minimal valid session fixture
 const validSession: SessionData = {
@@ -144,9 +144,7 @@ describe("getHmacKey — missing ENCRYPTION_KEY", () => {
 	});
 
 	it("F19: signSession throws when ENCRYPTION_KEY is missing", async () => {
-		await expect(signSession(validSession)).rejects.toThrow(
-			"ENCRYPTION_KEY environment variable is required",
-		);
+		await expect(signSession(validSession)).rejects.toThrow("ENCRYPTION_KEY environment variable is required");
 	});
 
 	it("F19: verifySession throws (or returns null via catch) when ENCRYPTION_KEY is missing", async () => {

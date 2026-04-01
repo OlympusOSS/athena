@@ -9,9 +9,9 @@
  * Auth enforcement (S1–S4) is handled in middleware.test.ts.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET, POST } from "../route";
 import type { Setting } from "@olympusoss/sdk";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "../route";
 
 // Mock the SDK
 const mockListSettingsForDisplay = vi.fn();
