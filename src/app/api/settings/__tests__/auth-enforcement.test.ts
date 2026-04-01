@@ -10,7 +10,7 @@
  * ENCRYPTION_KEY is set in vitest.config.ts.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SessionData } from "@/lib/session";
 import { signSession } from "@/lib/session";
 import { middleware } from "@/middleware";

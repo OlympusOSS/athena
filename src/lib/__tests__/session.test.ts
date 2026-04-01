@@ -8,7 +8,7 @@
  * ENCRYPTION_KEY is set to a fixed test value in vitest.config.ts.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SessionData } from "../session";
 import { signSession, verifySession } from "../session";
 
