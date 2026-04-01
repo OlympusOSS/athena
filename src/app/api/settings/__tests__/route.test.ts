@@ -13,9 +13,11 @@ import type { Setting } from "@olympusoss/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "../route";
 
-// Mock the SDK
-const mockListSettingsForDisplay = vi.fn();
-const mockSetSetting = vi.fn();
+// Mock the SDK — use vi.hoisted() so variables are available in the hoisted vi.mock factory
+const { mockListSettingsForDisplay, mockSetSetting } = vi.hoisted(() => ({
+	mockListSettingsForDisplay: vi.fn(),
+	mockSetSetting: vi.fn(),
+}));
 
 vi.mock("@olympusoss/sdk", () => ({
 	listSettingsForDisplay: mockListSettingsForDisplay,

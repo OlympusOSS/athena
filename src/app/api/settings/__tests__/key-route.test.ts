@@ -12,9 +12,12 @@ import type { Setting } from "@olympusoss/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DELETE, GET } from "../[key]/route";
 
-const mockListSettings = vi.fn();
-const mockGetSecretSetting = vi.fn();
-const mockDeleteSetting = vi.fn();
+// use vi.hoisted() so variables are available in the hoisted vi.mock factory
+const { mockListSettings, mockGetSecretSetting, mockDeleteSetting } = vi.hoisted(() => ({
+	mockListSettings: vi.fn(),
+	mockGetSecretSetting: vi.fn(),
+	mockDeleteSetting: vi.fn(),
+}));
 
 vi.mock("@olympusoss/sdk", () => ({
 	listSettings: mockListSettings,
