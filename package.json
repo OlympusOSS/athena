@@ -10,7 +10,10 @@
 		"lint:fix": "biome check --write",
 		"format": "biome format --write .",
 		"typecheck": "tsc --noEmit",
-		"ci": "biome ci && tsc --noEmit"
+		"ci": "biome ci && tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
 	},
 	"repository": {
 		"type": "git",
@@ -55,7 +58,9 @@
 		"@types/react": "19.2.14",
 		"@types/react-dom": "19.2.3",
 		"@types/react-syntax-highlighter": "^15.5.13",
-		"typescript": "^5.9.3"
+		"@vitest/coverage-v8": "^3.2.4",
+		"typescript": "^5.9.3",
+		"vitest": "^3.2.4"
 	},
 	"overrides": {
 		"@types/react": "19.2.14",
