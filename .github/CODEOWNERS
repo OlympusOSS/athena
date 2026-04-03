@@ -1,0 +1,11 @@
+# CODEOWNERS — athena
+#
+# Social connection configuration routes and pages require security team review.
+# These paths handle OAuth2 client credentials and provider configuration.
+# Any change to these paths must be reviewed by a security-team member.
+#
+# athena#49 — Local QA requirement: security team ownership of connection routes.
+
+/src/app/api/connections/   @OlympusOSS/security-team
+/src/app/(app)/social-connections/   @OlympusOSS/security-team
+/src/lib/social-connections/   @OlympusOSS/security-team
