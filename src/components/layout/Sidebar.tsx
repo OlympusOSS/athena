@@ -59,6 +59,13 @@ const mainNavItems: NavItem[] = [
 		iconColor: "text-red-500",
 		requiredRole: UserRole.ADMIN,
 	},
+	{
+		title: "Social Connections",
+		path: "/social-connections",
+		icon: "app",
+		iconColor: "text-indigo-500",
+		requiredRole: UserRole.ADMIN,
+	},
 ];
 
 const hydraNavItems: NavItem[] = [

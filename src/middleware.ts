@@ -5,8 +5,18 @@ import { decryptApiKey } from "@/lib/crypto-edge";
 /**
  * Routes that require the "admin" role.
  * All other authenticated routes only require a valid session (any role).
+ *
+ * CSRF strategy (V5 mitigation, athena#49 Security Review):
+ * All mutation endpoints under these prefixes are protected by the admin session
+ * cookie set with SameSite=Strict, HttpOnly, and Secure attributes (see src/lib/session.ts).
+ * SameSite=Strict prevents cross-site form submissions without a separate CSRF token.
+ *
+ * athena#49: /api/connections/social protects all four social connection endpoints
+ * (GET full config, POST, PATCH /:provider, DELETE /:provider).
+ * The public unauthenticated endpoint /api/connections/public is registered in
+ * isPublicRoute() below — NOT here.
  */
-const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security"];
+const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security", "/api/connections/social"];
 
 function isAdminRoute(pathname: string): boolean {
 	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -14,9 +24,12 @@ function isAdminRoute(pathname: string): boolean {
 
 /**
  * Routes that skip auth entirely (public auth flow + health check).
+ *
+ * /api/connections/public — unauthenticated Hera endpoint for social provider list
+ * (athena#49 G2: separate route, not query-param branching on /api/connections/social)
  */
 function isPublicRoute(pathname: string): boolean {
-	return pathname.startsWith("/api/auth") || pathname === "/api/health";
+	return pathname.startsWith("/api/auth") || pathname === "/api/health" || pathname === "/api/connections/public";
 }
 
 /**
