@@ -6,7 +6,7 @@ import { decryptApiKey } from "@/lib/crypto-edge";
  * Routes that require the "admin" role.
  * All other authenticated routes only require a valid session (any role).
  */
-const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config"];
+const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security"];
 
 function isAdminRoute(pathname: string): boolean {
 	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

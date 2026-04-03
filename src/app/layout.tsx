@@ -1,3 +1,25 @@
+/**
+ * SECURITY REQUIREMENT — SR-1 (athena#73 Security Review):
+ *
+ * If any error-tracking or observability SDK (Sentry, Datadog, OpenTelemetry with log
+ * export, etc.) is added to Athena, the following fields MUST be in its scrub/deny list
+ * before the SDK is enabled on ANY environment:
+ *
+ *   - client_secret
+ *   - client_secret_expires_at
+ *   - any field matching *_secret pattern
+ *
+ * This requirement also applies if a structured logging library (pino, winston) is added.
+ *
+ * This is a STANDING security requirement — it survives code changes, file renames, and
+ * architectural refactors. Any PR that adds an observability or logging dependency to
+ * Athena must reference this requirement and confirm compliance.
+ *
+ * Origin: athena#73 (Next.js Log Sanitization for client_secret)
+ * Enforced by: CIAM Security Expert
+ * Gate: athena#50 (M2M OAuth2) must not open until athena#73 is Done
+ */
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";

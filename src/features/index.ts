@@ -14,3 +14,6 @@ export * as Sessions from "./sessions";
 
 // Settings
 export * as Settings from "./settings";
+
+// Security
+export * as Security from "./security";

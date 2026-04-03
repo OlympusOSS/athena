@@ -52,6 +52,13 @@ const mainNavItems: NavItem[] = [
 		iconColor: "text-cyan-500",
 		requiredRole: UserRole.VIEWER,
 	},
+	{
+		title: "Security",
+		path: "/security",
+		icon: "lock",
+		iconColor: "text-red-500",
+		requiredRole: UserRole.ADMIN,
+	},
 ];
 
 const hydraNavItems: NavItem[] = [

@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
 		// presenting it here lets Hydra return authoritative, signature-verified claims.
 		// PROHIBITION: the id_token MUST NOT be decoded for any claim retrieval — all
 		// claims come exclusively from this response. See architecture-brief-jwks-verification.md.
-		const userinfoRes = await fetch(`${hydraUrl}/oauth2/userinfo`, {
+		const userinfoRes = await fetch(`${hydraUrl}/userinfo`, {
 			headers: {
 				Authorization: `Bearer ${tokens.access_token}`,
 			},
