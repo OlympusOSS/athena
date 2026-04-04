@@ -1,18 +1,10 @@
 "use client";
 
-import {
-	Alert,
-	AlertDescription,
-	Badge,
-	Button,
-	Icon,
-	Input,
-	Label,
-} from "@olympusoss/canvas";
+import { Alert, AlertDescription, Badge, Button, Icon, Input, Label } from "@olympusoss/canvas";
 import { useForm } from "react-hook-form";
-import type { SocialConnectionAdminView } from "@/lib/social-connections/serializers";
 import { useCreateSocialConnection } from "@/hooks/useSocialConnections";
 import type { ReloadStatus } from "@/lib/social-connections/reload-client";
+import type { SocialConnectionAdminView } from "@/lib/social-connections/serializers";
 
 /**
  * SocialConnectionForm (athena#49 T14 + T15)
@@ -77,10 +69,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 	const selectedProvider = watch("provider");
 
 	// Base URL for Kratos callback URI — uses NEXT_PUBLIC_KRATOS_PUBLIC_URL or falls back to relative
-	const kratosBaseUrl =
-		typeof window !== "undefined"
-			? `${window.location.protocol}//${window.location.host}`
-			: "<your-domain>";
+	const kratosBaseUrl = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : "<your-domain>";
 	const callbackUri = `${kratosBaseUrl}/self-service/methods/oidc/callback/${selectedProvider}`;
 
 	const onSubmit = async (values: SocialConnectionFormValues) => {
@@ -118,11 +107,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 							key={option.value}
 							className={`relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors ${
 								!option.available ? "cursor-not-allowed opacity-50" : ""
-							} ${
-								selectedProvider === option.value && option.available
-									? "border-primary bg-primary/5"
-									: "border-border hover:border-primary/50"
-							}`}
+							} ${selectedProvider === option.value && option.available ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
 						>
 							<input
 								type="radio"
@@ -176,20 +161,14 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 						},
 					})}
 				/>
-				{errors.client_id && (
-					<p className="text-xs text-destructive">{errors.client_id.message}</p>
-				)}
+				{errors.client_id && <p className="text-xs text-destructive">{errors.client_id.message}</p>}
 			</div>
 
 			{/* Client Secret */}
 			<div className="space-y-2">
 				<Label htmlFor="client_secret">
 					Client Secret
-					{mode === "edit" && (
-						<span className="ml-1 text-xs font-normal text-muted-foreground">
-							(leave blank to keep existing secret)
-						</span>
-					)}
+					{mode === "edit" && <span className="ml-1 text-xs font-normal text-muted-foreground">(leave blank to keep existing secret)</span>}
 				</Label>
 				<Input
 					id="client_secret"
@@ -207,13 +186,9 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 								}),
 					})}
 				/>
-				{errors.client_secret && (
-					<p className="text-xs text-destructive">{errors.client_secret.message}</p>
-				)}
+				{errors.client_secret && <p className="text-xs text-destructive">{errors.client_secret.message}</p>}
 				{mode === "edit" && (
-					<p className="text-xs text-muted-foreground">
-						Saving a new client secret requires a Kratos service restart to take effect.
-					</p>
+					<p className="text-xs text-muted-foreground">Saving a new client secret requires a Kratos service restart to take effect.</p>
 				)}
 			</div>
 
@@ -222,9 +197,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 				<div className="space-y-4 rounded-lg border border-border bg-muted/50 p-4">
 					<div className="flex items-center gap-2">
 						<Icon name="lock" className="h-4 w-4 text-muted-foreground" />
-						<span className="text-sm font-medium text-muted-foreground">
-							Google OAuth2 Endpoints (pre-configured, read-only)
-						</span>
+						<span className="text-sm font-medium text-muted-foreground">Google OAuth2 Endpoints (pre-configured, read-only)</span>
 					</div>
 					<div className="space-y-3">
 						<div className="space-y-1">
@@ -251,12 +224,12 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 				<Label>Scopes</Label>
 				<div className="flex flex-wrap gap-2">
 					{GOOGLE_TEMPLATE.default_scopes.map((scope) => (
-						<Badge key={scope} variant="secondary">{scope}</Badge>
+						<Badge key={scope} variant="secondary">
+							{scope}
+						</Badge>
 					))}
 				</div>
-				<p className="text-xs text-muted-foreground">
-					Standard OAuth2 scopes for Google. These are pre-configured and cannot be changed in V1.
-				</p>
+				<p className="text-xs text-muted-foreground">Standard OAuth2 scopes for Google. These are pre-configured and cannot be changed in V1.</p>
 			</div>
 
 			{/* API error */}
@@ -278,8 +251,10 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 							<Icon name="loading" className="h-4 w-4 animate-spin" />
 							Saving...
 						</>
+					) : mode === "create" ? (
+						"Add Connection"
 					) : (
-						<>{mode === "create" ? "Add Connection" : "Save Changes"}</>
+						"Save Changes"
 					)}
 				</Button>
 			</div>

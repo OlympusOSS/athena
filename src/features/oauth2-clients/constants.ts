@@ -97,9 +97,7 @@ export type CreateM2MClientBody = z.infer<typeof createM2MClientSchema>;
  * @returns { valid: true, scopes: string[] } on success (deduplicated, insertion-order preserved)
  * @returns { valid: false, error: string, message: string } on failure
  */
-export function validateM2MScopes(scopeString: string):
-	| { valid: true; scopes: string[] }
-	| { valid: false; error: string; message: string } {
+export function validateM2MScopes(scopeString: string): { valid: true; scopes: string[] } | { valid: false; error: string; message: string } {
 	const requestedScopes = scopeString
 		.split(" ")
 		.map((s) => s.trim())
@@ -117,9 +115,7 @@ export function validateM2MScopes(scopeString: string):
 	// Check every scope against the allowlist.
 	// SECURITY: The error message is deliberately generic — it does NOT enumerate
 	// which specific scopes are invalid. Verbose errors create a scope discovery oracle.
-	const hasInvalidScope = requestedScopes.some(
-		(s) => !M2M_PERMITTED_SCOPES.includes(s as M2MPermittedScope),
-	);
+	const hasInvalidScope = requestedScopes.some((s) => !M2M_PERMITTED_SCOPES.includes(s as M2MPermittedScope));
 
 	if (hasInvalidScope) {
 		return {
