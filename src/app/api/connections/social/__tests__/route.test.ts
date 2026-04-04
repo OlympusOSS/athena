@@ -257,7 +257,8 @@ describe("POST /api/connections/social", () => {
 		vi.clearAllMocks();
 		mockGetSetting.mockResolvedValue(null); // Not yet configured = create
 		mockSetSetting.mockResolvedValue(undefined);
-		mockTriggerReload.mockResolvedValue({ status: "reloaded" });
+		// Mirror actual reload-client: skip reload when secret changed, reload otherwise
+		mockTriggerReload.mockImplementation(async (secretChanged: boolean) => ({ status: secretChanged ? "skipped" : "reloaded" }));
 		mockAuditSocialConnection.mockImplementation(() => {});
 	});
 
