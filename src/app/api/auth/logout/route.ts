@@ -53,7 +53,9 @@ async function revokeHydraConsentSessions(hydraAdminUrl: string, subject: string
 }
 
 export async function GET(request: NextRequest) {
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
+	// NEXT_PUBLIC_APP_URL is always set per-instance (CIAM=3001, IAM=4001).
+	// The fallback must NOT default to the other instance's URL.
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.APP_INSTANCE === "CIAM" ? "http://localhost:3001" : "http://localhost:4001");
 	// Configurable auth Hydra/Kratos admin URLs — defaults to IAM
 	const iamHydraAdminUrl = process.env.AUTH_HYDRA_ADMIN_URL || process.env.IAM_HYDRA_ADMIN_URL || "http://localhost:4103";
 	const iamKratosAdminUrl = process.env.AUTH_KRATOS_ADMIN_URL || process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
