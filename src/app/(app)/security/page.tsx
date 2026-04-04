@@ -1,6 +1,23 @@
 "use client";
 
-import { Alert, AlertDescription, Badge, Button, Card, CardContent, CardHeader, CardTitle, Icon, Toast, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, useToast } from "@olympusoss/canvas";
+import {
+	Alert,
+	AlertDescription,
+	Badge,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	Icon,
+	Toast,
+	Toaster,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+	useToast,
+} from "@olympusoss/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
@@ -47,9 +64,7 @@ export default function SecurityPage() {
 					{data?.truncated && (
 						<Alert variant="default">
 							<Icon name="danger" />
-							<AlertDescription>
-								Showing 500 of {total} locked accounts. Some accounts may not be displayed.
-							</AlertDescription>
+							<AlertDescription>Showing 500 of {total} locked accounts. Some accounts may not be displayed.</AlertDescription>
 						</Alert>
 					)}
 
@@ -68,9 +83,7 @@ export default function SecurityPage() {
 							{isError ? (
 								<div className="flex flex-col items-center gap-4 py-10 text-center">
 									<Icon name="danger" className="h-8 w-8 text-destructive" />
-									<p className="text-sm text-muted-foreground">
-										{error?.message ?? "Failed to load locked accounts. Please try again."}
-									</p>
+									<p className="text-sm text-muted-foreground">{error?.message ?? "Failed to load locked accounts. Please try again."}</p>
 									<Button variant="outline" onClick={() => refetch()}>
 										<Icon name="refresh" className="h-4 w-4" />
 										Retry
@@ -91,9 +104,9 @@ export default function SecurityPage() {
 						<CardContent>
 							<h2 className="text-sm font-semibold text-foreground">About Account Lockouts</h2>
 							<p className="mt-1 text-sm text-muted-foreground">
-								Accounts are automatically locked when too many failed login attempts occur within a sliding time window. Thresholds are
-								configurable in Settings under the Security category. Lockouts expire automatically — use the Unlock action to immediately
-								restore access without waiting for the lockout to expire.
+								Accounts are automatically locked when too many failed login attempts occur within a sliding time window. Thresholds are configurable
+								in Settings under the Security category. Lockouts expire automatically — use the Unlock action to immediately restore access without
+								waiting for the lockout to expire.
 							</p>
 						</CardContent>
 					</Card>

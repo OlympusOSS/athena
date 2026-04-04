@@ -1,16 +1,6 @@
 "use client";
 
-import {
-	Alert,
-	AlertDescription,
-	Button,
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	Icon,
-} from "@olympusoss/canvas";
+import { Alert, AlertDescription, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Icon } from "@olympusoss/canvas";
 import { useEffect, useRef, useState } from "react";
 import { useDeleteSocialConnection } from "@/hooks/useSocialConnections";
 import type { ReloadStatus } from "@/lib/social-connections/reload-client";
@@ -97,7 +87,7 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 			clearTimeout(timeoutId);
 			controller.abort();
 		};
-	}, [open, provider]);
+	}, [open]);
 
 	const handleConfirm = () => {
 		deleteMutation.mutate(provider, {
@@ -123,16 +113,16 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 						<Icon name="danger" />
 						<AlertDescription>
 							<p>
-								<strong>Users who have only logged in via {displayName} will not be able to log in after deletion.</strong>{" "}
-								Their accounts will remain intact. You can re-add {displayName} as a provider to restore access.
+								<strong>Users who have only logged in via {displayName} will not be able to log in after deletion.</strong> Their accounts will remain
+								intact. You can re-add {displayName} as a provider to restore access.
 							</p>
 						</AlertDescription>
 					</Alert>
 
 					{/* Session clarification — must NOT promise revocation (F21) */}
 					<p className="text-sm text-muted-foreground">
-						Existing user sessions will remain valid until they naturally expire. After deletion, users will not be able to
-						start new sessions via {displayName}.
+						Existing user sessions will remain valid until they naturally expire. After deletion, users will not be able to start new sessions via{" "}
+						{displayName}.
 					</p>
 
 					{/* Affected user count (best-effort, 5s timeout per DA C2) */}
@@ -161,28 +151,16 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 					{deleteMutation.isError && (
 						<Alert variant="destructive">
 							<Icon name="danger" />
-							<AlertDescription>
-								{deleteMutation.error?.message ?? "Failed to delete connection. Please try again."}
-							</AlertDescription>
+							<AlertDescription>{deleteMutation.error?.message ?? "Failed to delete connection. Please try again."}</AlertDescription>
 						</Alert>
 					)}
 				</div>
 
 				<DialogFooter>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onCancel}
-						disabled={deleteMutation.isPending}
-					>
+					<Button type="button" variant="outline" onClick={onCancel} disabled={deleteMutation.isPending}>
 						Cancel
 					</Button>
-					<Button
-						type="button"
-						variant="destructive"
-						onClick={handleConfirm}
-						disabled={deleteMutation.isPending}
-					>
+					<Button type="button" variant="destructive" onClick={handleConfirm} disabled={deleteMutation.isPending}>
 						{deleteMutation.isPending ? (
 							<>
 								<Icon name="loading" className="h-4 w-4 animate-spin" />

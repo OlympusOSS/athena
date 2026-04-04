@@ -1,6 +1,16 @@
 "use client";
 
-import { Button, DataTable, type DataTableColumn, Icon, StatusBadge, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@olympusoss/canvas";
+import {
+	Button,
+	DataTable,
+	type DataTableColumn,
+	Icon,
+	StatusBadge,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@olympusoss/canvas";
 import React, { useMemo } from "react";
 import { useUnlockAccount } from "../hooks/useLockedAccounts";
 import type { LockedAccount } from "../types";
@@ -70,17 +80,13 @@ export function LockedAccountsTable({ accounts, isLoading, onUnlockSuccess, onUn
 				field: "trigger_ip",
 				headerName: "Source IP",
 				minWidth: 140,
-				renderCell: (value: string | null) => (
-					<span className="font-mono text-sm">{value ?? "—"}</span>
-				),
+				renderCell: (value: string | null) => <span className="font-mono text-sm">{value ?? "—"}</span>,
 			},
 			{
 				field: "auto_threshold_at",
 				headerName: "Failed Attempts",
 				minWidth: 140,
-				renderCell: (value: number | null) => (
-					<span className="text-sm text-foreground">{value != null ? String(value) : "—"}</span>
-				),
+				renderCell: (value: number | null) => <span className="text-sm text-foreground">{value != null ? String(value) : "—"}</span>,
 			},
 			{
 				field: "locked_at",

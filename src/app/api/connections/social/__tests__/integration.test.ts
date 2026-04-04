@@ -42,9 +42,9 @@ vi.mock("@/lib/social-connections/audit", () => ({
 	auditSocialConnection: vi.fn(),
 }));
 
+import { GET as PublicGET } from "../../public/route";
 // Import route handlers after mocks
 import { GET as SocialGET } from "../route";
-import { GET as PublicGET } from "../../public/route";
 
 // ─── T21: GET /api/connections/public (unauthenticated — must return 200) ───
 

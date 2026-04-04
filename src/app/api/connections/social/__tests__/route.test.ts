@@ -20,16 +20,9 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// --- Validation module tests ---
-import {
-	ALLOWED_PROVIDERS,
-	validateClientId,
-	validateClientSecret,
-	validateProvider,
-	validateScopes,
-} from "@/lib/social-connections/validation";
 import { MASKED_SECRET, maskSecret, toPublicConnection } from "@/lib/social-connections/serializers";
+// --- Validation module tests ---
+import { ALLOWED_PROVIDERS, validateClientId, validateClientSecret, validateProvider, validateScopes } from "@/lib/social-connections/validation";
 
 describe("validateProvider", () => {
 	it("accepts allowed providers", () => {
@@ -204,9 +197,9 @@ vi.mock("@/lib/social-connections/audit", () => ({
 	auditSocialConnection: mockAuditSocialConnection,
 }));
 
+import { GET as PublicGET } from "../../public/route";
 // Import routes after mocks are set up
 import { GET, POST } from "../route";
-import { GET as PublicGET } from "../../public/route";
 
 function buildAdminRequest(method: string, body?: unknown): Request {
 	const req = new Request("http://localhost:3001/api/connections/social", {
@@ -323,8 +316,7 @@ describe("POST /api/connections/social", () => {
 
 		// Verify encrypted=true was used for the secret
 		const secretCall = mockSetSetting.mock.calls.find(
-			([key, , opts]: [string, string, { encrypted?: boolean }]) =>
-				key === "social.google.client_secret" && opts?.encrypted === true,
+			([key, , opts]: [string, string, { encrypted?: boolean }]) => key === "social.google.client_secret" && opts?.encrypted === true,
 		);
 		expect(secretCall).toBeDefined();
 	});

@@ -36,15 +36,17 @@ export const dynamic = "force-dynamic";
  * Reads all configured social connections from the SDK settings table and
  * assembles them into an array of admin-view objects.
  */
-async function readAllConnections(): Promise<Array<{
-	provider: string;
-	display_name: string;
-	enabled: boolean;
-	client_id: string;
-	client_secret?: string;
-	scopes: string[];
-	order: number;
-}>> {
+async function readAllConnections(): Promise<
+	Array<{
+		provider: string;
+		display_name: string;
+		enabled: boolean;
+		client_id: string;
+		client_secret?: string;
+		scopes: string[];
+		order: number;
+	}>
+> {
 	// Read all social.* settings from SDK
 	const allSettings = await listSettings("social");
 

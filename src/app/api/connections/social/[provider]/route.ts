@@ -34,10 +34,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 	// V2: Validate provider slug against allowlist (prevents path traversal/injection)
 	const providerValidation = validateProvider(provider);
 	if (!providerValidation.valid) {
-		return NextResponse.json(
-			{ error: `Validation failed: ${providerValidation.error}` },
-			{ status: 400 },
-		);
+		return NextResponse.json({ error: `Validation failed: ${providerValidation.error}` }, { status: 400 });
 	}
 
 	// Read admin identity from middleware-injected headers
@@ -60,19 +57,13 @@ export async function PATCH(request: Request, context: RouteContext) {
 	// Validate enabled field
 	const enabledValidation = validateEnabled(enabled);
 	if (!enabledValidation.valid) {
-		return NextResponse.json(
-			{ error: `Validation failed: ${enabledValidation.error}` },
-			{ status: 400 },
-		);
+		return NextResponse.json({ error: `Validation failed: ${enabledValidation.error}` }, { status: 400 });
 	}
 
 	// Verify provider is actually configured before toggling
 	const existingClientId = await getSetting(`social.${provider}.client_id`);
 	if (!existingClientId) {
-		return NextResponse.json(
-			{ error: `Provider not found: ${provider}` },
-			{ status: 404 },
-		);
+		return NextResponse.json({ error: `Provider not found: ${provider}` }, { status: 404 });
 	}
 
 	try {
@@ -117,10 +108,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 	// V2: Validate provider slug against allowlist (prevents path traversal/injection)
 	const providerValidation = validateProvider(provider);
 	if (!providerValidation.valid) {
-		return NextResponse.json(
-			{ error: `Validation failed: ${providerValidation.error}` },
-			{ status: 400 },
-		);
+		return NextResponse.json({ error: `Validation failed: ${providerValidation.error}` }, { status: 400 });
 	}
 
 	// Read admin identity from middleware-injected headers
@@ -130,10 +118,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 	// Verify provider is actually configured before deletion
 	const existingClientId = await getSetting(`social.${provider}.client_id`);
 	if (!existingClientId) {
-		return NextResponse.json(
-			{ error: `Provider not found: ${provider}` },
-			{ status: 404 },
-		);
+		return NextResponse.json({ error: `Provider not found: ${provider}` }, { status: 404 });
 	}
 
 	try {

@@ -9,11 +9,9 @@ export * as Auth from "./auth";
 export * as Identities from "./identities";
 // Schemas
 export * as Schemas from "./schemas";
-// Sessions
-export * as Sessions from "./sessions";
-
-// Settings
-export * as Settings from "./settings";
-
 // Security
 export * as Security from "./security";
+// Sessions
+export * as Sessions from "./sessions";
+// Settings
+export * as Settings from "./settings";

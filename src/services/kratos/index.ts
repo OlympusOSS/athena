@@ -15,4 +15,4 @@ export { checkKratosHealth } from "./health";
 
 // Export canonical reload helper (athena#89 — DA hard gate for athena#49)
 // All Kratos config reload calls MUST go through this helper — not inline Axios calls.
-export { reloadKratosConfig, ConfigurationError } from "./reload";
+export { ConfigurationError, reloadKratosConfig } from "./reload";

@@ -8,8 +8,8 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { SocialConnectionAdminView } from "@/lib/social-connections/serializers";
 import type { ReloadStatus } from "@/lib/social-connections/reload-client";
+import type { SocialConnectionAdminView } from "@/lib/social-connections/serializers";
 
 const QUERY_KEY = ["social-connections"] as const;
 

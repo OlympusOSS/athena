@@ -104,10 +104,7 @@ export default function SocialConnectionsPage() {
 		} else if (reloadStatus === "misconfigured") {
 			showToast("Configuration saved. CIAM_RELOAD_SIDECAR_URL is not configured — changes require a Kratos restart.", "default");
 		} else {
-			showToast(
-				"Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.",
-				"default",
-			);
+			showToast("Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.", "default");
 		}
 	};
 
@@ -157,9 +154,7 @@ export default function SocialConnectionsPage() {
 							<CardContent className="pt-6">
 								<div className="flex flex-col items-center gap-4 py-10 text-center">
 									<Icon name="danger" className="h-8 w-8 text-destructive" />
-									<p className="text-sm text-muted-foreground">
-										{error?.message ?? "Failed to load social connections. Please try again."}
-									</p>
+									<p className="text-sm text-muted-foreground">{error?.message ?? "Failed to load social connections. Please try again."}</p>
 									<Button variant="outline" onClick={() => refetch()}>
 										<Icon name="refresh" className="h-4 w-4" />
 										Retry
@@ -231,9 +226,7 @@ export default function SocialConnectionsPage() {
 				<Dialog open={formOpen} onOpenChange={setFormOpen}>
 					<DialogContent className="max-w-2xl">
 						<DialogHeader>
-							<DialogTitle>
-								{formMode === "create" ? "Add Social Connection" : `Edit ${editingConnection?.display_name ?? "Connection"}`}
-							</DialogTitle>
+							<DialogTitle>{formMode === "create" ? "Add Social Connection" : `Edit ${editingConnection?.display_name ?? "Connection"}`}</DialogTitle>
 						</DialogHeader>
 						<SocialConnectionForm
 							mode={formMode}
@@ -283,13 +276,9 @@ function SocialConnectionRow({ connection, onEdit, onDelete, onToggle, isTogglin
 				<div>
 					<div className="flex items-center gap-2">
 						<span className="text-sm font-medium">{connection.display_name}</span>
-						<Badge variant={connection.enabled ? "default" : "secondary"}>
-							{connection.enabled ? "Enabled" : "Disabled"}
-						</Badge>
+						<Badge variant={connection.enabled ? "default" : "secondary"}>{connection.enabled ? "Enabled" : "Disabled"}</Badge>
 					</div>
-					<p className="text-xs text-muted-foreground">
-						Client ID: {connection.client_id}
-					</p>
+					<p className="text-xs text-muted-foreground">Client ID: {connection.client_id}</p>
 				</div>
 			</div>
 			<div className="flex items-center gap-2">
