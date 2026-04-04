@@ -6,23 +6,39 @@ export async function GET(request: NextRequest) {
 	const code = request.nextUrl.searchParams.get("code");
 	const state = request.nextUrl.searchParams.get("state");
 
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
+	// NEXT_PUBLIC_APP_URL is always set per-instance (CIAM=3001, IAM=4001).
+	// The fallback must NOT default to the other instance's URL.
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.APP_INSTANCE === "CIAM" ? "http://localhost:3001" : "http://localhost:4001");
+
+	// Handle OAuth2 error responses from Hydra (e.g. access_denied, login_required).
+	// Without this, error callbacks would silently redirect to login in a loop.
+	const oauthError = request.nextUrl.searchParams.get("error");
+	if (oauthError) {
+		const desc = request.nextUrl.searchParams.get("error_description") ?? oauthError;
+		console.error(`OAuth2 error from authorization server: ${oauthError} — ${desc}`);
+		return NextResponse.redirect(new URL(`/api/auth/login?error=${encodeURIComponent(oauthError)}`, appUrl));
+	}
 
 	if (!code) {
+		console.error("OAuth callback missing authorization code");
 		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
 	}
 
 	const storedState = request.cookies.get("oauth_state")?.value;
 	if (!state || state !== storedState) {
-		console.error("OAuth state mismatch");
-		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
+		// State mismatch: either CSRF attempt, cookie expired (5 min TTL), or the
+		// user initiated a second login flow that overwrote the state cookie while
+		// the first callback was still in-flight (race condition on cold compile).
+		// Redirect to login with an error hint so the user gets clear feedback.
+		console.error(`OAuth state mismatch — received: ${state ?? "(none)"}, stored: ${storedState ?? "(none)"}`);
+		return NextResponse.redirect(new URL("/api/auth/login?error=state_mismatch", appUrl));
 	}
 
 	// PKCE: retrieve the code_verifier stored during the login initiation
 	const codeVerifier = request.cookies.get("pkce_verifier")?.value;
 	if (!codeVerifier) {
 		console.error("PKCE code_verifier cookie missing");
-		return NextResponse.redirect(new URL("/api/auth/login", appUrl));
+		return NextResponse.redirect(new URL("/api/auth/login?error=pkce_missing", appUrl));
 	}
 
 	// Configurable auth Hydra — defaults to IAM Hydra (admins are IAM identities)

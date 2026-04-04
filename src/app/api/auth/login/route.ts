@@ -15,7 +15,9 @@ export async function GET() {
 	if (!clientId) {
 		clientId = process.env.OAUTH_CLIENT_ID || "";
 	}
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
+	// NEXT_PUBLIC_APP_URL is always set per-instance (CIAM=3001, IAM=4001).
+	// The fallback must NOT default to the other instance's URL.
+	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.APP_INSTANCE === "CIAM" ? "http://localhost:3001" : "http://localhost:4001");
 	const redirectUri = `${appUrl}/api/auth/callback`;
 
 	const state = randomBytes(32).toString("hex");
