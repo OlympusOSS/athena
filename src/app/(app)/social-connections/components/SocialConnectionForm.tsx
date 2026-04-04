@@ -95,11 +95,14 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 			enabled: values.enabled,
 		};
 
-		createMutation.mutate(payload, {
-			onSuccess: (result) => {
-				onSuccess(result.reloadStatus, result.secretChanged);
-			},
-		});
+		try {
+			const result = await createMutation.mutateAsync(payload);
+			onSuccess(result.reloadStatus, result.secretChanged);
+		} catch {
+			// Error is stored in createMutation.error and displayed in the UI via
+			// the createMutation.isError branch below. Do not re-throw — this keeps
+			// the dialog open so the admin can correct the input and retry.
+		}
 	};
 
 	const isGoogleSelected = selectedProvider === "google";

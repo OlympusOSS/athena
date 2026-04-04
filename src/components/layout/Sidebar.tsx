@@ -16,6 +16,12 @@ interface NavItem {
 	requiredRole?: UserRole;
 }
 
+/** A labeled group of nav items — renders a section header above its items. */
+interface NavSection {
+	label: string;
+	items: NavItem[];
+}
+
 const mainNavItems: NavItem[] = [
 	{
 		title: "Dashboard",
@@ -59,12 +65,25 @@ const mainNavItems: NavItem[] = [
 		iconColor: "text-red-500",
 		requiredRole: UserRole.ADMIN,
 	},
+];
+
+/**
+ * Grouped nav sections rendered below the main nav items, above the Hydra divider.
+ * Each section shows a small uppercase label followed by its nav items.
+ * This matches the visual pattern of the Hydra section divider below.
+ */
+const navSections: NavSection[] = [
 	{
-		title: "Social Connections",
-		path: "/social-connections",
-		icon: "app",
-		iconColor: "text-indigo-500",
-		requiredRole: UserRole.ADMIN,
+		label: "Authentication",
+		items: [
+			{
+				title: "Social Connections",
+				path: "/social-connections",
+				icon: "app",
+				iconColor: "text-indigo-500",
+				requiredRole: UserRole.ADMIN,
+			},
+		],
 	},
 ];
 
@@ -125,6 +144,12 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 	};
 
 	const filteredMainNavItems = mainNavItems.filter((item) => hasRequiredRole(item.requiredRole));
+	const filteredNavSections: NavSection[] = navSections
+		.map((section) => ({
+			...section,
+			items: section.items.filter((item) => hasRequiredRole(item.requiredRole)),
+		}))
+		.filter((section) => section.items.length > 0);
 	const filteredHydraNavItems = hydraEnabled ? hydraNavItems.filter((item) => hasRequiredRole(item.requiredRole)) : [];
 
 	return (
@@ -199,6 +224,24 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 						{/* Main nav */}
 						{filteredMainNavItems.map((item) => (
 							<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
+						))}
+
+						{/* Grouped nav sections (e.g. "Authentication > Social Connections") */}
+						{filteredNavSections.map((section) => (
+							<div key={section.label}>
+								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
+								{expanded && (
+									<span
+										className="block px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest"
+										style={{ color: "hsl(var(--sidebar-fg))", opacity: 0.5 }}
+									>
+										{section.label}
+									</span>
+								)}
+								{section.items.map((item) => (
+									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
+								))}
+							</div>
 						))}
 
 						{/* Hydra nav */}
