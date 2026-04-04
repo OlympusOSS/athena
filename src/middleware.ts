@@ -8,8 +8,16 @@ import { decryptApiKey } from "@/lib/crypto-edge";
  *
  * CSRF strategy (V5 mitigation, athena#49 Security Review):
  * All mutation endpoints under these prefixes are protected by the admin session
- * cookie set with SameSite=Strict, HttpOnly, and Secure attributes (see src/lib/session.ts).
- * SameSite=Strict prevents cross-site form submissions without a separate CSRF token.
+ * cookie set with SameSite=Lax, HttpOnly, and Secure attributes (see src/lib/session.ts).
+ * SameSite=Lax is intentional — SameSite=Strict would break the OAuth2 callback flow
+ * because the browser's redirect from the IdP (a cross-origin navigation) would strip
+ * the session cookie before the callback handler can read it. Lax allows cookies on
+ * top-level cross-site navigations (GET redirects) while still blocking cross-site
+ * form submissions (POST/PATCH/DELETE) from third-party pages.
+ * Fetch-based CSRF (e.g., forged XHR from an attacker's origin) is independently blocked
+ * by CORS — the /api/connections/ routes do not emit Access-Control-Allow-Origin headers
+ * for third-party origins, so cross-origin fetch requests are rejected by the browser
+ * before they reach the server.
  *
  * athena#49: /api/connections/social protects all four social connection endpoints
  * (GET full config, POST, PATCH /:provider, DELETE /:provider).
