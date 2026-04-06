@@ -1,5 +1,6 @@
 export { CaptchaConfigSection } from "./CaptchaConfigSection";
 export { GeoConfigSection } from "./GeoConfigSection";
+export { MfaPolicySection } from "./MfaPolicySection";
 export { OAuthConfigSection } from "./OAuthConfigSection";
 export {
 	ServiceConfigSection,
