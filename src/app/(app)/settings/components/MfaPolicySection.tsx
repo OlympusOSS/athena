@@ -1,7 +1,26 @@
 "use client";
 
-import { Alert, AlertDescription, Button, Card, CardContent, CardHeader, CardTitle, cn, Icon, Input, Label, Switch } from "@olympusoss/canvas";
-import { useCallback, useEffect, useState } from "react";
+import {
+	Alert,
+	AlertDescription,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	cn,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	Icon,
+	Input,
+	Label,
+	Switch,
+} from "@olympusoss/canvas";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type MfaMethod = "totp" | "webauthn" | "sms";
 
@@ -31,6 +50,13 @@ export function MfaPolicySection() {
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
+	// SR-MFA-2: confirmation modal state
+	const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+	// SR-MFA-2: last-fetched persisted state — used to restore form on Cancel.
+	// A ref (not state) so updates do not trigger re-renders.
+	// Null until the first successful fetchSettings() resolves.
+	const persistedSettings = useRef<MfaPolicySettings | null>(null);
 
 	// Guard C (SR-MFA-1): Save is disabled when MFA is required but no methods are enabled.
 	// This mirrors the server-side invariant check in POST /api/settings/batch.
@@ -55,12 +81,15 @@ export function MfaPolicySection() {
 
 			const gracePeriod = Number.parseInt(map["mfa.grace_period_days"] || "7", 10);
 
-			setSettings({
+			const fetchedSettings: MfaPolicySettings = {
 				requireMfa: map["mfa.require_mfa"] === "true",
 				allowSelfEnroll: map["mfa.allow_self_enroll"] !== "false",
 				methods: parsedMethods.length > 0 ? parsedMethods : ["totp", "webauthn"],
 				gracePeriodDays: Number.isNaN(gracePeriod) || gracePeriod < 0 ? 7 : gracePeriod,
-			});
+			};
+			// SR-MFA-2: seed the persisted ref so Cancel can restore to DB state
+			persistedSettings.current = fetchedSettings;
+			setSettings(fetchedSettings);
 		} catch {
 			setError("Failed to load MFA policy settings");
 		} finally {
@@ -72,7 +101,11 @@ export function MfaPolicySection() {
 		fetchSettings();
 	}, [fetchSettings]);
 
-	const handleSave = useCallback(async () => {
+	/**
+	 * Execute the actual batch save to the API.
+	 * Called directly on non-modal paths, and from the modal's onConfirm handler.
+	 */
+	const executeSave = useCallback(async () => {
 		setSaving(true);
 		setSaveSuccess(false);
 		setError(null);
@@ -96,6 +129,8 @@ export function MfaPolicySection() {
 				throw new Error(body.error || `Server responded with ${res.status}`);
 			}
 
+			// SR-MFA-2: update persisted ref to newly-saved state after successful save
+			persistedSettings.current = { ...settings };
 			setSaveSuccess(true);
 			setTimeout(() => setSaveSuccess(false), 3000);
 		} catch (err) {
@@ -104,6 +139,42 @@ export function MfaPolicySection() {
 			setSaving(false);
 		}
 	}, [settings]);
+
+	/**
+	 * Save button handler.
+	 * SR-MFA-2: evaluates the zero-grace-period trigger condition at save time.
+	 * If requireMfa=true AND gracePeriodDays=0, shows confirmation modal first.
+	 * Otherwise, calls executeSave directly.
+	 */
+	const handleSave = useCallback(() => {
+		// SR-MFA-2: state-based trigger (not transition-based) — fires whenever
+		// the resulting saved state would be 'mandatory MFA, zero grace period'.
+		if (settings.requireMfa && settings.gracePeriodDays === 0) {
+			setShowConfirmModal(true);
+			return;
+		}
+		executeSave();
+	}, [settings, executeSave]);
+
+	/**
+	 * SR-MFA-2: Cancel confirmation modal.
+	 * Restores to last-persisted DB state (not the unsaved local state).
+	 * If persistedSettings.current is null (fetch not yet complete), no-op.
+	 */
+	const handleCancelModal = useCallback(() => {
+		setShowConfirmModal(false);
+		if (persistedSettings.current !== null) {
+			setSettings(persistedSettings.current);
+		}
+	}, []);
+
+	/**
+	 * SR-MFA-2: Confirm modal — proceed with save.
+	 */
+	const handleConfirmModal = useCallback(() => {
+		setShowConfirmModal(false);
+		executeSave();
+	}, [executeSave]);
 
 	const toggleMethod = useCallback((method: MfaMethod) => {
 		setSettings((prev) => {
@@ -255,6 +326,41 @@ export function MfaPolicySection() {
 					)}
 				</Button>
 			</div>
+
+			{/* SR-MFA-2: Zero-grace-period confirmation modal */}
+			<Dialog
+				open={showConfirmModal}
+				onOpenChange={(open) => {
+					if (!open) handleCancelModal();
+				}}
+			>
+				<DialogContent className="glass-overlay max-w-md">
+					<DialogHeader>
+						<DialogTitle className="text-sm font-semibold">Confirm MFA Policy Change</DialogTitle>
+						<DialogDescription className="text-xs text-muted-foreground">This configuration requires your explicit confirmation.</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-3 py-2">
+						<div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+							<p className="font-medium mb-1">No grace period — immediate enforcement</p>
+							<p>
+								Mandatory MFA with no grace period will be active after saving. Users who have not yet enrolled an MFA factor will be required to
+								enroll on their next login. They will not be able to access their account until enrollment is complete.
+							</p>
+						</div>
+						{/* Stats slot — reserved for Guard A story to populate with enrollment counts */}
+						<p className="text-xs text-muted-foreground italic">Enrollment statistics are not yet available.</p>
+						<p className="text-xs text-muted-foreground">Cancel will discard all unsaved changes.</p>
+					</div>
+					<DialogFooter className="gap-2">
+						<Button variant="outline" size="sm" onClick={handleCancelModal}>
+							Cancel
+						</Button>
+						<Button variant="destructive" size="sm" onClick={handleConfirmModal}>
+							Save Policy
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
