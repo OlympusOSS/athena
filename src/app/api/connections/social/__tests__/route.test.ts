@@ -389,8 +389,8 @@ describe("GET /api/connections/public", () => {
 		const json = await res.json();
 
 		expect(res.status).toBe(200);
-		expect(Array.isArray(json)).toBe(true);
-		expect(json).toHaveLength(0);
+		expect(Array.isArray(json.providers)).toBe(true);
+		expect(json.providers).toHaveLength(0);
 	});
 
 	it("returns only enabled providers (F25)", async () => {
@@ -405,14 +405,14 @@ describe("GET /api/connections/public", () => {
 		const json = await res.json();
 
 		expect(res.status).toBe(200);
-		expect(json).toHaveLength(1);
-		expect(json[0].provider).toBe("google");
-		expect(json[0].display_name).toBe("Google");
-		expect(json[0].enabled).toBe(true);
+		expect(json.providers).toHaveLength(1);
+		expect(json.providers[0].provider).toBe("google");
+		expect(json.providers[0].display_name).toBe("Google");
+		expect(json.providers[0].enabled).toBe(true);
 		// V9: no credentials in public response (F26)
-		expect("client_id" in json[0]).toBe(false);
-		expect("client_secret" in json[0]).toBe(false);
-		expect("scopes" in json[0]).toBe(false);
+		expect("client_id" in json.providers[0]).toBe(false);
+		expect("client_secret" in json.providers[0]).toBe(false);
+		expect("scopes" in json.providers[0]).toBe(false);
 	});
 
 	it("returns empty array when provider is disabled (F28 / E13 / V9)", async () => {
@@ -429,6 +429,6 @@ describe("GET /api/connections/public", () => {
 
 		expect(res.status).toBe(200);
 		// Identical response to unconfigured (F27) — provider absent from array
-		expect(json).toHaveLength(0);
+		expect(json.providers).toHaveLength(0);
 	});
 });

@@ -54,14 +54,14 @@ describe("T21: GET /api/connections/public — unauthenticated access returns 20
 		mockListSettings.mockResolvedValue([]);
 	});
 
-	it("returns HTTP 200 with an array when called without any auth headers", async () => {
+	it("returns HTTP 200 with {providers:[]} shape when called without any auth headers", async () => {
 		// Simulate an unauthenticated request — no session cookie, no x-user-* headers
 		const req = new Request("http://localhost:3001/api/connections/public");
 		const res = await PublicGET(req);
 
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(Array.isArray(body)).toBe(true);
+		expect(Array.isArray(body.providers)).toBe(true);
 	});
 
 	it("returns 200 with enabled Google provider when configured and enabled", async () => {
@@ -94,12 +94,12 @@ describe("T21: GET /api/connections/public — unauthenticated access returns 20
 
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body).toHaveLength(1);
-		expect(body[0].provider).toBe("google");
+		expect(body.providers).toHaveLength(1);
+		expect(body.providers[0].provider).toBe("google");
 		// Public endpoint must NOT leak credentials (V9)
-		expect("client_id" in body[0]).toBe(false);
-		expect("client_secret" in body[0]).toBe(false);
-		expect("scopes" in body[0]).toBe(false);
+		expect("client_id" in body.providers[0]).toBe(false);
+		expect("client_secret" in body.providers[0]).toBe(false);
+		expect("scopes" in body.providers[0]).toBe(false);
 	});
 
 	it("returns 200 with empty array when provider is configured but disabled (V9 normalization)", async () => {
@@ -124,10 +124,10 @@ describe("T21: GET /api/connections/public — unauthenticated access returns 20
 		const req = new Request("http://localhost:3001/api/connections/public");
 		const res = await PublicGET(req);
 
-		// Must be 200 — not a 404 or 403 — just an empty array
+		// Must be 200 — not a 404 or 403 — just an empty providers array
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body).toHaveLength(0);
+		expect(body.providers).toHaveLength(0);
 	});
 });
 
