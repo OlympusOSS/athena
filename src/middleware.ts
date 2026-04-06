@@ -161,10 +161,12 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			requestHeaders.set("Authorization", authorizationHeader);
 		}
 
+		const proxyTimeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);
 		const response = await fetch(targetUrl, {
 			method: request.method,
 			headers: requestHeaders,
 			body: request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined,
+			signal: AbortSignal.timeout(proxyTimeoutMs),
 		});
 
 		// Handle different response types
@@ -211,6 +213,18 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			stack: error instanceof Error ? error.stack : undefined,
 			name: error instanceof Error ? error.name : undefined,
 		});
+
+		// Handle proxy timeout — stale TCP connections (platform#65 / athena#109)
+		if (error instanceof Error && error.name === "TimeoutError") {
+			return NextResponse.json(
+				{
+					error: "Gateway Timeout",
+					message: `Proxy request to ${serviceName} timed out`,
+					details: `${serviceName} at ${baseUrl} did not respond within the allowed time.`,
+				},
+				{ status: 504 },
+			);
+		}
 
 		// Handle fetch errors
 		if (error instanceof TypeError && error.message.includes("fetch")) {
