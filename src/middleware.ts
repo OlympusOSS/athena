@@ -25,9 +25,12 @@ import { decryptApiKey } from "@/lib/crypto-edge";
  * This CSP is NOT set on API routes (/api/*). It applies only to page (HTML) responses.
  */
 function buildCsp(nonce: string): string {
+	// In dev mode, Next.js HMR/React Refresh requires eval().
+	// 'unsafe-eval' is ONLY included in development — never in production.
+	const isDev = process.env.NODE_ENV !== "production";
 	const directives = [
 		"default-src 'self'",
-		`script-src 'self' 'nonce-${nonce}'`,
+		`script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}`,
 		"style-src 'self' 'unsafe-inline'",
 		"connect-src 'self'",
 		"img-src 'self' data:",
