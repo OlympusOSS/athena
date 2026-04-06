@@ -388,6 +388,53 @@ If Hydra fails on the PUT step during a rotation (after GET succeeded), the rota
 
 The rotation flow uses GET-then-PUT (last-write-wins). If two admins rotate the same client simultaneously, the second PUT overwrites the first. The second admin's secret modal shows the correct new secret; the first admin's secret is invalidated without warning. M2M client administration is a low-frequency operation in practice; optimistic concurrency (ETag) is a V2 concern.
 
+## Audit Log Pipeline Contract
+
+M2M client lifecycle events are emitted as structured JSON to `process.stdout`. The log pipeline must be configured to route these entries to the audit store, separate from operational logs.
+
+### Discriminator Field
+
+Every audit log entry carries `"type": "audit"`. Log aggregators must split on this field:
+
+- Lines with `"type": "audit"` are shipped to the audit store (SOC2 CC6.2 evidence)
+- All other lines are treated as operational logs
+
+### Log Aggregator Configuration
+
+Example Loki LogQL filter for the audit stream:
+
+```
+{app="athena"} | json | type="audit"
+```
+
+Example Vector sink configuration (YAML):
+
+```yaml
+transforms:
+  athena_audit:
+    type: filter
+    inputs: [athena_stdout]
+    condition: '.type == "audit"'
+```
+
+Any log aggregator (Loki, Vector, Fluentd, etc.) must implement this split before this feature is used in a production environment subject to SOC2 CC6.2 audit requirements.
+
+### What Is and Is Not Logged
+
+Audit entries include: `type`, `event`, `actor`, `client_id`, `scope` (creation only), `timestamp`.
+
+`client_secret` is **never** present in any audit log entry. The log sanitization in the route handlers strips `client_secret` from all log calls. This is confirmed by the acceptance criterion: create an M2M client via Athena and search all log outputs for the returned secret value — no match must be found.
+
+## Component State — `mutation.reset()` on Modal Close
+
+The `SecretRevealModal` calls `mutation.reset()` when the modal closes. This is a security requirement, not a cleanup convenience:
+
+- `mutation.reset()` clears the TanStack Query mutation state, which includes the `client_secret` value returned from the POST or rotate-secret API response
+- Without this call, `client_secret` persists in the component's mutation state until the component unmounts or the user navigates away
+- A `client_secret` persisting in React component state after the modal closes can be accessed via React DevTools, memory inspection, or a component re-render that re-surfaces the value
+
+**This call must be present in the `SecretRevealModal` close handler and must not be removed as a "cleanup optimization."** It is a security boundary.
+
 ## Security Considerations
 
 ### Client secret is a high-value credential
