@@ -139,8 +139,31 @@ export async function GET(request: NextRequest) {
 		const signedCookie = await signSession(sessionData);
 		response.cookies.set("athena-session", signedCookie, buildSessionCookieOptions(tokens.expires_in || 3600));
 
-		response.cookies.delete("oauth_state");
-		response.cookies.delete("pkce_verifier");
+		// Explicit clearing headers instead of bare cookies.delete() — intended behavior,
+		// verification pending athena#57 deployment (QA tests F6, F7, V5, V6 are BLOCKED
+		// on that deploy). Once athena#57 is live, QA will confirm these clearing headers
+		// match the full attribute profile of the cookies being cleared.
+		//
+		// Rationale: after the fix in login/route.ts, these cookies are set with Secure in
+		// production. The deletion header must carry matching attributes (sameSite: 'lax',
+		// Secure) for forward compatibility with RFC 6265bis, which tightens attribute-matching
+		// requirements for cookie deletion. Next.js's bare cookies.delete() generates Max-Age=0
+		// without repeating the original attributes. Do not revert to bare delete() — this is
+		// an intentional choice, not an oversight.
+		response.cookies.set("oauth_state", "", {
+			maxAge: 0,
+			httpOnly: true,
+			path: "/",
+			sameSite: "lax",
+			secure: process.env.NODE_ENV === "production",
+		});
+		response.cookies.set("pkce_verifier", "", {
+			maxAge: 0,
+			httpOnly: true,
+			path: "/",
+			sameSite: "lax",
+			secure: process.env.NODE_ENV === "production",
+		});
 
 		return response;
 	} catch (err) {

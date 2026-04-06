@@ -16,6 +16,15 @@
  *
  * Passing maxAge=0 is the cookie-deletion pattern (used by the logout route).
  * Math.min(0, 28800) === 0, so the cap is safe for the clear case.
+ *
+ * Scope: this helper is for `athena-session` only. The `oauth_state` and
+ * `pkce_verifier` flow-state tokens in the login route must NOT use this helper.
+ * They require sameSite: 'lax' (not 'strict') because the OAuth2 callback is a
+ * cross-origin top-level navigation from Hydra — 'strict' would cause the browser
+ * to drop both cookies on the redirect, breaking CSRF verification and the PKCE
+ * exchange for all users. They also require maxAge: 300s (not 28800s) to minimize
+ * the attack surface window for stolen tokens. See /api/auth/login/route.ts for
+ * those cookies' explicit options objects.
  */
 export function buildSessionCookieOptions(maxAge: number): {
 	httpOnly: boolean;

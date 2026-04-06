@@ -37,19 +37,48 @@ export async function GET() {
 
 	const response = NextResponse.redirect(authUrl.toString());
 
+	// oauth_state and pkce_verifier are short-lived flow-state tokens, not session credentials.
+	// They must NOT use buildSessionCookieOptions from lib/cookie-options.ts — that helper is
+	// designed for athena-session and uses sameSite: 'strict' and maxAge: 28800s, both of which
+	// are incorrect for these cookies.
+	//
+	// sameSite: 'lax' is required (not 'strict') because the OAuth2 callback is a cross-origin
+	// top-level navigation redirect from Hydra back to Athena. With sameSite: 'strict', the
+	// browser drops both cookies on that redirect, breaking CSRF verification and the PKCE
+	// exchange for all users.
+	//
+	// maxAge: 300 (5 minutes) — implementation reason: these cookies only need to survive the
+	// browser round-trip from the login redirect to Hydra and back, which takes seconds in
+	// practice. 5 minutes is already generous for this window. Security reason: a shorter
+	// lifetime minimizes the attack surface window for a stolen oauth_state or pkce_verifier.
+	// If either cookie is intercepted, the window during which it can be submitted to the
+	// callback route is bounded to 300 seconds — the authorization code at Hydra may still
+	// be valid for up to 10 minutes, but the stolen cookie becomes useless after 5.
+	// Do not increase this value — a longer maxAge extends exposure without functional benefit.
+	//
+	// secure: without this flag, the browser transmits the CSRF state token and PKCE verifier
+	// over plain HTTP on any same-origin HTTP resource load — including mixed-content subrequests
+	// on an otherwise HTTPS page — regardless of whether the server is HTTPS-terminated. An
+	// attacker with a position to observe HTTP traffic on the same origin can intercept both
+	// tokens and attempt a CSRF attack or PKCE exchange completion. The Secure flag ensures
+	// the browser only sends these cookies over TLS. Omitted in development (NODE_ENV !== 'production')
+	// so localhost dev over HTTP continues to work without TLS. Fix for hera#33.
 	response.cookies.set("oauth_state", state, {
 		httpOnly: true,
 		path: "/",
 		maxAge: 300,
 		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
 	});
 
-	// Store the code_verifier so the callback can complete the PKCE exchange
+	// Store the code_verifier so the callback can complete the PKCE exchange.
+	// See comment above for the full rationale on sameSite, maxAge, and secure attributes.
 	response.cookies.set("pkce_verifier", codeVerifier, {
 		httpOnly: true,
 		path: "/",
 		maxAge: 300,
 		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
 	});
 
 	return response;
