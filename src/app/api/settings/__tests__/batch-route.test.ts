@@ -21,7 +21,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST, parseMfaMethods } from "../batch/route";
+import { parseMfaMethods } from "@/lib/mfa-methods";
+import { POST } from "../batch/route";
 
 // Mock the SDK — use vi.hoisted() so variables are available in the hoisted vi.mock factory
 const { mockBatchSetSettings, mockGetSettingOrDefault } = vi.hoisted(() => ({

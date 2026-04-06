@@ -1,5 +1,6 @@
 import { batchSetSettings, getSettingOrDefault } from "@olympusoss/sdk";
 import { NextResponse } from "next/server";
+import { parseMfaMethods } from "@/lib/mfa-methods";
 
 export const dynamic = "force-dynamic";
 
@@ -7,24 +8,6 @@ const SETTINGS_TABLE = process.env.SETTINGS_TABLE || "ciam_settings";
 
 // Guard: max 20 entries per batch (SDK comment in batchSetSettings notes this limit).
 const MAX_BATCH_SIZE = 20;
-
-/**
- * Parse a comma-separated MFA methods string into an array of non-empty method tokens.
- *
- * SR-MFA-1-SEC-1: This named helper is the single parsing rule for `mfa.methods`.
- * It handles all edge cases: absent key (null), empty string, whitespace-only,
- * delimiter-only (e.g., ',', ',,'), and mixed whitespace/delimiter values.
- *
- * Parsing rule: split on comma → trim each token → filter zero-length tokens after trim.
- * The following inputs all produce [] (no methods): null, '', ' ', ',', ',,' , ' , '.
- */
-export function parseMfaMethods(value: string | null | undefined): string[] {
-	if (!value) return [];
-	return value
-		.split(",")
-		.map((token) => token.trim())
-		.filter((token) => token.length > 0);
-}
 
 /**
  * Guard C (SR-MFA-1): MFA invariant check.
