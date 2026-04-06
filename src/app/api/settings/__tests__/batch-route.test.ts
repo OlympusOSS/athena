@@ -7,6 +7,11 @@
  *   - Unauthenticated request returns 401 (via middleware — tested via auth-enforcement.test.ts pattern)
  *   - Invalid entry shape returns 400
  *
+ * Guard C (SR-MFA-1) scenarios:
+ *   - Test A: Direct payload with require=true and methods empty → 400, no DB write
+ *   - Test B: Stateful — persisted require=true, batch disables all methods → 400, no DB write
+ *   - parseMfaMethods edge cases: whitespace, delimiter-only, null
+ *
  * Auth enforcement (401) is tested through the middleware directly using the
  * existing auth-enforcement.test.ts pattern. The route handler itself never
  * sees unauthenticated requests in production because the middleware blocks them.
@@ -16,15 +21,17 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "../batch/route";
+import { POST, parseMfaMethods } from "../batch/route";
 
 // Mock the SDK — use vi.hoisted() so variables are available in the hoisted vi.mock factory
-const { mockBatchSetSettings } = vi.hoisted(() => ({
+const { mockBatchSetSettings, mockGetSettingOrDefault } = vi.hoisted(() => ({
 	mockBatchSetSettings: vi.fn(),
+	mockGetSettingOrDefault: vi.fn(),
 }));
 
 vi.mock("@olympusoss/sdk", () => ({
 	batchSetSettings: mockBatchSetSettings,
+	getSettingOrDefault: mockGetSettingOrDefault,
 }));
 
 function buildBatchRequest(body: unknown): Request {
@@ -46,6 +53,8 @@ function makeEntries(count: number) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	// Default: no persisted MFA settings (safe defaults for non-MFA tests)
+	mockGetSettingOrDefault.mockResolvedValue("false");
 });
 
 // ── Valid batch requests ──────────────────────────────────────────────────────
@@ -270,5 +279,101 @@ describe("POST /api/settings/batch — error paths", () => {
 		});
 		const res = await POST(req);
 		expect(res.status).toBe(500);
+	});
+});
+
+// ── Guard C (SR-MFA-1): MFA invariant check ───────────────────────────────────
+
+describe("parseMfaMethods — SR-MFA-1-SEC-1 named helper", () => {
+	it("returns [] for null", () => expect(parseMfaMethods(null)).toEqual([]));
+	it("returns [] for empty string", () => expect(parseMfaMethods("")).toEqual([]));
+	it("returns [] for whitespace-only string", () => expect(parseMfaMethods("   ")).toEqual([]));
+	it("returns [] for delimiter-only string ','", () => expect(parseMfaMethods(",")).toEqual([]));
+	it("returns [] for multi-delimiter string ',,'", () => expect(parseMfaMethods(",,")).toEqual([]));
+	it("returns [] for whitespace+delimiter ' , '", () => expect(parseMfaMethods(" , ")).toEqual([]));
+	it("returns ['totp'] for 'totp'", () => expect(parseMfaMethods("totp")).toEqual(["totp"]));
+	it("returns ['totp','webauthn'] for 'totp,webauthn'", () => expect(parseMfaMethods("totp,webauthn")).toEqual(["totp", "webauthn"]));
+	it("trims whitespace around tokens", () => expect(parseMfaMethods(" totp , webauthn ")).toEqual(["totp", "webauthn"]));
+	it("filters empty tokens in mixed list', totp'", () => expect(parseMfaMethods(",totp")).toEqual(["totp"]));
+});
+
+describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () => {
+	it("Test A — direct payload: require=true + empty methods in same batch → 400, no DB write", async () => {
+		// Both keys present in the batch — no DB read needed; guard evaluates payload directly
+		const req = buildBatchRequest([
+			{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" },
+			{ key: "mfa.methods", value: "", encrypted: false, category: "mfa" },
+		]);
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const body = await res.json();
+		expect(body.code).toBe("mfa_no_methods_enabled");
+		expect(body.error).toContain("MFA cannot be required");
+		// No DB write must occur
+		expect(mockBatchSetSettings).not.toHaveBeenCalled();
+	});
+
+	it("Test A — direct payload: require=true + whitespace-only methods → 400, no DB write", async () => {
+		const req = buildBatchRequest([
+			{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" },
+			{ key: "mfa.methods", value: " , ", encrypted: false, category: "mfa" },
+		]);
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const body = await res.json();
+		expect(body.code).toBe("mfa_no_methods_enabled");
+		expect(mockBatchSetSettings).not.toHaveBeenCalled();
+	});
+
+	it("Test B — stateful: persisted require=true, batch disables all methods → 400, no DB write", async () => {
+		// Simulates: mfa.require_mfa=true was saved previously; new batch only changes methods
+		// Mock: getSetting for mfa.require_mfa returns 'true' (persisted); mfa.methods not in payload
+		mockGetSettingOrDefault.mockImplementation((key: string, fallback: string) => {
+			if (key === "mfa.require_mfa") return Promise.resolve("true");
+			if (key === "mfa.methods") return Promise.resolve(""); // already empty persisted
+			return Promise.resolve(fallback);
+		});
+
+		// Batch only includes methods key (require_mfa not in payload → read from DB = 'true')
+		const req = buildBatchRequest([{ key: "mfa.methods", value: "", encrypted: false, category: "mfa" }]);
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const body = await res.json();
+		expect(body.code).toBe("mfa_no_methods_enabled");
+		expect(mockBatchSetSettings).not.toHaveBeenCalled();
+	});
+
+	it("Test B — stateful: persisted require=true, batch enables a method → 200, DB write occurs", async () => {
+		// Batch enables totp while require_mfa is persisted as true — guard should pass
+		mockGetSettingOrDefault.mockImplementation((key: string, fallback: string) => {
+			if (key === "mfa.require_mfa") return Promise.resolve("true");
+			return Promise.resolve(fallback);
+		});
+		mockBatchSetSettings.mockResolvedValue(undefined);
+
+		const req = buildBatchRequest([{ key: "mfa.methods", value: "totp", encrypted: false, category: "mfa" }]);
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockBatchSetSettings).toHaveBeenCalledTimes(1);
+	});
+
+	it("guard is not triggered for non-mfa batches", async () => {
+		// Batch with no mfa.* keys should not call getSettingOrDefault
+		mockBatchSetSettings.mockResolvedValue(undefined);
+		const req = buildBatchRequest([{ key: "captcha.enabled", value: "true", encrypted: false, category: "captcha" }]);
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockGetSettingOrDefault).not.toHaveBeenCalled();
+	});
+
+	it("require=false with no methods — guard passes (invariant only applies when require=true)", async () => {
+		mockBatchSetSettings.mockResolvedValue(undefined);
+		const req = buildBatchRequest([
+			{ key: "mfa.require_mfa", value: "false", encrypted: false, category: "mfa" },
+			{ key: "mfa.methods", value: "", encrypted: false, category: "mfa" },
+		]);
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockBatchSetSettings).toHaveBeenCalledTimes(1);
 	});
 });

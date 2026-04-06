@@ -32,6 +32,11 @@ export function MfaPolicySection() {
 	const [error, setError] = useState<string | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
 
+	// Guard C (SR-MFA-1): Save is disabled when MFA is required but no methods are enabled.
+	// This mirrors the server-side invariant check in POST /api/settings/batch.
+	const mfaInvariantViolation = settings.requireMfa && settings.methods.length === 0;
+	const saveDisabled = saving || mfaInvariantViolation;
+
 	const fetchSettings = useCallback(async () => {
 		try {
 			setLoading(true);
@@ -224,6 +229,7 @@ export function MfaPolicySection() {
 							</div>
 						);
 					})}
+					{mfaInvariantViolation && <p className="text-xs text-destructive pt-1">At least one MFA method must be enabled when MFA is required.</p>}
 				</CardContent>
 			</Card>
 
@@ -235,7 +241,7 @@ export function MfaPolicySection() {
 			</Alert>
 
 			<div className="flex justify-end">
-				<Button size="sm" onClick={handleSave} disabled={saving}>
+				<Button size="sm" onClick={handleSave} disabled={saveDisabled}>
 					{saving ? (
 						<>
 							<Icon name="loading" className="mr-1.5 h-3.5 w-3.5 animate-spin" />
