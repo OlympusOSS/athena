@@ -3,6 +3,45 @@ import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
 import { decryptApiKey } from "@/lib/crypto-edge";
 
 /**
+ * CSP NONCE — platform#18 (Security Headers)
+ *
+ * A cryptographic nonce is generated per-request and injected into:
+ *   1. The `Content-Security-Policy` response header (via `'nonce-{value}'` in script-src)
+ *   2. The `x-nonce` request header, so layout.tsx can forward it to Next.js <Script> components
+ *      and any inline <script> blocks.
+ *
+ * Framing policy ownership (DA/Security condition C3):
+ *   - `frame-ancestors 'none'` in the CSP is the AUTHORITATIVE framing policy for Athena.
+ *   - `X-Frame-Options: DENY` set by Caddy is the legacy-browser fallback ONLY.
+ *   - Future framing policy changes MUST update this CSP. Changing the Caddyfile alone has
+ *     no effect in modern browsers because CSP frame-ancestors takes precedence.
+ *
+ * `unsafe-inline` in style-src (DA/Security condition C2 / SR-1):
+ *   - `'unsafe-inline'` in style-src is a known pragmatic allowance for CSS-in-JS and
+ *     Canvas component styles. This is a CSS injection risk (lower-severity than XSS).
+ *   - A follow-on ticket (athena#<n>) tracks removing this allowance via nonce-based styles.
+ *     See OlympusOSS/athena issues for the follow-on ticket.
+ *
+ * This CSP is NOT set on API routes (/api/*). It applies only to page (HTML) responses.
+ */
+function buildCsp(nonce: string): string {
+	const directives = [
+		"default-src 'self'",
+		`script-src 'self' 'nonce-${nonce}'`,
+		"style-src 'self' 'unsafe-inline'",
+		"connect-src 'self'",
+		"img-src 'self' data:",
+		"font-src 'self'",
+		"object-src 'none'",
+		"base-uri 'self'",
+		"form-action 'self'",
+		// frame-ancestors is authoritative for framing policy — see note above
+		"frame-ancestors 'none'",
+	];
+	return directives.join("; ");
+}
+
+/**
  * Routes that require the "admin" role.
  * All other authenticated routes only require a valid session (any role).
  *
@@ -173,6 +212,22 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
+	// --- CSP nonce injection for page (HTML) responses ------------------------
+	// Only inject on non-API routes. API routes don't serve HTML and don't need CSP.
+	if (!pathname.startsWith("/api/")) {
+		const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64");
+		const csp = buildCsp(nonce);
+
+		const requestHeaders = new Headers(request.headers);
+		// Forward the nonce to layout.tsx via request header so it can be passed
+		// to <Script> components and inline <script> blocks as the `nonce` attribute.
+		requestHeaders.set("x-nonce", nonce);
+
+		const response = NextResponse.next({ request: { headers: requestHeaders } });
+		response.headers.set("Content-Security-Policy", csp);
+		return response;
+	}
+
 	// --- Auth enforcement for non-proxy, non-public API routes ----------------
 	if (pathname.startsWith("/api/") && !isPublicRoute(pathname) && !isProxyRoute(pathname)) {
 		const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
@@ -237,6 +292,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
 	matcher: [
+		// Page routes — CSP nonce is injected on all page (HTML) responses.
+		// Excludes Next.js internal routes (_next/static, _next/image, favicon.ico)
+		// which don't serve HTML and should not be interrupted by middleware.
+		"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+		// API routes — auth enforcement and proxy routing
 		"/api/kratos/:path*",
 		"/api/kratos-admin/:path*",
 		"/api/iam-kratos/:path*",
