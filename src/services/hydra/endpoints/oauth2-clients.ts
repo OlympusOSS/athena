@@ -96,6 +96,62 @@ export async function patchOAuth2Client(clientId: string, clientData: Partial<Cr
 	}, "Hydra");
 }
 
+/**
+ * Rotate the client secret for an existing OAuth2 client.
+ *
+ * SECURITY: This is the only correct rotation mechanism for the deployed @ory/hydra-client
+ * version. No `rotateOAuth2ClientSecret` method or `/lifesign` endpoint exists.
+ * The correct approach is a full PUT with a newly generated server-side secret.
+ *
+ * Flow:
+ *   1. GET the current client record from Hydra (to preserve all existing fields)
+ *   2. Generate a new 64-character hex secret using Node.js built-in crypto
+ *   3. PUT the full client record back with the new secret
+ *   4. Return `{ client_id, client_secret }` — the plaintext secret is shown once in the UI
+ *      and then discarded; Athena never persists it
+ *
+ * The previous secret is immediately invalidated after a successful PUT — any token
+ * request using the old secret will return 401.
+ *
+ * Verified against DA REVISE/PROCEED verdict (athena#50 thread, 2026-04-02).
+ */
+export async function rotateOAuth2ClientSecret(clientId: string): Promise<{ client_id: string; client_secret: string }> {
+	return withApiErrorHandling(async () => {
+		// Step 1: Fetch the current full client record
+		const getResponse = await getAdminOAuth2Api().getOAuth2Client({ id: clientId });
+		const currentClient = getResponse.data;
+
+		// Step 2: Generate a new cryptographically random 64-char hex secret.
+		// Uses Node.js built-in `node:crypto` — no new dependencies required.
+		const { randomBytes } = await import("node:crypto");
+		const newSecret = randomBytes(32).toString("hex");
+
+		// Step 3: PUT the full record back with the new secret
+		const putResponse = await getAdminOAuth2Api().setOAuth2Client({
+			id: clientId,
+			oAuth2Client: {
+				...currentClient,
+				client_secret: newSecret,
+			},
+		});
+
+		// Step 4: Return the plaintext secret from the PUT response.
+		// Per OQ-3 verification (athena#50 thread): Hydra echoes the plaintext in the PUT
+		// response body. Return response.data.client_secret (what Hydra echoes), not the
+		// locally generated value, in case Hydra processes or re-encodes the value.
+		const rotatedSecret = putResponse.data.client_secret;
+
+		if (typeof rotatedSecret !== "string" || rotatedSecret.length === 0) {
+			throw new Error("Hydra did not return a client_secret in the PUT response — rotation failed");
+		}
+
+		return {
+			client_id: putResponse.data.client_id ?? clientId,
+			client_secret: rotatedSecret,
+		};
+	}, "Hydra");
+}
+
 // Delete an OAuth2 client
 export async function deleteOAuth2Client(clientId: string) {
 	return withApiErrorHandling(async () => {

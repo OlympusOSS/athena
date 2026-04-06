@@ -1,42 +1,15 @@
 import { z } from "zod";
 
 /**
- * M2M_PERMITTED_SCOPES — the definitive server-side allowlist for OAuth2 M2M client scopes.
+ * Re-export M2M scope constants from the canonical source.
+ * The single source of truth is src/lib/m2m-scopes.ts — this file
+ * imports and re-exports for backwards compatibility with feature module imports.
  *
- * SECURITY: This constant is a security boundary, not an implementation detail.
- * It is consumed by two places:
- *   1. The POST /api/clients/m2m route handler (server-side validation — the actual guard)
- *   2. The M2M client multi-select UI component (UX control — NOT a security control)
- *
- * Any modification to this list REQUIRES:
- *   - The `security-review` label on the PR
- *   - Explicit sign-off from the Security Expert AND Product Owner before merge
- *   - A PO decision documented in the relevant issue
- *
- * This requirement is tracked as SR-ATHENA-1 from the athena#74 Security Review.
- * See: https://github.com/OlympusOSS/athena/issues/74
- *
- * DO NOT add scopes unilaterally. Scope additions silently escalate privilege for
- * ALL future M2M clients registered through Athena.
- *
- * Explicitly excluded (must never appear on M2M clients):
- *   - settings:write  (admin-level config mutation)
- *   - identities:delete  (destructive identity operation)
- *   - openid, profile, email, address, phone  (OIDC user-facing scopes)
- *
- * V1 definition confirmed by PO on 2026-04-01 (platform#16) and re-confirmed 2026-04-03 (athena#74).
+ * DO NOT define M2M_PERMITTED_SCOPES here — modify src/lib/m2m-scopes.ts instead.
  */
-export const M2M_PERMITTED_SCOPES = [
-	"identities:read",
-	"identities:write",
-	"sessions:read",
-	"sessions:invalidate",
-	"settings:read",
-	"audit:read",
-	"webhooks:write",
-] as const;
+export { M2M_HIGH_RISK_SCOPES, M2M_PERMITTED_SCOPES, M2M_SCOPE_DESCRIPTIONS, type M2MPermittedScope } from "@/lib/m2m-scopes";
 
-export type M2MPermittedScope = (typeof M2M_PERMITTED_SCOPES)[number];
+import { M2M_PERMITTED_SCOPES, type M2MPermittedScope } from "@/lib/m2m-scopes";
 
 /**
  * Zod schema for the POST /api/clients/m2m request body.
@@ -65,9 +38,13 @@ export const createM2MClientSchema = z.object({
 		required_error: "scope is required — provide a space-separated string of permitted scopes",
 		invalid_type_error: "scope must be a string (space-separated), not an array",
 	}),
-	grant_types: z.array(z.string()).optional(),
-	response_types: z.array(z.string()).optional(),
-	redirect_uris: z.array(z.string().url()).optional(),
+	/**
+	 * token_lifetime: access token TTL in seconds for this M2M client.
+	 * Range: 1–3600 (enforced server-side before Hydra call — SR-5 / athena#78).
+	 * Default: 3600 (per PO AC3). Recommended for AI agents: 300.
+	 * No refresh tokens are issued for client_credentials grants.
+	 */
+	token_lifetime: z.number().int().min(1).max(3600).optional(),
 	audience: z.array(z.string()).optional(),
 	owner: z.string().optional(),
 	client_uri: z.string().url().optional(),
