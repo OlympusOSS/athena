@@ -16,7 +16,7 @@
  *
  * Hera integration contract:
  * URL: /api/connections/public
- * Response: Array of { provider, display_name, enabled } — only enabled=true providers
+ * Response: { providers: Array of { provider, display_name, enabled } } — only enabled=true providers
  */
 
 import { listSettings } from "@olympusoss/sdk";
@@ -66,7 +66,7 @@ export async function GET(_request: Request) {
 			});
 		});
 
-		return NextResponse.json(result);
+		return NextResponse.json({ providers: result });
 	} catch (error) {
 		console.error("[api/connections/public] GET failed:", {
 			message: error instanceof Error ? error.message : String(error),
