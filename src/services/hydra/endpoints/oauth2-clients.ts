@@ -105,28 +105,25 @@ export async function patchOAuth2Client(clientId: string, clientData: Partial<Cr
  *
  * Flow:
  *   1. GET the current client record from Hydra (to preserve all existing fields)
- *   2. Generate a new 64-character hex secret using Node.js built-in crypto
+ *   2. Caller provides a pre-generated server-side secret (generated in the API route
+ *      to keep `node:crypto` out of this file's webpack bundle trace)
  *   3. PUT the full client record back with the new secret
- *   4. Return `{ client_id, client_secret }` — the plaintext secret is shown once in the UI
- *      and then discarded; Athena never persists it
+ *   4. Return `{ client_id, client_secret }` — Hydra echoes the plaintext in the PUT
+ *      response body (verified via OQ-3, athena#50 thread 2026-04-02)
  *
  * The previous secret is immediately invalidated after a successful PUT — any token
  * request using the old secret will return 401.
  *
- * Verified against DA REVISE/PROCEED verdict (athena#50 thread, 2026-04-02).
+ * @param clientId - the Hydra client ID to rotate
+ * @param newSecret - caller-provided cryptographically random secret (e.g. 32-byte hex)
  */
-export async function rotateOAuth2ClientSecret(clientId: string): Promise<{ client_id: string; client_secret: string }> {
+export async function rotateOAuth2ClientSecret(clientId: string, newSecret: string): Promise<{ client_id: string; client_secret: string }> {
 	return withApiErrorHandling(async () => {
 		// Step 1: Fetch the current full client record
 		const getResponse = await getAdminOAuth2Api().getOAuth2Client({ id: clientId });
 		const currentClient = getResponse.data;
 
-		// Step 2: Generate a new cryptographically random 64-char hex secret.
-		// Uses Node.js built-in `node:crypto` — no new dependencies required.
-		const { randomBytes } = await import("node:crypto");
-		const newSecret = randomBytes(32).toString("hex");
-
-		// Step 3: PUT the full record back with the new secret
+		// Step 2: PUT the full record back with the provided new secret
 		const putResponse = await getAdminOAuth2Api().setOAuth2Client({
 			id: clientId,
 			oAuth2Client: {
@@ -135,7 +132,7 @@ export async function rotateOAuth2ClientSecret(clientId: string): Promise<{ clie
 			},
 		});
 
-		// Step 4: Return the plaintext secret from the PUT response.
+		// Step 3: Return the plaintext secret from the PUT response.
 		// Per OQ-3 verification (athena#50 thread): Hydra echoes the plaintext in the PUT
 		// response body. Return response.data.client_secret (what Hydra echoes), not the
 		// locally generated value, in case Hydra processes or re-encodes the value.

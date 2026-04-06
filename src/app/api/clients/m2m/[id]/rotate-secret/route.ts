@@ -18,6 +18,7 @@
  * Rotation mechanism verified against @ory/hydra-client api.d.ts — DA PROCEED (athena#50, 2026-04-02).
  */
 
+import { randomBytes } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { rotateOAuth2ClientSecret } from "@/services/hydra";
 
@@ -47,9 +48,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 		return NextResponse.json({ error: "missing_required_field", field: "id", message: "Client ID is required." }, { status: 400 });
 	}
 
+	// Generate the new secret here (in the API route, server-side only) to keep
+	// node:crypto out of the hydra service file's webpack bundle trace.
+	const newSecret = randomBytes(32).toString("hex");
+
 	let rotated: { client_id: string; client_secret: string };
 	try {
-		rotated = await rotateOAuth2ClientSecret(clientId);
+		rotated = await rotateOAuth2ClientSecret(clientId, newSecret);
 	} catch (error) {
 		// C2 (log sanitization): only log the error message, never any response body
 		// or any field that could contain client_secret
