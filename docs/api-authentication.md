@@ -76,7 +76,7 @@ Developer browser
       client_id=...
       code_verifier=<verifier>          ← no client_secret (public client)
   → Athena fetches verified identity claims from /oauth2/userinfo
-  → Athena sets athena-session cookie (HttpOnly, SameSite=Lax, Secure in production)
+  → Athena sets athena-session cookie (HttpOnly, SameSite=Strict, Secure in production)
   → Browser redirects to /dashboard
 ```
 
