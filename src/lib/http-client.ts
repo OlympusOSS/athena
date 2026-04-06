@@ -231,4 +231,4 @@ export const kratosHttpClient = new HttpClient({
 	},
 });
 
-export { HttpError, TimeoutError, NetworkError };
+export { HttpError, NetworkError, TimeoutError };
