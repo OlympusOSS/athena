@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { buildSessionClearOptions } from "@/lib/cookie-options";
 import { verifySession } from "@/lib/session";
 
 /**
@@ -88,12 +89,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	function clearSessionCookie(response: NextResponse) {
-		response.cookies.set("athena-session", "", {
-			httpOnly: true,
-			path: "/",
-			maxAge: 0,
-			sameSite: "lax",
-		});
+		response.cookies.set("athena-session", "", buildSessionClearOptions());
 	}
 
 	const loginUrl = new URL("/api/auth/login", appUrl).toString();

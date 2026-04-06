@@ -171,6 +171,42 @@ describe("E6: Hydra revocation returns 500 — logout still completes", () => {
 	});
 });
 
+describe("S12: Session cookie cleared with correct security attributes on logout", () => {
+	it("clear cookie has sameSite=strict (upgraded from lax)", async () => {
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		expect(setCookie.toLowerCase()).toContain("samesite=strict");
+	});
+
+	it("clear cookie has secure flag in production", async () => {
+		process.env.NODE_ENV = "production";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		expect(setCookie.toLowerCase()).toContain("secure");
+		expect(setCookie).toMatch(/max-age=0/i);
+	});
+
+	it("clear cookie has no secure flag in development", async () => {
+		process.env.NODE_ENV = "development";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		expect(setCookie.toLowerCase()).not.toContain("secure");
+		expect(setCookie).toMatch(/max-age=0/i);
+	});
+});
+
 describe("S11: HTML injection in logout redirect meta tag", () => {
 	it("loginUrl is constructed via URL object — characters are encoded, no HTML injection", async () => {
 		// The route uses `new URL("/api/auth/login", appUrl).toString()` which encodes

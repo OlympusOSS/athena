@@ -1,5 +1,6 @@
 import { getSettingOrDefault } from "@olympusoss/sdk";
 import { type NextRequest, NextResponse } from "next/server";
+import { buildSessionCookieOptions } from "@/lib/cookie-options";
 import { signSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
@@ -136,13 +137,7 @@ export async function GET(request: NextRequest) {
 		const response = NextResponse.redirect(new URL("/dashboard", appUrl));
 
 		const signedCookie = await signSession(sessionData);
-		response.cookies.set("athena-session", signedCookie, {
-			httpOnly: true,
-			path: "/",
-			maxAge: tokens.expires_in || 3600,
-			sameSite: "lax",
-			secure: process.env.NODE_ENV === "production",
-		});
+		response.cookies.set("athena-session", signedCookie, buildSessionCookieOptions(tokens.expires_in || 3600));
 
 		response.cookies.delete("oauth_state");
 		response.cookies.delete("pkce_verifier");

@@ -189,13 +189,13 @@ describe("F2 / F6: Successful callback with valid state and token exchange", () 
 		expect(res.headers.get("location")).toContain("/dashboard");
 	});
 
-	it("F6: sets athena-session cookie with httpOnly=true, sameSite=lax", async () => {
+	it("F6: sets athena-session cookie with httpOnly=true, sameSite=strict", async () => {
 		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
 		const res = await GET(req);
 		const setCookie = res.headers.get("set-cookie") ?? "";
 		expect(setCookie).toContain("athena-session");
 		expect(setCookie.toLowerCase()).toContain("httponly");
-		expect(setCookie.toLowerCase()).toContain("samesite=lax");
+		expect(setCookie.toLowerCase()).toContain("samesite=strict");
 	});
 
 	it("S10: secure flag absent in test env (NODE_ENV=test)", async () => {
@@ -206,6 +206,47 @@ describe("F2 / F6: Successful callback with valid state and token exchange", () 
 		// NODE_ENV is 'test' not 'production' during tests
 		// secure flag should NOT be present in test environment
 		expect(setCookie.toLowerCase()).not.toContain("secure");
+	});
+
+	it("S10-prod: secure flag present when NODE_ENV=production", async () => {
+		process.env.NODE_ENV = "production";
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		expect(setCookie).toContain("athena-session");
+		expect(setCookie.toLowerCase()).toContain("secure");
+	});
+
+	it("S10-maxage: maxAge is capped at 28800 when OAuth2 server returns expires_in > 28800", async () => {
+		// expires_in = 86400 (1 day) — should be capped to 28800 (8 hours)
+		const longTokens = buildTokens({ expires_in: 86400 });
+		// Re-stub fetch for this single test with a long expires_in
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue(longTokens),
+					text: vi.fn().mockResolvedValue(""),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue(buildUserinfo()),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue({
+						traits: { email: "admin@example.com", role: "admin", name: { first: "Admin", last: "User" } },
+					}),
+				}),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// max-age should be 28800, not 86400
+		expect(setCookie.toLowerCase()).toContain("max-age=28800");
+		expect(setCookie.toLowerCase()).not.toContain("max-age=86400");
 	});
 
 	it("F10: clears oauth_state and pkce_verifier cookies on success", async () => {
