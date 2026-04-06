@@ -28,10 +28,7 @@ export async function POST(request: Request) {
 		}
 
 		if (body.length > MAX_BATCH_SIZE) {
-			return NextResponse.json(
-				{ error: `Batch size exceeds maximum of ${MAX_BATCH_SIZE} entries` },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: `Batch size exceeds maximum of ${MAX_BATCH_SIZE} entries` }, { status: 400 });
 		}
 
 		// Validate each entry
@@ -51,10 +48,7 @@ export async function POST(request: Request) {
 			}
 
 			if (entry.encrypted === true && String(entry.value) === "") {
-				return NextResponse.json(
-					{ error: `Entry at index ${i}: encrypted entries must have a non-empty value` },
-					{ status: 400 },
-				);
+				return NextResponse.json({ error: `Entry at index ${i}: encrypted entries must have a non-empty value` }, { status: 400 });
 			}
 		}
 
