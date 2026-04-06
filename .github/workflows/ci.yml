@@ -33,6 +33,8 @@ jobs:
       - run: bun install
       - run: bun run lint
       - run: bun run typecheck
+      - name: Cookie audit — no unguarded athena-session writes
+        run: bun run audit:cookies
       - name: Run tests
         run: bun run test
       - run: bun run build
