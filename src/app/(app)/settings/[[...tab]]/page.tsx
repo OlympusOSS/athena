@@ -41,6 +41,7 @@ import {
 import {
 	CaptchaConfigSection,
 	GeoConfigSection,
+	MfaPolicySection,
 	OAuthConfigSection,
 	ServiceConfigSection,
 	SettingsVaultSection,
@@ -48,7 +49,7 @@ import {
 } from "../components";
 import { useServiceSettingsForm } from "../hooks";
 
-const VALID_TABS = ["general", "vault", "kratos", "hydra", "geo"] as const;
+const VALID_TABS = ["general", "vault", "kratos", "hydra", "geo", "security"] as const;
 type SettingsTab = (typeof VALID_TABS)[number];
 
 /* ── Inline helper: a single row in a settings card ── */
@@ -163,6 +164,10 @@ export default function SettingsPage() {
 					<TabsTrigger value="geo">
 						<Icon name="globe" className="h-3.5 w-3.5" />
 						Geolocation
+					</TabsTrigger>
+					<TabsTrigger value="security">
+						<Icon name="shield" className="h-3.5 w-3.5" />
+						Security
 					</TabsTrigger>
 				</TabsList>
 
@@ -281,6 +286,11 @@ export default function SettingsPage() {
 				{/* ── Geolocation ── */}
 				<TabsContent value="geo">
 					<GeoConfigSection />
+				</TabsContent>
+
+				{/* ── Security (MFA Policy) ── */}
+				<TabsContent value="security">
+					<MfaPolicySection />
 				</TabsContent>
 			</Tabs>
 
