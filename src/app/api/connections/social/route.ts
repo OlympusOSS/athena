@@ -86,7 +86,7 @@ async function readAllConnections(): Promise<
 	for (const provider of allProviderSlugs) {
 		if (!(ALLOWED_PROVIDERS as readonly string[]).includes(provider)) continue;
 		const fields = byProvider[provider];
-		if (!fields || !fields.client_id) continue; // Skip unconfigured providers
+		if (!fields?.client_id) continue; // Skip unconfigured providers
 
 		const typedProvider = provider as SocialProvider;
 		connections.push({
