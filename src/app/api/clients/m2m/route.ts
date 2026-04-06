@@ -7,7 +7,7 @@
  *
  * Security conditions addressed (athena#50 Security Review):
  *   SC1: Scope allowlist — all requested scopes are validated against M2M_PERMITTED_SCOPES
- *        before the Hydra call is made; invalid scopes return 422 without calling Hydra
+ *        before the Hydra call is made; invalid scopes return 400 without calling Hydra
  *   SC2: client_secret is NEVER logged — only returned in the 201 response body once
  *   SC4: Audit events emitted via process.stdout.write with type:"audit" discriminator
  *   SC5: Auth enforced by middleware (admin session + admin role)
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 				permitted_scopes: [...M2M_PERMITTED_SCOPES],
 				suggestion: "Select only scopes from the permitted_scopes list.",
 			},
-			{ status: 422 },
+			{ status: 400 },
 		);
 	}
 

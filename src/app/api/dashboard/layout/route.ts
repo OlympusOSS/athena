@@ -24,9 +24,12 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 	}
 
+	const timeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);
+
 	try {
 		const res = await fetch(`${iamKratosAdminUrl}/admin/identities/${identityId}`, {
 			headers: { Accept: "application/json" },
+			signal: AbortSignal.timeout(timeoutMs),
 		});
 
 		if (!res.ok) {
@@ -39,6 +42,10 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json({ layout });
 	} catch (err) {
+		if (err instanceof Error && err.name === "TimeoutError") {
+			console.error("Timeout fetching dashboard layout from IAM Kratos");
+			return NextResponse.json({ error: "Gateway Timeout", message: "IAM Kratos did not respond in time" }, { status: 504 });
+		}
 		console.error("Error fetching dashboard layout:", err);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
@@ -57,6 +64,8 @@ export async function PUT(request: NextRequest) {
 		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 	}
 
+	const timeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);
+
 	try {
 		const body = await request.json();
 		const newLayout = body.layout;
@@ -68,6 +77,7 @@ export async function PUT(request: NextRequest) {
 		// Fetch current identity to get existing metadata_public
 		const identityRes = await fetch(`${iamKratosAdminUrl}/admin/identities/${identityId}`, {
 			headers: { Accept: "application/json" },
+			signal: AbortSignal.timeout(timeoutMs),
 		});
 
 		if (!identityRes.ok) {
@@ -98,6 +108,7 @@ export async function PUT(request: NextRequest) {
 				metadata_admin: identity.metadata_admin,
 				state: identity.state,
 			}),
+			signal: AbortSignal.timeout(timeoutMs),
 		});
 
 		if (!updateRes.ok) {
@@ -108,6 +119,10 @@ export async function PUT(request: NextRequest) {
 
 		return NextResponse.json({ success: true });
 	} catch (err) {
+		if (err instanceof Error && err.name === "TimeoutError") {
+			console.error("Timeout saving dashboard layout to IAM Kratos");
+			return NextResponse.json({ error: "Gateway Timeout", message: "IAM Kratos did not respond in time" }, { status: 504 });
+		}
 		console.error("Error saving dashboard layout:", err);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
