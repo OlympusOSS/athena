@@ -63,7 +63,31 @@ function buildCsp(nonce: string): string {
  * The public unauthenticated endpoint /api/connections/public is registered in
  * isPublicRoute() below — NOT here.
  */
-const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security", "/api/connections/social", "/api/mfa"];
+const ADMIN_PREFIXES = [
+	"/api/settings",
+	"/api/encrypt",
+	"/api/config",
+	"/api/security",
+	"/api/connections/social",
+	"/api/mfa",
+	/**
+	 * /api/clients — M2M OAuth2 client management routes (athena#50 / athena#77).
+	 *
+	 * This prefix covers all four M2M routes:
+	 *   GET    /api/clients/m2m
+	 *   POST   /api/clients/m2m
+	 *   POST   /api/clients/m2m/:id/rotate-secret
+	 *   DELETE /api/clients/m2m/:id
+	 *
+	 * The isAdminRoute() check uses startsWith(prefix + "/") which means
+	 * "/api/clients" covers "/api/clients/m2m", "/api/clients/m2m/abc/rotate-secret", etc.
+	 *
+	 * athena#77: This prefix is a BLOCKING prerequisite for athena#50 (M2M routes must
+	 * not be reachable without admin role verification). Shipping athena#50 without this
+	 * line would leave all M2M endpoints unprotected.
+	 */
+	"/api/clients",
+];
 
 function isAdminRoute(pathname: string): boolean {
 	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -303,6 +327,8 @@ export const config = {
 		"/api/iam-kratos-admin/:path*",
 		"/api/hydra/:path*",
 		"/api/hydra-admin/:path*",
+		// M2M client management routes (athena#50 / athena#77)
+		"/api/clients/:path*",
 		"/api/((?!auth|health).*)",
 	],
 };

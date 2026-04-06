@@ -96,6 +96,27 @@ const hydraNavItems: NavItem[] = [
 	},
 ];
 
+/**
+ * Applications section — M2M OAuth2 client management (athena#50).
+ * Displayed below the Hydra section when Hydra is enabled.
+ *
+ * iconColor follows the pre-existing sidebar pattern (see hydraNavItems).
+ * Canvas NavLink primitives are used — no Tailwind utility classes beyond
+ * the iconColor field which is consistent with all other nav items in this file.
+ */
+const applicationsNavSection: NavSection = {
+	label: "Applications",
+	items: [
+		{
+			title: "Machine-to-Machine",
+			path: "/applications/m2m",
+			icon: "server",
+			iconColor: "text-violet-500",
+			requiredRole: UserRole.ADMIN,
+		},
+	],
+};
+
 /* ── Nav item with colored icons ── */
 function NavLink({ item, active, collapsed, onNavigate }: { item: NavItem; active: boolean; collapsed: boolean; onNavigate?: () => void }) {
 	return (
@@ -151,6 +172,7 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 		}))
 		.filter((section) => section.items.length > 0);
 	const filteredHydraNavItems = hydraEnabled ? hydraNavItems.filter((item) => hasRequiredRole(item.requiredRole)) : [];
+	const filteredApplicationsItems = hydraEnabled ? applicationsNavSection.items.filter((item) => hasRequiredRole(item.requiredRole)) : [];
 
 	return (
 		<TooltipProvider delayDuration={0}>
@@ -249,6 +271,24 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 							<>
 								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
 								{filteredHydraNavItems.map((item) => (
+									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
+								))}
+							</>
+						)}
+
+						{/* Applications section — M2M clients (athena#50) */}
+						{filteredApplicationsItems.length > 0 && (
+							<>
+								<div className="mx-1 my-2" style={{ borderBottom: "1px solid hsl(var(--sidebar-border))" }} />
+								{expanded && (
+									<span
+										className="block px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest"
+										style={{ color: "hsl(var(--sidebar-fg))", opacity: 0.5 }}
+									>
+										{applicationsNavSection.label}
+									</span>
+								)}
+								{filteredApplicationsItems.map((item) => (
 									<NavLink key={item.path} item={item} active={isActive(item.path)} collapsed={!expanded} onNavigate={onNavigate} />
 								))}
 							</>
