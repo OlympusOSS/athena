@@ -244,7 +244,7 @@ The `athena-session` cookie is protected by four security attributes that are no
 | `Secure` | true (production), false (localhost dev) | Cookie is only sent over HTTPS in production. Prevents interception on the wire. The flag is false in local development to allow HTTP on localhost. |
 | `MaxAge` | `min(expires_in, 28800)` | Admin sessions are capped at 8 hours regardless of what the OAuth2 server returns in `expires_in`. Prevents multi-day admin sessions. |
 
-Cookie attributes are centralized in `src/lib/cookie-options.ts`. All cookie write and delete operations in the codebase import from this single source of truth — future changes require updating only one file.
+Cookie attributes are centralized in `src/lib/cookie-options.ts`. All cookie write and delete operations in the codebase import from this single source of truth — future changes require updating only one file. A CI step enforces this requirement: any `cookies.set("athena-session", ...)` call with an inline options object outside this helper fails the build. See [Athena Testing Guide — Cookie Audit](testing.md#cookie-audit--ci-gate) for the full requirement for new routes.
 
 Do not disable or weaken these attributes. Do not attempt to read the session cookie from `document.cookie` — `HttpOnly` means it is not accessible from JavaScript, and this is intentional.
 
@@ -309,7 +309,8 @@ If the `oauth_state` cookie is missing or does not match the `state` query param
 - [athena#60](https://github.com/OlympusOSS/athena/issues/60) — Standardized 401/403 error response shape (`not_authenticated` / `forbidden`)
 - [athena#61](https://github.com/OlympusOSS/athena/issues/61) — This document
 - [athena#63](https://github.com/OlympusOSS/athena/issues/63) — PKCE + public client OAuth2 integration guide
+- [athena#66](https://github.com/OlympusOSS/athena/issues/66) — CI enforcement: `audit:cookies` step for `cookie-options.ts` usage
 
 ---
 
-*Last updated: 2026-04-01 (Technical Writer — athena#57 cookie security attributes, athena#60 standardized error shapes)*
+*Last updated: 2026-04-06 (Technical Writer — athena#66 CI cookie audit gate, cookie-options.ts enforcement link)*

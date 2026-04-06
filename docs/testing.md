@@ -148,11 +148,43 @@ vi.spyOn(global, "fetch").mockResolvedValueOnce(
 
 ### Mocking environment for cookie tests
 
+Use `vi.stubEnv` for `NODE_ENV` mocking — it is safe, scoped per test, and does not leak across tests in the same run:
+
 ```typescript
-const originalEnv = process.env.NODE_ENV
-beforeEach(() => { process.env.NODE_ENV = "production" })
-afterEach(() => { process.env.NODE_ENV = originalEnv })
+import { vi, beforeEach, afterEach } from "vitest"
+
+beforeEach(() => { vi.stubEnv("NODE_ENV", "production") })
+afterEach(() => { vi.unstubAllEnvs() })
 ```
+
+Do NOT use direct assignment (`process.env.NODE_ENV = "production"`) without a paired restore. Direct assignment without `afterEach` cleanup leaks the env value to subsequent tests in the same run and can produce false positives.
+
+When asserting the `Secure` attribute, assert its presence or absence exactly — do not use `toBeTruthy()` on the `Set-Cookie` header string:
+
+```typescript
+// Assert Secure is present in production
+expect(setCookieHeader).toContain("Secure")
+
+// Assert Secure is absent in development
+expect(setCookieHeader).not.toContain("Secure")
+```
+
+When asserting cookie deletion behavior, use `maxAge === 0` (strict equality), not `maxAge >= 0`. This prevents a future "minimum maxAge" guard from silently breaking cookie deletion while the test continues to pass.
+
+---
+
+## Cookie Audit — CI Gate
+
+A CI step named `Cookie audit — no unguarded athena-session writes` runs `bun run audit:cookies` on every push and pull request. This step fails if any `cookies.set("athena-session", ...)` call with an inline options object exists outside `src/lib/cookie-options.ts`.
+
+**If you add a new route that writes the `athena-session` cookie:**
+
+1. Import from `src/lib/cookie-options.ts` — use `buildSessionCookieOptions(maxAge)` for set and `buildSessionClearOptions()` for delete
+2. Do not pass an inline options object to `cookies.set` — the audit script will fail the build
+3. Assert `Secure` in production mode in the route's test (see [Mocking environment for cookie tests](#mocking-environment-for-cookie-tests))
+4. Run `bun run audit:cookies` locally before opening a PR
+
+**Known limitation**: The audit grep pattern (`cookies\.set.*athena-session.*{`) targets single-line inline option objects. A multiline `cookies.set` call formatted across multiple lines will not be caught by the pattern. If you write a multiline call, CI will not catch it — follow the import rule regardless.
 
 ---
 
@@ -175,7 +207,9 @@ Settings API tests must assert 401 is returned for unauthenticated requests. Ass
 - [athena#39](https://github.com/OlympusOSS/athena/issues/39) — OAuth2 auth flow tests (Done)
 - [athena#40](https://github.com/OlympusOSS/athena/issues/40) — Settings API tests (Done)
 - [athena#42](https://github.com/OlympusOSS/athena/issues/42) — Dashboard layout store tests (Done)
+- [athena#57](https://github.com/OlympusOSS/athena/issues/57) — Session cookie `Secure` flag fix; `buildSessionCookieOptions` helper
+- [athena#66](https://github.com/OlympusOSS/athena/issues/66) — Cookie audit CI step; `vi.stubEnv` NODE_ENV mocking requirement
 
 ---
 
-*Last updated: 2026-04-01 (Technical Writer — athena#35 test framework, athena#42 layout store tests)*
+*Last updated: 2026-04-06 (Technical Writer — athena#57 vi.stubEnv pattern, athena#66 cookie audit CI gate)*

@@ -108,10 +108,40 @@ Writes multiple settings atomically. All keys commit or none do (Postgres transa
 
 | Error Code | Condition | HTTP Status |
 |------------|-----------|-------------|
-| `mfa_no_methods_enabled` | `mfa.required=true` and all `mfa.methods.*=false` | `400` |
+| `mfa_no_methods_enabled` | `mfa.required=true` and all `mfa.methods.*=false` in the resulting state | `400` |
 | `invalid_grace_period` | `mfa.grace_period_days` is not an integer in `[0, 365]` | `400` |
 
+**`mfa_no_methods_enabled` response body:**
+
+```json
+{
+  "code": "mfa_no_methods_enabled",
+  "error": "MFA cannot be required when no MFA methods are enabled."
+}
+```
+
 The `mfa_no_methods_enabled` check is both client-side (disables the Save button) and server-side (returns `400` before any write is attempted). This prevents a complete platform lockout: if MFA is required but no method is enabled, users have no enrollment path.
+
+**Resulting-state evaluation (Guard C):** The server-side guard evaluates the *resulting state* after merging the payload with persisted values — not just the keys present in the payload. This means a batch that sends only `mfa.methods.totp=false` and `mfa.methods.webauthn=false` (without `mfa.required`) will trigger `mfa_no_methods_enabled` if `mfa.require_mfa` is already `true` in the database. The guard reads persisted values for any `mfa.*` keys absent from the payload and merges before validating the invariant.
+
+Example: guard triggers on a partial payload when MFA is already required:
+
+```bash
+# mfa.require_mfa is currently "true" in the DB
+curl -X POST \
+  -H "Cookie: athena-session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "settings": [
+      { "key": "mfa.methods.totp", "value": "false", "category": "mfa" },
+      { "key": "mfa.methods.webauthn", "value": "false", "category": "mfa" }
+    ]
+  }' \
+  http://localhost:3001/api/settings/batch
+# Returns 400 mfa_no_methods_enabled — mfa.require_mfa was read from DB and merged
+```
+
+**Zero-grace-period modal is UI-only:** When `mfa.require_mfa=true` and `mfa.grace_period_days=0`, the admin UI shows a confirmation modal before sending the batch request. This modal is a client-side safety prompt only — it is not enforced at the API level. Calling `POST /api/settings/batch` directly with this combination is accepted without confirmation. The server-side invariant enforced by this endpoint is Guard C (`mfa_no_methods_enabled`), not the zero-grace-period condition. See [Security Considerations — Mass lockout prevention](#mass-lockout-prevention) for the guard design rationale.
 
 ### MFA Stats Endpoint
 
@@ -312,7 +342,13 @@ Every successful `POST /api/settings/batch` emits a structured audit log entry: 
 ## Related
 
 - [athena#48](https://github.com/OlympusOSS/athena/issues/48) — feature story
+- [athena#67](https://github.com/OlympusOSS/athena/issues/67) — Guard C: server-side invariant preventing mfa.required=true with no methods
+- [athena#68](https://github.com/OlympusOSS/athena/issues/68) — Zero-grace-period confirmation modal (SR-MFA-2)
 - [platform#14](https://github.com/OlympusOSS/platform/issues/14) — MFA policy setting keys and stats endpoint design
 - [platform#13](https://github.com/OlympusOSS/platform/issues/13) — TOTP implementation
 - `docs/state/ADR-002-mfa-policy-enforcement-layer.md` — V1 browser-only enforcement decision
 - `docs/state/architecture-brief-mfa-policy-settings-panel.md` — full architecture brief
+
+---
+
+*Last updated: 2026-04-06 (Technical Writer — athena#67 Guard C resulting-state evaluation, athena#68 zero-grace-period modal UI-only note)*
