@@ -24,7 +24,7 @@ import { decryptApiKey } from "@/lib/crypto-edge";
  * The public unauthenticated endpoint /api/connections/public is registered in
  * isPublicRoute() below — NOT here.
  */
-const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security", "/api/connections/social"];
+const ADMIN_PREFIXES = ["/api/settings", "/api/encrypt", "/api/config", "/api/security", "/api/connections/social", "/api/mfa"];
 
 function isAdminRoute(pathname: string): boolean {
 	return ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
