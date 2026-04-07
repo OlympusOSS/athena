@@ -125,6 +125,32 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			const map: Record<string, string> = {};
 			for (const s of data.settings || []) map[s.key] = s.value;
 
+			// Transparent self-healing migration: mfa.require_mfa → mfa.required
+			// If the new key is absent but the old stale key is present, migrate it.
+			// This runs once on the first page load after deployment in any environment
+			// that previously stored settings under the old key name.
+			if (!("mfa.required" in map) && "mfa.require_mfa" in map) {
+				const oldValue = map["mfa.require_mfa"];
+				try {
+					// Write the canonical key with the value from the stale key
+					await fetch("/api/settings", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ key: "mfa.required", value: oldValue, encrypted: false, category: "mfa" }),
+					});
+					// Delete the stale key
+					await fetch("/api/settings/mfa.require_mfa", { method: "DELETE" });
+					// Update the local map so the rest of the parse logic sees the migrated value
+					map["mfa.required"] = oldValue;
+					delete map["mfa.require_mfa"];
+					console.info("Migrated MFA setting key: mfa.require_mfa → mfa.required");
+				} catch {
+					// Migration failure is non-fatal — log and continue with the old value
+					console.warn("Failed to migrate MFA setting key mfa.require_mfa → mfa.required; falling back to stale key value");
+					map["mfa.required"] = oldValue;
+				}
+			}
+
 			const rawMethods = map["mfa.methods"] || "totp";
 			const parsedMethods = rawMethods
 				.split(",")
