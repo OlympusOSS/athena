@@ -156,10 +156,13 @@ export default function SettingsPage() {
 
 	const handleTabChange = useCallback(
 		(value: string) => {
-			// If we are navigating away from "security" and MFA has unsaved changes, block
+			// If we are navigating away from "security" and MFA has unsaved changes, block.
+			// Use setTimeout to defer the dialog open until after Radix UI finishes its own
+			// synchronous internal state update for the tab change event — without the defer,
+			// Radix may close the dialog before React commits the showMfaNavGuard=true render.
 			if (activeTab === "security" && value !== "security" && mfaDirtyRef.current) {
 				pendingTabRef.current = value;
-				setShowMfaNavGuard(true);
+				setTimeout(() => setShowMfaNavGuard(true), 0);
 				return;
 			}
 			router.push(`/settings/${value}`, { scroll: false });

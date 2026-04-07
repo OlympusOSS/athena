@@ -135,7 +135,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			const gracePeriod = Number.parseInt(map["mfa.grace_period_days"] || "0", 10);
 
 			const fetchedSettings: MfaPolicySettings = {
-				requireMfa: map["mfa.require_mfa"] === "true",
+				requireMfa: map["mfa.required"] === "true",
 				allowSelfEnroll: map["mfa.allow_self_enroll"] !== "false",
 				methods: parsedMethods.length > 0 ? parsedMethods : ["totp"],
 				gracePeriodDays: Number.isNaN(gracePeriod) || gracePeriod < 0 ? 0 : gracePeriod,
@@ -185,7 +185,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 
 		try {
 			const entries = [
-				{ key: "mfa.require_mfa", value: String(settings.requireMfa), encrypted: false, category: "mfa" },
+				{ key: "mfa.required", value: String(settings.requireMfa), encrypted: false, category: "mfa" },
 				{ key: "mfa.allow_self_enroll", value: String(settings.allowSelfEnroll), encrypted: false, category: "mfa" },
 				{ key: "mfa.methods", value: settings.methods.join(","), encrypted: false, category: "mfa" },
 				{ key: "mfa.grace_period_days", value: String(settings.gracePeriodDays), encrypted: false, category: "mfa" },
