@@ -125,6 +125,64 @@ curl -b "athena-session=<cookie-value>" \
 
 ---
 
+## Session Check Lifecycle (AuthProvider)
+
+When a user opens Athena in a browser, the `AuthProvider` component runs a session check before rendering any content. This produces a `401` in the browser console on every unauthenticated page load. This is expected behavior, not an error.
+
+### Flow
+
+```
+Browser loads Athena (any route)
+        │
+        ▼
+AuthProvider mounts
+        │
+        ▼
+fetch("GET /api/auth/session")
+        │
+        ├─ 200 + session data → isAuthenticated=true → render dashboard
+        │
+        └─ 401 { "error": "Not authenticated" }
+                │
+                ▼
+           isAuthenticated=false
+                │
+                ▼
+           window.location.href = "/api/auth/login"
+                │
+                ▼
+           OAuth2 flow starts (Hydra → Hera login form)
+```
+
+### Why the Console Shows a 401
+
+The `AuthProvider` (`src/providers/AuthProvider.tsx`) calls `GET /api/auth/session` on mount via the `useAuth` Zustand store. When no `athena-session` cookie exists (first visit, expired session, after logout), the endpoint returns `401`. The `AuthProvider` then redirects the browser to `/api/auth/login` to start the OAuth2 flow.
+
+This `401` appears as a red error line in the browser console:
+
+```
+GET http://localhost:3001/api/auth/session 401 (Unauthorized)
+```
+
+**This is expected.** The 401 is the mechanism by which Athena detects an unauthenticated user. It is not a bug. After login completes, the `athena-session` cookie is set and subsequent calls to `/api/auth/session` return `200`.
+
+### After Successful Login
+
+```
+fetch("GET /api/auth/session")
+  → 200 { "user": { "kratosIdentityId": "...", "email": "admin@demo.user", "role": "admin" } }
+  → AuthProvider sets isAuthenticated=true
+  → Dashboard renders
+```
+
+The session check runs once on mount. The `hasCheckedSession` ref prevents duplicate calls. No polling occurs — if the session expires mid-use, API calls return `401` and the next page navigation triggers the auth redirect.
+
+### Dual-Domain Session Isolation
+
+CIAM Athena (`:3001`) and IAM Athena (`:4001`) each have their own `athena-session` cookie scoped to their respective origin. Logging into one does not grant access to the other. Each domain runs its own OAuth2 flow against its respective Hydra instance.
+
+---
+
 ## No Server-to-Server Auth Path
 
 Athena has no server-to-server authentication path. There is no API key, bearer token, or `client_credentials` flow for Athena.
@@ -313,4 +371,4 @@ If the `oauth_state` cookie is missing or does not match the `state` query param
 
 ---
 
-*Last updated: 2026-04-06 (Technical Writer — athena#66 CI cookie audit gate, cookie-options.ts enforcement link)*
+*Last updated: 2026-04-06 (Technical Writer — added Session Check Lifecycle section, athena#66 CI cookie audit gate)*
