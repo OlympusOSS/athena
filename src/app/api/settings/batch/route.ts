@@ -14,7 +14,7 @@ const MAX_BATCH_SIZE = 20;
  *
  * Triggered only when the batch payload contains at least one `mfa.` prefixed key.
  * Validates the *resulting state* (payload merged over persisted values) to prevent
- * mfa.require_mfa=true with no methods enabled.
+ * mfa.required=true with no methods enabled.
  *
  * Returns a 400 NextResponse if the invariant is violated, or null if the guard passes.
  * When a non-null response is returned, NO settings have been written.
@@ -25,7 +25,7 @@ async function checkMfaInvariant(payloadMap: Map<string, string>): Promise<NextR
 	if (!hasMfaKeys) return null;
 
 	// Step 1: Get submitted values (payload takes precedence over DB)
-	const submittedRequire = payloadMap.get("mfa.require_mfa");
+	const submittedRequire = payloadMap.get("mfa.required");
 	const submittedMethods = payloadMap.get("mfa.methods");
 
 	// Step 2: For each key absent from payload, read persisted value from DB
@@ -33,7 +33,7 @@ async function checkMfaInvariant(payloadMap: Map<string, string>): Promise<NextR
 	if (submittedRequire !== undefined) {
 		requireMfa = submittedRequire;
 	} else {
-		requireMfa = await getSettingOrDefault("mfa.require_mfa", "false");
+		requireMfa = await getSettingOrDefault("mfa.required", "false");
 	}
 
 	let methodsRaw: string | null;

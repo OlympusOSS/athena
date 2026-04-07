@@ -63,7 +63,7 @@ beforeEach(() => {
 describe("POST /api/settings/batch — valid requests", () => {
 	it("succeeds with a single valid entry", async () => {
 		mockBatchSetSettings.mockResolvedValue(undefined);
-		const req = buildBatchRequest([{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" }]);
+		const req = buildBatchRequest([{ key: "mfa.required", value: "true", encrypted: false, category: "mfa" }]);
 		const res = await POST(req);
 		expect(res.status).toBe(200);
 		const body = await res.json();
@@ -71,7 +71,7 @@ describe("POST /api/settings/batch — valid requests", () => {
 		expect(body.count).toBe(1);
 		expect(mockBatchSetSettings).toHaveBeenCalledTimes(1);
 		expect(mockBatchSetSettings).toHaveBeenCalledWith(
-			[{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" }],
+			[{ key: "mfa.required", value: "true", encrypted: false, category: "mfa" }],
 			expect.any(String),
 		);
 	});
@@ -79,7 +79,7 @@ describe("POST /api/settings/batch — valid requests", () => {
 	it("succeeds with multiple valid entries (typical MFA policy batch)", async () => {
 		mockBatchSetSettings.mockResolvedValue(undefined);
 		const entries = [
-			{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" },
+			{ key: "mfa.required", value: "true", encrypted: false, category: "mfa" },
 			{ key: "mfa.allow_self_enroll", value: "false", encrypted: false, category: "mfa" },
 			{ key: "mfa.methods", value: "totp,webauthn", encrypted: false, category: "mfa" },
 			{ key: "mfa.grace_period_days", value: "7", encrypted: false, category: "mfa" },
@@ -302,7 +302,7 @@ describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () =>
 	it("Test A — direct payload: require=true + empty methods in same batch → 400, no DB write", async () => {
 		// Both keys present in the batch — no DB read needed; guard evaluates payload directly
 		const req = buildBatchRequest([
-			{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" },
+			{ key: "mfa.required", value: "true", encrypted: false, category: "mfa" },
 			{ key: "mfa.methods", value: "", encrypted: false, category: "mfa" },
 		]);
 		const res = await POST(req);
@@ -316,7 +316,7 @@ describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () =>
 
 	it("Test A — direct payload: require=true + whitespace-only methods → 400, no DB write", async () => {
 		const req = buildBatchRequest([
-			{ key: "mfa.require_mfa", value: "true", encrypted: false, category: "mfa" },
+			{ key: "mfa.required", value: "true", encrypted: false, category: "mfa" },
 			{ key: "mfa.methods", value: " , ", encrypted: false, category: "mfa" },
 		]);
 		const res = await POST(req);
@@ -327,10 +327,10 @@ describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () =>
 	});
 
 	it("Test B — stateful: persisted require=true, batch disables all methods → 400, no DB write", async () => {
-		// Simulates: mfa.require_mfa=true was saved previously; new batch only changes methods
-		// Mock: getSetting for mfa.require_mfa returns 'true' (persisted); mfa.methods not in payload
+		// Simulates: mfa.required=true was saved previously; new batch only changes methods
+		// Mock: getSetting for mfa.required returns 'true' (persisted); mfa.methods not in payload
 		mockGetSettingOrDefault.mockImplementation((key: string, fallback: string) => {
-			if (key === "mfa.require_mfa") return Promise.resolve("true");
+			if (key === "mfa.required") return Promise.resolve("true");
 			if (key === "mfa.methods") return Promise.resolve(""); // already empty persisted
 			return Promise.resolve(fallback);
 		});
@@ -347,7 +347,7 @@ describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () =>
 	it("Test B — stateful: persisted require=true, batch enables a method → 200, DB write occurs", async () => {
 		// Batch enables totp while require_mfa is persisted as true — guard should pass
 		mockGetSettingOrDefault.mockImplementation((key: string, fallback: string) => {
-			if (key === "mfa.require_mfa") return Promise.resolve("true");
+			if (key === "mfa.required") return Promise.resolve("true");
 			return Promise.resolve(fallback);
 		});
 		mockBatchSetSettings.mockResolvedValue(undefined);
@@ -370,7 +370,7 @@ describe("POST /api/settings/batch — Guard C (SR-MFA-1): MFA invariant", () =>
 	it("require=false with no methods — guard passes (invariant only applies when require=true)", async () => {
 		mockBatchSetSettings.mockResolvedValue(undefined);
 		const req = buildBatchRequest([
-			{ key: "mfa.require_mfa", value: "false", encrypted: false, category: "mfa" },
+			{ key: "mfa.required", value: "false", encrypted: false, category: "mfa" },
 			{ key: "mfa.methods", value: "", encrypted: false, category: "mfa" },
 		]);
 		const res = await POST(req);
