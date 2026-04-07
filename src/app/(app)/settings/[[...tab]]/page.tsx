@@ -31,7 +31,7 @@ import {
 	useToast,
 } from "@olympusoss/canvas";
 import { useParams, useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ProtectedPage } from "@/components/layout";
 import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import {
@@ -107,6 +107,27 @@ export default function SettingsPage() {
 	// Guard C: show a nav-guard dialog before leaving the security tab if MFA section is dirty
 	const [showMfaNavGuard, setShowMfaNavGuard] = useState(false);
 	const pendingTabRef = useRef<string | null>(null);
+	// Stores the URL to restore if the user chooses "Stay on page" after a popstate guard
+	const blockedUrlRef = useRef<string | null>(null);
+
+	// Guard C: intercept browser back/forward (popstate) when on the security tab with dirty state.
+	// When popstate fires, the URL has already changed — we push the original URL back to undo
+	// the navigation and show the confirmation dialog. If the user confirms, we push the target URL.
+	useEffect(() => {
+		const handlePopState = () => {
+			if (activeTab === "security" && mfaDirtyRef.current) {
+				// The browser already moved — push current settings/security URL back so the
+				// user appears to stay on the page while the dialog is shown.
+				const restoredUrl = `/settings/security`;
+				blockedUrlRef.current = window.location.pathname;
+				window.history.pushState(null, "", restoredUrl);
+				pendingTabRef.current = null; // popstate target is a full URL nav, not a tab
+				setShowMfaNavGuard(true);
+			}
+		};
+		window.addEventListener("popstate", handlePopState);
+		return () => window.removeEventListener("popstate", handlePopState);
+	}, [activeTab]);
 
 	const handleTabChange = useCallback(
 		(value: string) => {
@@ -337,6 +358,7 @@ export default function SettingsPage() {
 					if (!open) {
 						setShowMfaNavGuard(false);
 						pendingTabRef.current = null;
+						blockedUrlRef.current = null;
 					}
 				}}
 			>
@@ -359,6 +381,7 @@ export default function SettingsPage() {
 							onClick={() => {
 								setShowMfaNavGuard(false);
 								pendingTabRef.current = null;
+								blockedUrlRef.current = null;
 							}}
 						>
 							Stay on page
@@ -367,13 +390,22 @@ export default function SettingsPage() {
 							variant="destructive"
 							size="sm"
 							onClick={() => {
-								const target = pendingTabRef.current;
+								const pendingTab = pendingTabRef.current;
+								const blockedUrl = blockedUrlRef.current;
 								setShowMfaNavGuard(false);
 								pendingTabRef.current = null;
+								blockedUrlRef.current = null;
 								// Reset dirty tracking — the MFA section will re-fetch on next mount
 								setMfaSectionDirty(false);
 								mfaDirtyRef.current = false;
-								if (target) router.push(`/settings/${target}`, { scroll: false });
+								if (pendingTab) {
+									// Tab-click navigation — push to the target settings tab
+									router.push(`/settings/${pendingTab}`, { scroll: false });
+								} else if (blockedUrl) {
+									// Popstate navigation (browser back/forward) — navigate to the
+									// URL the browser tried to go to before we blocked it
+									router.push(blockedUrl, { scroll: false });
+								}
 							}}
 						>
 							Discard changes

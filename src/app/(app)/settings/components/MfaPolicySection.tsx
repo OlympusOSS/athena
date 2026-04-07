@@ -33,6 +33,7 @@ interface MfaPolicySettings {
 }
 
 interface MfaStats {
+	available: boolean;
 	enrolled: number;
 	total: number;
 	rate: number;
@@ -281,7 +282,8 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 		);
 	}
 
-	const enrolledPercent = stats && stats.total > 0 ? Math.round((stats.enrolled / stats.total) * 100) : 0;
+	const statsAvailable = stats !== null && stats.available !== false;
+	const enrolledPercent = statsAvailable && stats && stats.total > 0 ? Math.round((stats.enrolled / stats.total) * 100) : 0;
 
 	return (
 		<div className="space-y-4">
@@ -318,8 +320,10 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 					</div>
 				</CardHeader>
 				<CardContent className="pt-0">
-					{statsError ? (
-						<p className="text-xs text-muted-foreground py-2">Stats unavailable. The enrollment data could not be loaded.</p>
+					{statsError || (stats !== null && stats.available === false) ? (
+						<div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+							Enrollment statistics are not available — exercise caution before enabling MFA for all users.
+						</div>
 					) : stats === null ? (
 						<div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
 							<Icon name="loading" className="h-3.5 w-3.5 animate-spin" />
@@ -336,14 +340,14 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 							<div className="rounded-md border border-border divide-y divide-border text-xs">
 								<div className="flex items-center justify-between px-3 py-2">
 									<span className="text-muted-foreground">TOTP (Authenticator App)</span>
-									<span className="font-medium tabular-nums">—</span>
+									<span className="font-medium tabular-nums">{stats.enrolled}</span>
 								</div>
 								<div className="flex items-center justify-between px-3 py-2">
 									<span className="text-muted-foreground">WebAuthn / Passkey</span>
 									<span className="font-medium tabular-nums">—</span>
 								</div>
 							</div>
-							<p className="text-[11px] text-muted-foreground">Per-method breakdown is not yet available. Coming in a future release.</p>
+							<p className="text-[11px] text-muted-foreground">WebAuthn / Passkey breakdown is not yet available. Coming in a future release.</p>
 						</div>
 					)}
 				</CardContent>
@@ -514,14 +518,14 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 								enroll on their next login. They will not be able to access their account until enrollment is complete.
 							</p>
 						</div>
-						{stats !== null && !statsError ? (
+						{statsAvailable && stats !== null ? (
 							<p className="text-xs text-muted-foreground">
 								Currently {stats.enrolled} of {stats.total} users have MFA enrolled ({enrolledPercent}%). Users without MFA will be required to enroll
 								immediately.
 							</p>
 						) : (
 							<p className="text-xs text-muted-foreground italic">
-								Enrollment statistics are not available. Confirm only if you are certain of impact.
+								Enrollment statistics are not available — exercise caution. Confirm only if you are certain of the impact on your users.
 							</p>
 						)}
 						<p className="text-xs text-muted-foreground">Cancel will discard all unsaved changes.</p>
