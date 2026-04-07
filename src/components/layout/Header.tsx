@@ -18,9 +18,10 @@ import {
 	TooltipTrigger,
 } from "@olympusoss/canvas";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
+import { navGuard } from "@/lib/navGuard";
 import { useTheme } from "@/providers/ThemeProvider";
 
 export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void }) {
@@ -28,6 +29,7 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 	const user = useUser();
 	const logout = useLogout();
 	const pathname = usePathname();
+	const router = useRouter();
 	const [searchValue, setSearchValue] = useState("");
 
 	/* Derive page title from pathname */
@@ -70,13 +72,22 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 					<Separator orientation="vertical" className="mx-1 h-6" />
 
 					<TooltipProvider delayDuration={0}>
-						{/* Settings */}
+						{/* Settings — guarded: if the MFA section has unsaved changes, show the
+						    nav-guard dialog instead of navigating away silently. */}
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<Button variant="ghost" size="icon" asChild>
-									<Link href="/settings">
-										<Icon name="settings" />
-									</Link>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										if (navGuard.isDirty()) {
+											navGuard.requestGuard("/settings");
+										} else {
+											router.push("/settings");
+										}
+									}}
+								>
+									<Icon name="settings" />
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent>Settings</TooltipContent>

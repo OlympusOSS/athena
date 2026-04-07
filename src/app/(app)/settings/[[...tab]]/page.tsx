@@ -45,6 +45,7 @@ import {
 	useSetHydraEndpoints,
 	useSetKratosEndpoints,
 } from "@/features/settings/hooks/useSettings";
+import { navGuard } from "@/lib/navGuard";
 import {
 	CaptchaConfigSection,
 	GeoConfigSection,
@@ -99,16 +100,40 @@ export default function SettingsPage() {
 	// Guard C: track whether the MFA section has unsaved changes so tab navigation can be intercepted
 	const [_mfaSectionDirty, setMfaSectionDirty] = useState(false);
 	const mfaDirtyRef = useRef(false);
-	const handleMfaDirtyChange = useCallback((isDirty: boolean) => {
-		mfaDirtyRef.current = isDirty;
-		setMfaSectionDirty(isDirty);
-	}, []);
-
 	// Guard C: show a nav-guard dialog before leaving the security tab if MFA section is dirty
 	const [showMfaNavGuard, setShowMfaNavGuard] = useState(false);
 	const pendingTabRef = useRef<string | null>(null);
 	// Stores the URL to restore if the user chooses "Stay on page" after a popstate guard
 	const blockedUrlRef = useRef<string | null>(null);
+	// showMfaNavGuard setter ref — used by navGuard callback so the Header can open the dialog
+	const showMfaNavGuardSetterRef = useRef<((v: boolean) => void) | null>(null);
+	// Wire the setter ref on every render so the navGuard callback always has the latest setter
+	showMfaNavGuardSetterRef.current = setShowMfaNavGuard;
+
+	const handleMfaDirtyChange = useCallback((isDirty: boolean) => {
+		mfaDirtyRef.current = isDirty;
+		setMfaSectionDirty(isDirty);
+		// Sync the module-level nav guard so the Header can intercept pushState navigation.
+		// The callback receives the intended URL and stores it in blockedUrlRef so the
+		// "Discard changes" button can navigate there after the user confirms.
+		navGuard.setDirty(
+			isDirty,
+			isDirty
+				? (intendedUrl: string) => {
+						blockedUrlRef.current = intendedUrl;
+						showMfaNavGuardSetterRef.current?.(true);
+					}
+				: null,
+		);
+	}, []);
+
+	// Reset the module-level guard when the settings page unmounts so the Header
+	// does not incorrectly block navigation after the user has left this page.
+	useEffect(() => {
+		return () => {
+			navGuard.reset();
+		};
+	}, []);
 
 	// Guard C: intercept browser back/forward (popstate) when on the security tab with dirty state.
 	// When popstate fires, the URL has already changed — we push the original URL back to undo
