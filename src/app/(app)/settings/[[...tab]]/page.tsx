@@ -3,11 +3,18 @@
 import type { IconName } from "@olympusoss/canvas";
 import {
 	Badge,
+	Button,
 	Card,
 	CardContent,
 	CardHeader,
 	CardTitle,
 	cn,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 	Icon,
 	Select,
 	SelectContent,
@@ -24,7 +31,7 @@ import {
 	useToast,
 } from "@olympusoss/canvas";
 import { useParams, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
 import { ProtectedPage } from "@/components/layout";
 import { useAllOAuth2Clients } from "@/features/oauth2-clients/hooks/useOAuth2Clients";
 import {
@@ -89,6 +96,31 @@ export default function SettingsPage() {
 	const tabSlug = params.tab?.[0];
 	const activeTab: SettingsTab = VALID_TABS.includes(tabSlug as SettingsTab) ? (tabSlug as SettingsTab) : "general";
 
+	// Guard C: track whether the MFA section has unsaved changes so tab navigation can be intercepted
+	const [_mfaSectionDirty, setMfaSectionDirty] = useState(false);
+	const mfaDirtyRef = useRef(false);
+	const handleMfaDirtyChange = useCallback((isDirty: boolean) => {
+		mfaDirtyRef.current = isDirty;
+		setMfaSectionDirty(isDirty);
+	}, []);
+
+	// Guard C: show a nav-guard dialog before leaving the security tab if MFA section is dirty
+	const [showMfaNavGuard, setShowMfaNavGuard] = useState(false);
+	const pendingTabRef = useRef<string | null>(null);
+
+	const handleTabChange = useCallback(
+		(value: string) => {
+			// If we are navigating away from "security" and MFA has unsaved changes, block
+			if (activeTab === "security" && value !== "security" && mfaDirtyRef.current) {
+				pendingTabRef.current = value;
+				setShowMfaNavGuard(true);
+				return;
+			}
+			router.push(`/settings/${value}`, { scroll: false });
+		},
+		[activeTab, router],
+	);
+
 	const { toast, show: showSuccessToast, dismiss } = useToast();
 
 	// Settings store hooks
@@ -143,7 +175,7 @@ export default function SettingsPage() {
 
 	return (
 		<ProtectedPage>
-			<Tabs value={activeTab} onValueChange={(value) => router.push(`/settings/${value}`, { scroll: false })}>
+			<Tabs value={activeTab} onValueChange={handleTabChange}>
 				<TabsList>
 					<TabsTrigger value="general">
 						<Icon name="settings" className="h-3.5 w-3.5" />
@@ -290,13 +322,65 @@ export default function SettingsPage() {
 
 				{/* ── Security (MFA Policy) ── */}
 				<TabsContent value="security">
-					<MfaPolicySection />
+					<MfaPolicySection onDirtyChange={handleMfaDirtyChange} />
 				</TabsContent>
 			</Tabs>
 
 			<Toaster>
 				<Toast {...toast} onClose={dismiss} />
 			</Toaster>
+
+			{/* Guard C: Hard-block tab navigation when MFA section has unsaved changes */}
+			<Dialog
+				open={showMfaNavGuard}
+				onOpenChange={(open) => {
+					if (!open) {
+						setShowMfaNavGuard(false);
+						pendingTabRef.current = null;
+					}
+				}}
+			>
+				<DialogContent className="glass-overlay max-w-md">
+					<DialogHeader>
+						<DialogTitle className="text-sm font-semibold">Unsaved Changes</DialogTitle>
+						<DialogDescription className="text-xs text-muted-foreground">
+							You have unsaved changes to the MFA policy. If you leave this page, your changes will be lost.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-2">
+						<div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+							Your unsaved MFA policy changes will be permanently discarded if you navigate away.
+						</div>
+					</div>
+					<DialogFooter className="gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => {
+								setShowMfaNavGuard(false);
+								pendingTabRef.current = null;
+							}}
+						>
+							Stay on page
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							onClick={() => {
+								const target = pendingTabRef.current;
+								setShowMfaNavGuard(false);
+								pendingTabRef.current = null;
+								// Reset dirty tracking — the MFA section will re-fetch on next mount
+								setMfaSectionDirty(false);
+								mfaDirtyRef.current = false;
+								if (target) router.push(`/settings/${target}`, { scroll: false });
+							}}
+						>
+							Discard changes
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</ProtectedPage>
 	);
 }

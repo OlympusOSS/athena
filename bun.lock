@@ -9,7 +9,7 @@
         "@nivo/line": "^0.99.0",
         "@nivo/pie": "^0.99.0",
         "@olympusoss/canvas": "^1.0.39",
-        "@olympusoss/sdk": "^1.0.40",
+        "@olympusoss/sdk": "^1.1.1",
         "@ory/hydra-client": "^26.2.0",
         "@ory/kratos-client": "^26.2.0",
         "@rjsf/core": "6.4.1",
@@ -265,7 +265,7 @@
 
     "@olympusoss/canvas": ["@olympusoss/canvas@1.0.39", "https://npm.pkg.github.com/download/@olympusoss/canvas/1.0.39/d2be7af33506604351dc2336458a19b58a2abb41", { "dependencies": { "@nivo/bar": "^0.99.0", "@nivo/core": "^0.99.0", "@nivo/line": "^0.99.0", "@nivo/pie": "^0.99.0", "@types/leaflet": "^1.9.21", "@types/react-grid-layout": "^2.1.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "leaflet": "^1.9.4", "lucide-react": "^0.577.0", "radix-ui": "^1.4.3", "react-grid-layout": "^2.2.2", "react-leaflet": "^5.0.0", "tailwind-merge": "^3.5.0", "tailwindcss-animate": "^1.0.7" }, "peerDependencies": { "framer-motion": ">=12", "react": ">=19", "react-dom": ">=19" } }, "sha512-ECBj8Z6bSBn46sy8mekAawdAHeO0hnTH5lnNp0C8BlA0L1VsN0bNdBw3DQd7i82j2ba6hEsSDaD6dYFGnPwbCw=="],
 
-    "@olympusoss/sdk": ["@olympusoss/sdk@1.0.40", "https://npm.pkg.github.com/download/@olympusoss/sdk/1.0.40/efa1a39019daff530c41c616e4e3165632b3a93f", { "dependencies": { "postgres": "^3.4.7" } }, "sha512-SUJFHhhYa30Qgylm6XJTXzwGVqXT3zGCU9YsxFuyRVyxOd79qu9veBSzr13wj29phPD/Bs11sJcsQFZXlnlNzg=="],
+    "@olympusoss/sdk": ["@olympusoss/sdk@1.1.1", "https://npm.pkg.github.com/download/@olympusoss/sdk/1.1.1/7dff775727ca4c459dae754b949dd61e77982119", { "dependencies": { "postgres": "^3.4.7" } }, "sha512-ivXZC91ADBdGWnPB0DvoBSFBOLP0IW6zwpSENqwHJS3WCwYhNqHvzCTnbDQ4nEIwjpAwNY5SOJ6EV2It5WD8yw=="],
 
     "@ory/hydra-client": ["@ory/hydra-client@26.2.0", "", { "dependencies": { "axios": "^1.6.1" } }, "sha512-0eWsELw9NQX8dJTP4aSFbgx1MvGusNz0UpwmoGCCLlDWBoD56khVOS96C0T6se2+Oy87/gF/RY0moZw4YVzfGQ=="],
 

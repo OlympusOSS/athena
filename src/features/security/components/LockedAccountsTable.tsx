@@ -117,7 +117,7 @@ export function LockedAccountsTable({ accounts, isLoading, onUnlockSuccess, onUn
 				},
 			},
 			{
-				field: "identifier",
+				field: "_actions",
 				headerName: "Actions",
 				minWidth: 120,
 				renderCell: (_value: string, row: LockedAccount) => (

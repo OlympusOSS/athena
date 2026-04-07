@@ -3,6 +3,7 @@
 import {
 	Alert,
 	AlertDescription,
+	Badge,
 	Button,
 	Card,
 	CardContent,
@@ -31,8 +32,23 @@ interface MfaPolicySettings {
 	gracePeriodDays: number;
 }
 
-const ALL_METHODS: { id: MfaMethod; label: string; description: string }[] = [
+interface MfaStats {
+	enrolled: number;
+	total: number;
+	rate: number;
+}
+
+interface MfaPolicySectionProps {
+	/** Called by the parent when it needs to know if navigation away is safe. */
+	onDirtyChange?: (isDirty: boolean) => void;
+}
+
+// Only TOTP is interactive in V1. WebAuthn and SMS are V2 — shown as Coming Soon.
+const INTERACTIVE_METHODS: { id: MfaMethod; label: string; description: string }[] = [
 	{ id: "totp", label: "TOTP (Authenticator App)", description: "Time-based one-time passwords via apps like Google Authenticator" },
+];
+
+const COMING_SOON_METHODS: { id: MfaMethod; label: string; description: string }[] = [
 	{ id: "webauthn", label: "WebAuthn / Passkey", description: "Hardware security keys and platform authenticators (biometrics)" },
 	{ id: "sms", label: "SMS", description: "One-time codes sent via text message" },
 ];
@@ -40,18 +56,35 @@ const ALL_METHODS: { id: MfaMethod; label: string; description: string }[] = [
 const DEFAULT_SETTINGS: MfaPolicySettings = {
 	requireMfa: false,
 	allowSelfEnroll: true,
-	methods: ["totp", "webauthn"],
-	gracePeriodDays: 7,
+	// Only TOTP is active in V1; webauthn/sms are V2 (Coming Soon)
+	methods: ["totp"],
+	gracePeriodDays: 0,
 };
 
-export function MfaPolicySection() {
+function settingsEqual(a: MfaPolicySettings, b: MfaPolicySettings): boolean {
+	return (
+		a.requireMfa === b.requireMfa &&
+		a.allowSelfEnroll === b.allowSelfEnroll &&
+		a.gracePeriodDays === b.gracePeriodDays &&
+		a.methods.length === b.methods.length &&
+		a.methods.every((m) => b.methods.includes(m))
+	);
+}
+
+export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 	const [settings, setSettings] = useState<MfaPolicySettings>(DEFAULT_SETTINGS);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [saveSuccess, setSaveSuccess] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
+
 	// SR-MFA-2: confirmation modal state
 	const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+	// MFA stats
+	const [stats, setStats] = useState<MfaStats | null>(null);
+	const [statsError, setStatsError] = useState(false);
 
 	// SR-MFA-2: last-fetched persisted state — used to restore form on Cancel.
 	// A ref (not state) so updates do not trigger re-renders.
@@ -61,7 +94,25 @@ export function MfaPolicySection() {
 	// Guard C (SR-MFA-1): Save is disabled when MFA is required but no methods are enabled.
 	// This mirrors the server-side invariant check in POST /api/settings/batch.
 	const mfaInvariantViolation = settings.requireMfa && settings.methods.length === 0;
-	const saveDisabled = saving || mfaInvariantViolation;
+	// Save is enabled only when there are unsaved changes and no invariant violation.
+	const saveDisabled = saving || mfaInvariantViolation || !isDirty;
+
+	// Propagate dirty state to parent (for tab navigation interception)
+	useEffect(() => {
+		onDirtyChange?.(isDirty);
+	}, [isDirty, onDirtyChange]);
+
+	// Guard C: intercept browser close/reload when dirty
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (isDirty) {
+				e.preventDefault();
+				e.returnValue = "";
+			}
+		};
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+	}, [isDirty]);
 
 	const fetchSettings = useCallback(async () => {
 		try {
@@ -73,23 +124,25 @@ export function MfaPolicySection() {
 			const map: Record<string, string> = {};
 			for (const s of data.settings || []) map[s.key] = s.value;
 
-			const rawMethods = map["mfa.methods"] || "totp,webauthn";
+			const rawMethods = map["mfa.methods"] || "totp";
 			const parsedMethods = rawMethods
 				.split(",")
 				.map((m: string) => m.trim())
-				.filter((m: string): m is MfaMethod => ["totp", "webauthn", "sms"].includes(m));
+				// V1: only "totp" is a valid interactive method — filter out v2 methods
+				.filter((m: string): m is MfaMethod => ["totp"].includes(m));
 
-			const gracePeriod = Number.parseInt(map["mfa.grace_period_days"] || "7", 10);
+			const gracePeriod = Number.parseInt(map["mfa.grace_period_days"] || "0", 10);
 
 			const fetchedSettings: MfaPolicySettings = {
 				requireMfa: map["mfa.require_mfa"] === "true",
 				allowSelfEnroll: map["mfa.allow_self_enroll"] !== "false",
-				methods: parsedMethods.length > 0 ? parsedMethods : ["totp", "webauthn"],
-				gracePeriodDays: Number.isNaN(gracePeriod) || gracePeriod < 0 ? 7 : gracePeriod,
+				methods: parsedMethods.length > 0 ? parsedMethods : ["totp"],
+				gracePeriodDays: Number.isNaN(gracePeriod) || gracePeriod < 0 ? 0 : gracePeriod,
 			};
 			// SR-MFA-2: seed the persisted ref so Cancel can restore to DB state
 			persistedSettings.current = fetchedSettings;
 			setSettings(fetchedSettings);
+			setIsDirty(false);
 		} catch {
 			setError("Failed to load MFA policy settings");
 		} finally {
@@ -97,9 +150,28 @@ export function MfaPolicySection() {
 		}
 	}, []);
 
+	const fetchStats = useCallback(async () => {
+		try {
+			setStatsError(false);
+			const res = await fetch("/api/mfa/stats");
+			if (!res.ok) throw new Error("Stats unavailable");
+			const data = await res.json();
+			setStats(data);
+		} catch {
+			setStatsError(true);
+		}
+	}, []);
+
 	useEffect(() => {
 		fetchSettings();
-	}, [fetchSettings]);
+		fetchStats();
+	}, [fetchSettings, fetchStats]);
+
+	// Track dirty state whenever settings change relative to persisted state
+	useEffect(() => {
+		if (persistedSettings.current === null) return;
+		setIsDirty(!settingsEqual(settings, persistedSettings.current));
+	}, [settings]);
 
 	/**
 	 * Execute the actual batch save to the API.
@@ -131,14 +203,17 @@ export function MfaPolicySection() {
 
 			// SR-MFA-2: update persisted ref to newly-saved state after successful save
 			persistedSettings.current = { ...settings };
+			setIsDirty(false);
 			setSaveSuccess(true);
-			setTimeout(() => setSaveSuccess(false), 3000);
+			// Refresh stats after saving — policy changes may affect enrollment state
+			fetchStats();
+			setTimeout(() => setSaveSuccess(false), 4000);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to save MFA policy");
 		} finally {
 			setSaving(false);
 		}
-	}, [settings]);
+	}, [settings, fetchStats]);
 
 	/**
 	 * Save button handler.
@@ -165,6 +240,7 @@ export function MfaPolicySection() {
 		setShowConfirmModal(false);
 		if (persistedSettings.current !== null) {
 			setSettings(persistedSettings.current);
+			setIsDirty(false);
 		}
 	}, []);
 
@@ -190,6 +266,10 @@ export function MfaPolicySection() {
 		});
 	}, []);
 
+	const updateSettings = useCallback(<K extends keyof MfaPolicySettings>(key: K, value: MfaPolicySettings[K]) => {
+		setSettings((prev) => ({ ...prev, [key]: value }));
+	}, []);
+
 	if (loading) {
 		return (
 			<Card>
@@ -201,14 +281,73 @@ export function MfaPolicySection() {
 		);
 	}
 
+	const enrolledPercent = stats && stats.total > 0 ? Math.round((stats.enrolled / stats.total) * 100) : 0;
+
 	return (
 		<div className="space-y-4">
+			{/* SR-MFA-6: Browser-scope enforcement notice (non-dismissable, info) */}
+			<Alert className="py-2">
+				<Icon name="info" className="h-4 w-4" />
+				<AlertDescription className="text-xs">
+					MFA enforcement applies to browser-based logins. API integrations and direct Kratos session flows are not covered by this policy.
+				</AlertDescription>
+			</Alert>
+
 			{error && <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
+
 			{saveSuccess && (
 				<div className="rounded-md border border-green-500/50 bg-green-500/10 px-3 py-2 text-xs text-green-600 dark:text-green-400">
 					MFA policy saved successfully.
 				</div>
 			)}
+
+			{/* AC6: Unsaved changes indicator — visible whenever form is dirty */}
+			{isDirty && (
+				<div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+					<Icon name="warning" className="h-3.5 w-3.5 flex-shrink-0" />
+					<span>You have unsaved changes. Click "Save MFA Policy" to apply them.</span>
+				</div>
+			)}
+
+			{/* AC8/AC9: MFA Stats section */}
+			<Card>
+				<CardHeader>
+					<div className="flex items-center gap-2">
+						<Icon name="bar-chart" className="h-4 w-4 text-muted-foreground" />
+						<CardTitle className="text-base">Enrollment Statistics</CardTitle>
+					</div>
+				</CardHeader>
+				<CardContent className="pt-0">
+					{statsError ? (
+						<p className="text-xs text-muted-foreground py-2">Stats unavailable. The enrollment data could not be loaded.</p>
+					) : stats === null ? (
+						<div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
+							<Icon name="loading" className="h-3.5 w-3.5 animate-spin" />
+							Loading stats...
+						</div>
+					) : (
+						<div className="space-y-3">
+							<div className="flex items-baseline gap-2">
+								<span className="text-2xl font-semibold tabular-nums">{stats.enrolled}</span>
+								<span className="text-xs text-muted-foreground">
+									/ {stats.total} users enrolled ({enrolledPercent}%)
+								</span>
+							</div>
+							<div className="rounded-md border border-border divide-y divide-border text-xs">
+								<div className="flex items-center justify-between px-3 py-2">
+									<span className="text-muted-foreground">TOTP (Authenticator App)</span>
+									<span className="font-medium tabular-nums">—</span>
+								</div>
+								<div className="flex items-center justify-between px-3 py-2">
+									<span className="text-muted-foreground">WebAuthn / Passkey</span>
+									<span className="font-medium tabular-nums">—</span>
+								</div>
+							</div>
+							<p className="text-[11px] text-muted-foreground">Per-method breakdown is not yet available. Coming in a future release.</p>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
 			{/* Enrollment policy */}
 			<Card>
@@ -228,7 +367,7 @@ export function MfaPolicySection() {
 									: "MFA is optional — users can choose to enable it."}
 							</p>
 						</div>
-						<Switch checked={settings.requireMfa} onCheckedChange={(checked) => setSettings((s) => ({ ...s, requireMfa: checked }))} />
+						<Switch checked={settings.requireMfa} onCheckedChange={(checked) => updateSettings("requireMfa", checked)} />
 					</div>
 
 					<div className={cn("flex items-center justify-between rounded-md border border-border px-3 py-3")}>
@@ -240,7 +379,7 @@ export function MfaPolicySection() {
 									: "Only administrators can enroll MFA for users."}
 							</p>
 						</div>
-						<Switch checked={settings.allowSelfEnroll} onCheckedChange={(checked) => setSettings((s) => ({ ...s, allowSelfEnroll: checked }))} />
+						<Switch checked={settings.allowSelfEnroll} onCheckedChange={(checked) => updateSettings("allowSelfEnroll", checked)} />
 					</div>
 
 					{settings.requireMfa && (
@@ -258,7 +397,7 @@ export function MfaPolicySection() {
 									value={settings.gracePeriodDays}
 									onChange={(e) => {
 										const val = Number.parseInt(e.target.value, 10);
-										setSettings((s) => ({ ...s, gracePeriodDays: Number.isNaN(val) || val < 0 ? 0 : Math.min(val, 90) }));
+										updateSettings("gracePeriodDays", Number.isNaN(val) || val < 0 ? 0 : Math.min(val, 90));
 									}}
 									className="pl-8 text-sm w-32"
 								/>
@@ -283,7 +422,9 @@ export function MfaPolicySection() {
 					<p className="text-xs text-muted-foreground pb-1">
 						Select which MFA factors users are permitted to enroll. At least one method must be enabled.
 					</p>
-					{ALL_METHODS.map(({ id, label, description }) => {
+
+					{/* V1 interactive methods (TOTP only) */}
+					{INTERACTIVE_METHODS.map(({ id, label, description }) => {
 						const checked = settings.methods.includes(id);
 						const isLastEnabled = checked && settings.methods.length === 1;
 						return (
@@ -300,6 +441,25 @@ export function MfaPolicySection() {
 							</div>
 						);
 					})}
+
+					{/* V2 Coming Soon methods (WebAuthn, SMS) — non-interactive */}
+					{COMING_SOON_METHODS.map(({ id, label, description }) => (
+						<div key={id} className="flex items-center justify-between rounded-md border border-border px-3 py-3 opacity-60 cursor-not-allowed">
+							<div className="space-y-0.5">
+								<div className="flex items-center gap-2">
+									<Label className="text-xs font-medium">{label}</Label>
+									<Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+										Coming Soon
+									</Badge>
+								</div>
+								<p className="text-[11px] text-muted-foreground">{description}</p>
+								<p className="text-[11px] text-muted-foreground">This method will be available in a future release.</p>
+							</div>
+							{/* Non-interactive disabled switch — purely decorative/status indicator */}
+							<Switch checked={false} disabled aria-disabled="true" />
+						</div>
+					))}
+
 					{mfaInvariantViolation && <p className="text-xs text-destructive pt-1">At least one MFA method must be enabled when MFA is required.</p>}
 				</CardContent>
 			</Card>
@@ -311,7 +471,14 @@ export function MfaPolicySection() {
 				</AlertDescription>
 			</Alert>
 
-			<div className="flex justify-end">
+			<div className="flex items-center justify-between">
+				<div>
+					{isDirty && (
+						<Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+							Unsaved changes
+						</Badge>
+					)}
+				</div>
 				<Button size="sm" onClick={handleSave} disabled={saveDisabled}>
 					{saving ? (
 						<>
@@ -347,8 +514,16 @@ export function MfaPolicySection() {
 								enroll on their next login. They will not be able to access their account until enrollment is complete.
 							</p>
 						</div>
-						{/* Stats slot — reserved for Guard A story to populate with enrollment counts */}
-						<p className="text-xs text-muted-foreground italic">Enrollment statistics are not yet available.</p>
+						{stats !== null && !statsError ? (
+							<p className="text-xs text-muted-foreground">
+								Currently {stats.enrolled} of {stats.total} users have MFA enrolled ({enrolledPercent}%). Users without MFA will be required to enroll
+								immediately.
+							</p>
+						) : (
+							<p className="text-xs text-muted-foreground italic">
+								Enrollment statistics are not available. Confirm only if you are certain of impact.
+							</p>
+						)}
 						<p className="text-xs text-muted-foreground">Cancel will discard all unsaved changes.</p>
 					</div>
 					<DialogFooter className="gap-2">
@@ -364,3 +539,5 @@ export function MfaPolicySection() {
 		</div>
 	);
 }
+
+export type { MfaPolicySectionProps };
