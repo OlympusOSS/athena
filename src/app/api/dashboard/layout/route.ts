@@ -21,7 +21,15 @@ export async function GET(request: NextRequest) {
 	const identityId = await getIdentityIdFromSession(request);
 
 	if (!identityId) {
-		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		// athena#60: standardized error shape
+		return NextResponse.json(
+			{
+				error: "not_authenticated",
+				message: "Authentication required.",
+				hint: "Authenticate via /api/auth/login",
+			},
+			{ status: 401 },
+		);
 	}
 
 	const timeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);
@@ -61,7 +69,15 @@ export async function PUT(request: NextRequest) {
 	const identityId = await getIdentityIdFromSession(request);
 
 	if (!identityId) {
-		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		// athena#60: standardized error shape
+		return NextResponse.json(
+			{
+				error: "not_authenticated",
+				message: "Authentication required.",
+				hint: "Authenticate via /api/auth/login",
+			},
+			{ status: 401 },
+		);
 	}
 
 	const timeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);

@@ -72,7 +72,9 @@ describe("F12: Missing cookie returns 401", () => {
 		const res = await GET(req);
 		expect(res.status).toBe(401);
 		const body = await res.json();
-		expect(body.error).toBe("Not authenticated");
+		// athena#60: standardized error shape
+		expect(body.error).toBe("not_authenticated");
+		expect(body.hint).toBe("Authenticate via /api/auth/login");
 	});
 });
 
@@ -112,6 +114,8 @@ describe("S9: Unauthenticated access to /api/auth/session after middleware fix",
 		const res = await GET(req);
 		expect(res.status).toBe(401);
 		const body = await res.json();
-		expect(body.error).toBe("Not authenticated");
+		// athena#60: standardized error shape
+		expect(body.error).toBe("not_authenticated");
+		expect(body.hint).toBe("Authenticate via /api/auth/login");
 	});
 });

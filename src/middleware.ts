@@ -3,6 +3,32 @@ import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
 import { decryptApiKey } from "@/lib/crypto-edge";
 
 /**
+ * PROXY_TIMEOUT_MS guard — athena#110
+ *
+ * Evaluated once at module init. Changes require a container restart.
+ *
+ * Guard formula handles all malformed operator inputs:
+ *   - Unset (undefined/null): defaults to 5000ms via ?? operator
+ *   - NaN (non-numeric string): Number("notanumber") = NaN; falsy → fallback 5000
+ *   - 0: Number("0") = 0; falsy → fallback 5000
+ *   - Empty string: Number("") = 0; falsy → fallback 5000
+ *   - < 1000ms (below floor): Math.max(1000, ...) clamps to 1000ms minimum
+ *   - Valid numeric string: used as-is
+ *
+ * When the guard activates (input is invalid or below floor), a WARNING is logged
+ * with the raw input value and the effective value so on-call engineers have signal.
+ */
+const _rawProxyTimeout = process.env.PROXY_TIMEOUT_MS;
+const PROXY_TIMEOUT_MS: number = ((): number => {
+	const parsed = Number(_rawProxyTimeout ?? 5000) || 5000;
+	const effective = Math.max(1000, parsed);
+	if (_rawProxyTimeout !== undefined && effective !== Number(_rawProxyTimeout)) {
+		console.warn(`[Middleware] PROXY_TIMEOUT_MS value '${_rawProxyTimeout}' is invalid or below minimum; using ${effective}ms`);
+	}
+	return effective;
+})();
+
+/**
  * CSP NONCE — platform#18 (Security Headers)
  *
  * A cryptographic nonce is generated per-request and injected into:
@@ -161,12 +187,11 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			requestHeaders.set("Authorization", authorizationHeader);
 		}
 
-		const proxyTimeoutMs = Number(process.env.PROXY_TIMEOUT_MS ?? 5000);
 		const response = await fetch(targetUrl, {
 			method: request.method,
 			headers: requestHeaders,
 			body: request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined,
-			signal: AbortSignal.timeout(proxyTimeoutMs),
+			signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
 		});
 
 		// Handle different response types
@@ -207,6 +232,7 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 			headers: responseHeaders,
 		});
 	} catch (error) {
+		// Log full error details server-side only — never expose to client (athena#109 / Security C3)
 		console.error(`[Middleware] Failed to proxy ${request.nextUrl.pathname}:`, error);
 		console.error(`[Middleware] Error details:`, {
 			message: error instanceof Error ? error.message : "Unknown error",
@@ -215,35 +241,34 @@ async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix:
 		});
 
 		// Handle proxy timeout — stale TCP connections (platform#65 / athena#109)
+		// Security C3: body must not contain serviceName, baseUrl, or internal error text.
 		if (error instanceof Error && error.name === "TimeoutError") {
 			return NextResponse.json(
 				{
-					error: "Gateway Timeout",
-					message: `Proxy request to ${serviceName} timed out`,
-					details: `${serviceName} at ${baseUrl} did not respond within the allowed time.`,
+					error: "gateway_timeout",
+					message: "Upstream service did not respond within the timeout window.",
 				},
 				{ status: 504 },
 			);
 		}
 
-		// Handle fetch errors
+		// Handle fetch/network errors (e.g. ECONNREFUSED, DNS failure).
+		// Security C3 DA extension: generic error path must also not leak upstream URLs or details.
 		if (error instanceof TypeError && error.message.includes("fetch")) {
 			return NextResponse.json(
 				{
-					error: "Network Error",
-					message: error.message,
-					details: `Unable to reach ${serviceName} at ${baseUrl}. Please check your ${serviceName} configuration.`,
+					error: "bad_gateway",
+					message: "Unable to reach upstream service.",
 				},
 				{ status: 502 },
 			);
 		}
 
+		// Generic catch — unknown errors. No internal details in response (Security C3 DA extension).
 		return NextResponse.json(
 			{
-				error: "Proxy Error",
-				message: error instanceof Error ? error.message : "Unknown error",
-				details: `Failed to proxy request to ${serviceName} at ${baseUrl}`,
-				errorType: error instanceof Error ? error.name : "Unknown",
+				error: "proxy_error",
+				message: "An unexpected error occurred.",
 			},
 			{ status: 500 },
 		);
@@ -274,11 +299,28 @@ export async function middleware(request: NextRequest) {
 		const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
 
 		if (!session) {
-			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+			// athena#60: standardized error shape — machine-readable code, message, hint
+			// hint must NOT contain role names or internal service identifiers (Security C3)
+			return NextResponse.json(
+				{
+					error: "not_authenticated",
+					message: "Authentication required.",
+					hint: "Authenticate via /api/auth/login",
+				},
+				{ status: 401 },
+			);
 		}
 
 		if (isAdminRoute(pathname) && !isAdmin(session)) {
-			return NextResponse.json({ error: "Forbidden: admin role required" }, { status: 403 });
+			// athena#60: 403 hint must NOT name specific role identifiers (Security C3 / DA condition)
+			return NextResponse.json(
+				{
+					error: "forbidden",
+					message: "Admin access required.",
+					hint: "Contact your administrator to request access.",
+				},
+				{ status: 403 },
+			);
 		}
 
 		// Forward user info to downstream route handlers

@@ -207,6 +207,38 @@ describe("S12: Session cookie cleared with correct security attributes on logout
 	});
 });
 
+describe("athena#57 regression gate: athena-session clear cookie has both Secure AND HttpOnly flags", () => {
+	// DA Security condition: regression gate must verify HttpOnly alongside Secure.
+	// If a future change to buildSessionClearOptions() removes HttpOnly, this test fails.
+	it("clear cookie has httpOnly=true in production (regression gate: HttpOnly)", async () => {
+		process.env.NODE_ENV = "production";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// Both Secure and HttpOnly must be present on the clear-cookie — not just Secure
+		expect(setCookie.toLowerCase()).toContain("httponly");
+		expect(setCookie.toLowerCase()).toContain("secure");
+		expect(setCookie).toMatch(/max-age=0/i);
+	});
+
+	it("clear cookie has httpOnly=true in development (HttpOnly is NODE_ENV-independent)", async () => {
+		process.env.NODE_ENV = "development";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// HttpOnly is always true regardless of environment
+		expect(setCookie.toLowerCase()).toContain("httponly");
+		// Secure is absent in development
+		expect(setCookie.toLowerCase()).not.toContain("; secure");
+	});
+});
+
 describe("S11: HTML injection in logout redirect meta tag", () => {
 	it("loginUrl is constructed via URL object — characters are encoded, no HTML injection", async () => {
 		// The route uses `new URL("/api/auth/login", appUrl).toString()` which encodes

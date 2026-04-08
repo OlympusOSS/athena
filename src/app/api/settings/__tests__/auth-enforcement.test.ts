@@ -76,7 +76,10 @@ describe("S1: Unauthenticated GET /api/settings returns 401 (post athena#51 fix)
 		const res = await middleware(req);
 		expect(res.status).toBe(401);
 		const body = await res.json();
-		expect(body.error).toBe("Not authenticated");
+		// athena#60: standardized error shape — machine-readable code
+		expect(body.error).toBe("not_authenticated");
+		expect(body.message).toBe("Authentication required.");
+		expect(body.hint).toBe("Authenticate via /api/auth/login");
 	});
 });
 
@@ -103,7 +106,10 @@ describe("S4: Viewer role returns 403 on admin routes", () => {
 		const res = await middleware(req);
 		expect(res.status).toBe(403);
 		const body = await res.json();
-		expect(body.error).toBe("Forbidden: admin role required");
+		// athena#60: standardized error shape — no role identifiers in hint (Security C3)
+		expect(body.error).toBe("forbidden");
+		expect(body.message).toBe("Admin access required.");
+		expect(body.hint).toBe("Contact your administrator to request access.");
 	});
 
 	it("admin role proceeds through /api/settings (returns NextResponse.next)", async () => {
