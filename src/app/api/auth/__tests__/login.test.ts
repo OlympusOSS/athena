@@ -46,6 +46,59 @@ describe("F1: Login flow generates state cookie", () => {
 		expect(setCookie).toMatch(/max-age=300/i);
 	});
 
+	it("F1: sets pkce_verifier cookie with httpOnly=true, sameSite=lax, maxAge=300", async () => {
+		// athena#100 — pkce_verifier must have same security attributes as oauth_state
+		const res = await GET();
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		expect(setCookie).toContain("pkce_verifier=");
+		expect(setCookie.toLowerCase()).toContain("httponly");
+		expect(setCookie.toLowerCase()).toContain("samesite=lax");
+		expect(setCookie).toMatch(/max-age=300/i);
+	});
+
+	it("athena#100: oauth_state and pkce_verifier Max-Age is exactly 300 seconds", async () => {
+		// C2: AC requires explicit Max-Age=300 test — not just presence of the attribute
+		const res = await GET();
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// Both cookies must have Max-Age=300 exactly (not 600, not 28800)
+		const maxAgeMatches = setCookie.match(/max-age=(\d+)/gi);
+		expect(maxAgeMatches).not.toBeNull();
+		// All maxAge values in the set-cookie header must be 300
+		for (const match of maxAgeMatches ?? []) {
+			expect(match.toLowerCase()).toBe("max-age=300");
+		}
+	});
+
+	it("athena#100: Secure flag is ABSENT in test env (NODE_ENV=test, not production)", async () => {
+		// Development/test: Secure must be absent so OAuth2 flow works on HTTP localhost
+		const res = await GET();
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// NODE_ENV is 'test' in vitest — Secure must not be present
+		expect(setCookie.toLowerCase()).not.toContain("; secure");
+	});
+
+	it("athena#100: Secure flag is PRESENT in production (NODE_ENV=production)", async () => {
+		// Production: both oauth_state and pkce_verifier must include the Secure flag
+		process.env.NODE_ENV = "production";
+		const res = await GET();
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// Both cookies are in the same set-cookie header — Secure must appear
+		expect(setCookie).toContain("oauth_state=");
+		expect(setCookie).toContain("pkce_verifier=");
+		// Secure flag must be present when NODE_ENV=production
+		expect(setCookie.toLowerCase()).toContain("secure");
+	});
+
+	it("athena#100: oauth_state and pkce_verifier do NOT use buildSessionCookieOptions (no sameSite=strict)", async () => {
+		// These flow-state cookies must use sameSite=lax, not the session helper's sameSite=strict.
+		// If buildSessionCookieOptions were mistakenly applied, sameSite would be 'strict'.
+		const res = await GET();
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		// Must be lax (OAuth2 callback is cross-site top-level redirect from Hydra)
+		expect(setCookie.toLowerCase()).toContain("samesite=lax");
+		expect(setCookie.toLowerCase()).not.toContain("samesite=strict");
+	});
+
 	it("F1: state in redirect URL matches the cookie value (64-char hex)", async () => {
 		const res = await GET();
 		const location = res.headers.get("location") ?? "";

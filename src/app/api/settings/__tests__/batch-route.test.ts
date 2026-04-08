@@ -256,7 +256,9 @@ describe("POST /api/settings/batch — auth enforcement via middleware", () => {
 		const res = await middleware(req);
 		expect(res.status).toBe(401);
 		const body = await res.json();
-		expect(body.error).toBe("Not authenticated");
+		// athena#60: standardized error shape — machine-readable code
+		expect(body.error).toBe("not_authenticated");
+		expect(body.hint).toBe("Authenticate via /api/auth/login");
 	});
 });
 

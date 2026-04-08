@@ -5,7 +5,15 @@ export async function GET(request: NextRequest) {
 	const session = await verifySession(request.cookies.get("athena-session")?.value);
 
 	if (!session) {
-		return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		// athena#60: standardized error shape
+		return NextResponse.json(
+			{
+				error: "not_authenticated",
+				message: "Authentication required.",
+				hint: "Authenticate via /api/auth/login",
+			},
+			{ status: 401 },
+		);
 	}
 
 	return NextResponse.json({
