@@ -34,10 +34,10 @@ middleware.ts (Next.js edge middleware)
         │   /api/hydra-admin/**
         │
         ▼
-verifySession(cookie) ──Fail──→ 401 { "error": "not_authenticated", "message": "...", "suggestion": "..." }
+verifySession(cookie) ──Fail──→ 401 { "error": "not_authenticated", "message": "...", "hint": "..." }
         │
         ▼
-isAdminRoute()? ──Yes──→ role === "admin"? ──No──→ 403 { "error": "forbidden", "message": "...", "suggestion": "..." }
+isAdminRoute()? ──Yes──→ role === "admin"? ──No──→ 403 { "error": "forbidden", "message": "...", "hint": "..." }
         │
         ▼
 Route handler runs
@@ -235,7 +235,7 @@ All Athena API authentication errors return a consistent JSON shape. This applie
 {
   "error": "<machine_code>",
   "message": "<human readable explanation>",
-  "suggestion": "<remediation hint>"
+  "hint": "<actionable next step>"
 }
 ```
 
@@ -250,8 +250,8 @@ Returned when the `athena-session` cookie is absent, expired, or fails HMAC veri
 ```json
 {
   "error": "not_authenticated",
-  "message": "No active session. Authentication required.",
-  "suggestion": "Log in at /auth/login to obtain an admin session."
+  "message": "Authentication required.",
+  "hint": "Authenticate via /api/auth/login"
 }
 ```
 
@@ -271,8 +271,8 @@ Returned when the session is valid but the identity's role is not sufficient for
 ```json
 {
   "error": "forbidden",
-  "message": "Admin role required to access this resource.",
-  "suggestion": "Ensure your account has the admin role assigned. Contact your administrator."
+  "message": "Admin access required.",
+  "hint": "Contact your administrator to request access."
 }
 ```
 
@@ -371,4 +371,4 @@ If the `oauth_state` cookie is missing or does not match the `state` query param
 
 ---
 
-*Last updated: 2026-04-06 (Technical Writer — added Session Check Lifecycle section, athena#66 CI cookie audit gate)*
+*Last updated: 2026-04-08 (Technical Writer — corrected error response field name from `suggestion` to `hint` to match middleware source, updated 401/403 message text to match implementation)*
