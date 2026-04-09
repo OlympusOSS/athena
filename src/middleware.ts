@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
 import { decryptApiKey } from "@/lib/crypto-edge";
+import { buildCsp } from "@/lib/csp";
 
 /**
  * PROXY_TIMEOUT_MS guard — athena#110
@@ -31,44 +32,15 @@ const PROXY_TIMEOUT_MS: number = ((): number => {
 /**
  * CSP NONCE — platform#18 (Security Headers)
  *
+ * buildCsp() is imported from @/lib/csp (athena#108 extraction).
+ *
  * A cryptographic nonce is generated per-request and injected into:
  *   1. The `Content-Security-Policy` response header (via `'nonce-{value}'` in script-src)
  *   2. The `x-nonce` request header, so layout.tsx can forward it to Next.js <Script> components
  *      and any inline <script> blocks.
  *
- * Framing policy ownership (DA/Security condition C3):
- *   - `frame-ancestors 'none'` in the CSP is the AUTHORITATIVE framing policy for Athena.
- *   - `X-Frame-Options: DENY` set by Caddy is the legacy-browser fallback ONLY.
- *   - Future framing policy changes MUST update this CSP. Changing the Caddyfile alone has
- *     no effect in modern browsers because CSP frame-ancestors takes precedence.
- *
- * `unsafe-inline` in style-src (DA/Security condition C2 / SR-1):
- *   - `'unsafe-inline'` in style-src is a known pragmatic allowance for CSS-in-JS and
- *     Canvas component styles. This is a CSS injection risk (lower-severity than XSS).
- *   - A follow-on ticket (athena#<n>) tracks removing this allowance via nonce-based styles.
- *     See OlympusOSS/athena issues for the follow-on ticket.
- *
  * This CSP is NOT set on API routes (/api/*). It applies only to page (HTML) responses.
  */
-function buildCsp(nonce: string): string {
-	// In dev mode, Next.js HMR/React Refresh requires eval().
-	// 'unsafe-eval' is ONLY included in development — never in production.
-	const isDev = process.env.NODE_ENV !== "production";
-	const directives = [
-		"default-src 'self'",
-		`script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}`,
-		"style-src 'self' 'unsafe-inline'",
-		"connect-src 'self'",
-		"img-src 'self' data:",
-		"font-src 'self'",
-		"object-src 'none'",
-		"base-uri 'self'",
-		"form-action 'self'",
-		// frame-ancestors is authoritative for framing policy — see note above
-		"frame-ancestors 'none'",
-	];
-	return directives.join("; ");
-}
 
 /**
  * Routes that require the "admin" role.
@@ -116,6 +88,20 @@ const ADMIN_PREFIXES = [
 	 * line would leave all M2M endpoints unprotected.
 	 */
 	"/api/clients",
+	/**
+	 * Admin proxy routes — athena#51 (P0 SECURITY fix).
+	 *
+	 * These proxy to Kratos Admin, Hydra Admin, and IAM Kratos Admin APIs which
+	 * expose full identity/OAuth2 management (create/delete identities, create
+	 * OAuth2 clients, revoke sessions, read metadata_admin, etc.).
+	 *
+	 * Previously these routes were listed in isProxyRoute() which bypassed the
+	 * auth gate entirely, leaving them unauthenticated. Now they require both
+	 * a valid session AND the admin role.
+	 */
+	"/api/kratos-admin",
+	"/api/hydra-admin",
+	"/api/iam-kratos-admin",
 ];
 
 function isAdminRoute(pathname: string): boolean {
@@ -133,18 +119,19 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 /**
- * Routes handled by the Ory proxy below — auth is not enforced here
- * because these proxy to Kratos/Hydra which have their own auth.
+ * Routes handled by the Ory proxy below — PUBLIC proxy endpoints only.
+ *
+ * SECURITY (athena#51): Admin proxy routes (/api/kratos-admin/,
+ * /api/hydra-admin/, /api/iam-kratos-admin/) are intentionally EXCLUDED
+ * from this list. They MUST go through the auth + admin role gate in the
+ * middleware function below. Previously these were listed here which
+ * bypassed auth entirely — that was the root cause of athena#51.
+ *
+ * Only the public Ory endpoints (which serve unauthenticated flows like
+ * login, registration, recovery) are exempt from the Athena auth gate.
  */
 function isProxyRoute(pathname: string): boolean {
-	return (
-		pathname.startsWith("/api/kratos/") ||
-		pathname.startsWith("/api/kratos-admin/") ||
-		pathname.startsWith("/api/iam-kratos/") ||
-		pathname.startsWith("/api/iam-kratos-admin/") ||
-		pathname.startsWith("/api/hydra/") ||
-		pathname.startsWith("/api/hydra-admin/")
-	);
+	return pathname.startsWith("/api/kratos/") || pathname.startsWith("/api/iam-kratos/") || pathname.startsWith("/api/hydra/");
 }
 
 async function proxyToService(request: NextRequest, baseUrl: string, pathPrefix: string, serviceName: string): Promise<NextResponse> {
@@ -294,83 +281,107 @@ export async function middleware(request: NextRequest) {
 		return response;
 	}
 
-	// --- Auth enforcement for non-proxy, non-public API routes ----------------
-	if (pathname.startsWith("/api/") && !isPublicRoute(pathname) && !isProxyRoute(pathname)) {
-		const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
-
-		if (!session) {
-			// athena#60: standardized error shape — machine-readable code, message, hint
-			// hint must NOT contain role names or internal service identifiers (Security C3)
-			return NextResponse.json(
-				{
-					error: "not_authenticated",
-					message: "Authentication required.",
-					hint: "Authenticate via /api/auth/login",
-				},
-				{ status: 401 },
-			);
-		}
-
-		if (isAdminRoute(pathname) && !isAdmin(session)) {
-			// athena#60: 403 hint must NOT name specific role identifiers (Security C3 / DA condition)
-			return NextResponse.json(
-				{
-					error: "forbidden",
-					message: "Admin access required.",
-					hint: "Contact your administrator to request access.",
-				},
-				{ status: 403 },
-			);
-		}
-
-		// Forward user info to downstream route handlers
-		const headers = new Headers(request.headers);
-		headers.set("x-user-email", session.user.email);
-		headers.set("x-user-role", session.user.role);
-		headers.set("x-user-id", session.user.kratosIdentityId);
-
-		return NextResponse.next({ request: { headers } });
+	// --- Public routes (no auth required) ------------------------------------
+	if (isPublicRoute(pathname)) {
+		return NextResponse.next();
 	}
 
-	// Handle Kratos public API proxying
+	// --- Public Ory proxy routes (no Athena auth — Ory handles its own) ------
+	if (isProxyRoute(pathname)) {
+		return routeProxy(request, pathname);
+	}
+
+	// --- Auth enforcement for all remaining API routes -----------------------
+	// This covers both regular API routes AND admin proxy routes (athena#51).
+	const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
+
+	if (!session) {
+		// athena#60: standardized error shape — machine-readable code, message, hint
+		// hint must NOT contain role names or internal service identifiers (Security C3)
+		return NextResponse.json(
+			{
+				error: "not_authenticated",
+				message: "Authentication required.",
+				hint: "Authenticate via /api/auth/login",
+			},
+			{ status: 401 },
+		);
+	}
+
+	if (isAdminRoute(pathname) && !isAdmin(session)) {
+		// athena#60: 403 hint must NOT name specific role identifiers (Security C3 / DA condition)
+		return NextResponse.json(
+			{
+				error: "forbidden",
+				message: "Admin access required.",
+				hint: "Contact your administrator to request access.",
+			},
+			{ status: 403 },
+		);
+	}
+
+	// --- Admin proxy routes: auth passed, now proxy to upstream ---------------
+	// athena#51: These routes require a valid admin session before proxying.
+	// The proxy happens AFTER auth enforcement, not instead of it.
+	if (pathname.startsWith("/api/kratos-admin/") || pathname.startsWith("/api/iam-kratos-admin/") || pathname.startsWith("/api/hydra-admin/")) {
+		return routeProxy(request, pathname);
+	}
+
+	// --- Regular authenticated API routes ------------------------------------
+	// Forward user info to downstream route handlers
+	const headers = new Headers(request.headers);
+	headers.set("x-user-email", session.user.email);
+	headers.set("x-user-role", session.user.role);
+	headers.set("x-user-id", session.user.kratosIdentityId);
+
+	return NextResponse.next({ request: { headers } });
+}
+
+/**
+ * Route a request to the appropriate Ory proxy service based on pathname.
+ *
+ * Factored out of the main middleware function to allow both public and
+ * authenticated proxy routes to share the same routing logic (athena#51).
+ */
+function routeProxy(request: NextRequest, pathname: string): Promise<NextResponse> {
+	// Kratos public
 	if (pathname.startsWith("/api/kratos/")) {
 		const kratosPublicUrl = process.env.KRATOS_PUBLIC_URL || "http://localhost:3100";
 		return proxyToService(request, kratosPublicUrl, "/api/kratos", "Kratos");
 	}
 
-	// Handle Kratos admin API proxying
+	// Kratos admin (auth enforced before reaching here — athena#51)
 	if (pathname.startsWith("/api/kratos-admin/")) {
 		const kratosAdminUrl = process.env.KRATOS_ADMIN_URL || "http://localhost:3101";
 		return proxyToService(request, kratosAdminUrl, "/api/kratos-admin", "Kratos");
 	}
 
-	// Handle IAM Kratos public API proxying (used by IAM Athena for identity management)
+	// IAM Kratos public
 	if (pathname.startsWith("/api/iam-kratos/")) {
 		const iamKratosPublicUrl = process.env.IAM_KRATOS_PUBLIC_URL || "http://localhost:4100";
-
 		return proxyToService(request, iamKratosPublicUrl, "/api/iam-kratos", "Kratos");
 	}
 
-	// Handle IAM Kratos admin API proxying (used by IAM Athena for identity management)
+	// IAM Kratos admin (auth enforced before reaching here — athena#51)
 	if (pathname.startsWith("/api/iam-kratos-admin/")) {
 		const iamKratosAdminUrl = process.env.IAM_KRATOS_ADMIN_URL || "http://localhost:4101";
-
 		return proxyToService(request, iamKratosAdminUrl, "/api/iam-kratos-admin", "Kratos");
 	}
 
-	// Handle Hydra public API proxying
+	// Hydra public
 	if (pathname.startsWith("/api/hydra/")) {
 		const hydraPublicUrl = process.env.HYDRA_PUBLIC_URL || "http://localhost:3102";
 		return proxyToService(request, hydraPublicUrl, "/api/hydra", "Hydra");
 	}
 
-	// Handle Hydra admin API proxying
+	// Hydra admin (auth enforced before reaching here — athena#51)
 	if (pathname.startsWith("/api/hydra-admin/")) {
 		const hydraAdminUrl = process.env.HYDRA_ADMIN_URL || "http://localhost:3103";
 		return proxyToService(request, hydraAdminUrl, "/api/hydra-admin", "Hydra");
 	}
 
-	return NextResponse.next();
+	// Fallback — should not be reached if isProxyRoute() and admin proxy checks are consistent
+	return Promise.resolve(NextResponse.next());
 }
 
 export const config = {
