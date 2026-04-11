@@ -35,9 +35,15 @@ jobs:
       - run: bun run typecheck
       - name: Cookie audit — no unguarded athena-session writes
         run: bun run audit:cookies
-      - name: Run tests
+      - name: Run unit tests
         run: bun run test
       - run: bun run build
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: bun run test:e2e
+        env:
+          CI: true
       - name: "CSP gate: verify unsafe-eval is absent from production middleware bundle"
         run: |
           MIDDLEWARE_JS=".next/server/middleware.js"
