@@ -28,7 +28,7 @@ export function buildCsp(nonce: string): string {
 		`script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}`,
 		"style-src 'self' 'unsafe-inline'",
 		"connect-src 'self' https://api.github.com",
-		"img-src 'self' data:",
+		"img-src 'self' data: https://basemaps.cartocdn.com",
 		"font-src 'self'",
 		"object-src 'none'",
 		"base-uri 'self'",
