@@ -27,7 +27,7 @@ export function buildCsp(nonce: string): string {
 		"default-src 'self'",
 		`script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}`,
 		"style-src 'self' 'unsafe-inline'",
-		"connect-src 'self'",
+		"connect-src 'self' https://api.github.com",
 		"img-src 'self' data:",
 		"font-src 'self'",
 		"object-src 'none'",
