@@ -21,6 +21,7 @@
  */
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import Providers from "@/providers/Providers";
@@ -49,14 +50,19 @@ export async function generateMetadata(): Promise<Metadata> {
 	};
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	// Read the CSP nonce from middleware (set via x-nonce request header).
+	// Next.js automatically applies this nonce to its generated inline scripts
+	// when the root layout reads headers() as an async Server Component.
+	const nonce = (await headers()).get("x-nonce") ?? "";
+
 	return (
 		<html lang="en" className={inter.className} suppressHydrationWarning>
-			<body className="min-h-screen bg-background font-sans antialiased">
+			<body className="min-h-screen bg-background font-sans antialiased" nonce={nonce}>
 				<Providers>{children}</Providers>
 			</body>
 		</html>
