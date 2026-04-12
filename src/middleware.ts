@@ -278,6 +278,7 @@ export async function middleware(request: NextRequest) {
 
 		const response = NextResponse.next({ request: { headers: requestHeaders } });
 		response.headers.set("Content-Security-Policy", csp);
+		response.headers.set("Permissions-Policy", "geolocation=(self)");
 		return response;
 	}
 
