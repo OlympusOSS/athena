@@ -22,6 +22,5 @@ This repo is part of the [Olympus agent system](../docs/teams/ciam-team.md) — 
 
 ### Before Making Changes
 
-- Check [`../docs/system-status.md`](../docs/system-status.md) for active work
 - Check [`../docs/dependency-map.md`](../docs/dependency-map.md) for cross-repo impact
 - Changes to this repo may trigger reviews from Security, QA, and DX agents

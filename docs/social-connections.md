@@ -226,5 +226,3 @@ curl -X PATCH http://localhost:3001/api/connections/social/google \
 | athena#90 | Audit logging for social connection config changes (SOC2 CC6.2) |
 | hera#30 | Dynamic social login button rendering — must use `GET /api/connections/public` |
 | `docs/project-knowledge/social-login.md` | Full platform-level social login doc (architecture, SIGHUP sidecar, Google setup guide, environment variables) |
-| `docs/state/architecture-brief-social-login.md` | Architecture brief with sidecar design and signal delivery sequence |
-| `docs/state/ADR-003-social-login-config-reload.md` | Decision record: SIGHUP sidecar (Option A) accepted |

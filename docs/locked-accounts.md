@@ -221,7 +221,4 @@ Changes take effect within 60 seconds. No restart required.
 ## References
 
 - SDK integration guide: `docs/project-knowledge/brute-force-integration.md`
-- Architecture brief: `docs/state/architecture-brief-brute-force-protection.md`
-- QA plan: `docs/state/qa-plan-brute-force-protection.md`
-- DX plan: `docs/state/dx-plan-athena47-locked-accounts.md`
 - GitHub issues: [athena#47](https://github.com/OlympusOSS/athena/issues/47), [platform#11](https://github.com/OlympusOSS/platform/issues/11), [hera#26](https://github.com/OlympusOSS/hera/issues/26)

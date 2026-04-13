@@ -346,9 +346,6 @@ Every successful `POST /api/settings/batch` emits a structured audit log entry: 
 - [athena#68](https://github.com/OlympusOSS/athena/issues/68) — Zero-grace-period confirmation modal (SR-MFA-2)
 - [platform#14](https://github.com/OlympusOSS/platform/issues/14) — MFA policy setting keys and stats endpoint design
 - [platform#13](https://github.com/OlympusOSS/platform/issues/13) — TOTP implementation
-- `docs/state/ADR-002-mfa-policy-enforcement-layer.md` — V1 browser-only enforcement decision
-- `docs/state/architecture-brief-mfa-policy-settings-panel.md` — full architecture brief
-
 ---
 
 *Last updated: 2026-04-06 (Technical Writer — athena#67 Guard C resulting-state evaluation, athena#68 zero-grace-period modal UI-only note)*
