@@ -100,9 +100,9 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 		// Must NOT contain SameSite=Strict (would break OAuth2 callback)
-		expect(cookies).not.toContain("SameSite=Strict");
+		expect(cookies.toLowerCase()).not.toContain("samesite=strict");
 	});
 
 	test("F10: buildSessionCookieOptions NOT used for flow-state cookies", async ({
@@ -141,7 +141,7 @@ test.describe("OAuth State Secure Flag - Edge Cases", () => {
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		// Explicitly verify SameSite=Lax (not just absence of Strict)
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
 	test("E5: cookies have short 300s lifetime (5 minutes)", async ({
@@ -191,6 +191,6 @@ test.describe("OAuth State Secure Flag - Security Tests", () => {
 		const cookies = response.headers()["set-cookie"] || "";
 		// Defence-in-depth: HttpOnly prevents JS access, SameSite prevents cross-site
 		expect(cookies).toContain("HttpOnly");
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 });

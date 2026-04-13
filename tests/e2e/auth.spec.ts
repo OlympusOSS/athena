@@ -33,7 +33,7 @@ test.describe("Authentication Flow", () => {
 		expect(cookies).toContain("oauth_state");
 		expect(cookies).toContain("pkce_verifier");
 		expect(cookies).toContain("HttpOnly");
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
 	test("GET /api/auth/logout clears session", async ({ request }) => {

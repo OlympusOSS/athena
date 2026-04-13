@@ -25,7 +25,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 		expect(cookies).toContain("HttpOnly");
 		expect(cookies).toContain("Path=/");
 	});
@@ -56,7 +56,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		expect(cookies).toContain("HttpOnly");
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
 	test("F9: logout route clears cookie with matching attributes", async ({
@@ -103,7 +103,7 @@ test.describe("Cookie Options Helper - Edge Cases", () => {
 		// (cannot assert Secure absent since some test setups might use HTTPS)
 		// Verify other attributes are present
 		expect(cookies).toContain("HttpOnly");
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
 	test("E5: login route flow-state cookies have correct attributes", async ({
@@ -140,9 +140,9 @@ test.describe("Cookie Options Helper - Security Tests", () => {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 		// Must NOT use SameSite=None (would allow cross-site)
-		expect(cookies).not.toContain("SameSite=None");
+		expect(cookies.toLowerCase()).not.toContain("samesite=none");
 	});
 
 	test("S5: logout clears session properly", async ({ request }) => {

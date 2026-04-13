@@ -83,7 +83,7 @@ test.describe("Session Cookie Secure Flag - Edge Cases", () => {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
-		expect(cookies).toContain("SameSite=Lax");
+		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 });
 
