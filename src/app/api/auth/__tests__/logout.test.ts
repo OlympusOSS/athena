@@ -6,7 +6,7 @@
  * Security: S7 (logout CSRF — documented known trade-off).
  * Known bugs: S11 (HTML injection in meta-refresh — verified safe via URL construction).
  *
- * ENCRYPTION_KEY is set in vitest.config.ts.
+ * SESSION_SIGNING_KEY and ENCRYPTION_KEY are set in vitest.config.ts.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

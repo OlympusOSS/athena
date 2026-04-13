@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isAdmin, parseSession, SESSION_COOKIE } from "@/lib/auth";
+import { buildSessionClearOptions } from "@/lib/cookie-options";
 import { decryptApiKey } from "@/lib/crypto-edge";
 import { buildCsp } from "@/lib/csp";
 
@@ -294,12 +295,13 @@ export async function middleware(request: NextRequest) {
 
 	// --- Auth enforcement for all remaining API routes -----------------------
 	// This covers both regular API routes AND admin proxy routes (athena#51).
-	const session = await parseSession(request.cookies.get(SESSION_COOKIE)?.value);
+	const rawCookie = request.cookies.get(SESSION_COOKIE)?.value;
+	const session = await parseSession(rawCookie);
 
 	if (!session) {
 		// athena#60: standardized error shape — machine-readable code, message, hint
 		// hint must NOT contain role names or internal service identifiers (Security C3)
-		return NextResponse.json(
+		const response = NextResponse.json(
 			{
 				error: "not_authenticated",
 				message: "Authentication required.",
@@ -307,6 +309,15 @@ export async function middleware(request: NextRequest) {
 			},
 			{ status: 401 },
 		);
+
+		// athena#99: Clear stale/invalid session cookie with Max-Age=0 to prevent
+		// redirect loops on key rotation. Only clear if a cookie was present but
+		// failed verification (not if there was no cookie at all).
+		if (rawCookie) {
+			response.cookies.set(SESSION_COOKIE, "", buildSessionClearOptions());
+		}
+
+		return response;
 	}
 
 	if (isAdminRoute(pathname) && !isAdmin(session)) {

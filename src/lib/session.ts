@@ -4,8 +4,8 @@
  * Format: `base64url(json).base64url(hmac-sha256)`
  *
  * Uses the Web Crypto API so it works in both Node.js and Edge runtimes.
- * The HMAC key is derived from the ENCRYPTION_KEY env var (same key the SDK
- * uses for AES-256-GCM encryption of secrets).
+ * The HMAC key is derived from SESSION_SIGNING_KEY — a dedicated 32-byte
+ * base64-encoded key, separate from the SDK's ENCRYPTION_KEY (athena#99).
  */
 
 /** Shape of the user object stored inside the session cookie. */
@@ -26,22 +26,26 @@ export interface SessionData {
 }
 
 /**
- * Derive an HMAC-SHA256 CryptoKey from the ENCRYPTION_KEY env var.
+ * Import the HMAC-SHA256 CryptoKey from the SESSION_SIGNING_KEY env var.
+ *
+ * The env var must be a base64-encoded 32-byte key. The key is decoded from
+ * base64 to raw bytes and imported directly — no SHA-256 pre-hash step.
+ * This ensures the signing key is independent of ENCRYPTION_KEY (athena#99).
+ *
  * Throws if the env var is missing.
  */
 async function getHmacKey(): Promise<CryptoKey> {
-	const secret = process.env.ENCRYPTION_KEY;
+	const secret = process.env.SESSION_SIGNING_KEY;
 	if (!secret) {
-		throw new Error("ENCRYPTION_KEY environment variable is required for session signing");
+		throw new Error("SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32");
 	}
 
-	const encoder = new TextEncoder();
-	const keyData = encoder.encode(secret);
+	// Base64-decode the env var to raw 32 bytes, then import as HMAC key.
+	// Do NOT use TextEncoder on the base64 string — that would hash the ASCII
+	// representation rather than the actual key material (Architecture C2).
+	const keyData = Uint8Array.from(atob(secret), (c) => c.charCodeAt(0));
 
-	// Derive a fixed 32-byte key via SHA-256 so arbitrary-length env vars work.
-	const hash = await crypto.subtle.digest("SHA-256", keyData);
-
-	return crypto.subtle.importKey("raw", hash, { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+	return crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
 
 /**

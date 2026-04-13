@@ -8,7 +8,7 @@
  * Strategy: mock the @olympusoss/sdk module to avoid DB calls,
  * and mock global.fetch to simulate Hydra token exchange, Hydra userinfo,
  * and Kratos admin responses.
- * ENCRYPTION_KEY is set in vitest.config.ts.
+ * SESSION_SIGNING_KEY and ENCRYPTION_KEY are set in vitest.config.ts.
  *
  * Fetch call order per successful request:
  *   1. POST {hydraUrl}/oauth2/token        — token exchange

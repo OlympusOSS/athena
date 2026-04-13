@@ -4,7 +4,7 @@
  * Covers QA plan scenarios: F11, F12, F13.
  * Security tests: S3 (tampered cookie), S9 (unauthenticated access).
  *
- * ENCRYPTION_KEY is set in vitest.config.ts.
+ * SESSION_SIGNING_KEY and ENCRYPTION_KEY are set in vitest.config.ts.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
