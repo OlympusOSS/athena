@@ -325,9 +325,11 @@ Routes under `/api/kratos/**`, `/api/kratos-admin/**`, `/api/iam-kratos/**`, `/a
 
 ## Edge Cases
 
-### Missing `ENCRYPTION_KEY` Environment Variable
+### Missing `SESSION_SIGNING_KEY` Environment Variable
 
-If `ENCRYPTION_KEY` is not set in the container, session HMAC verification throws at startup and returns `500` on every request to protected routes. Verify with `GET /api/health` — if it returns `200`, the environment is configured correctly.
+If `SESSION_SIGNING_KEY` is not set in the container, Athena fails to start with a fatal error. See [session-signing-key.md](session-signing-key.md) for the full startup validation behavior and fix command. Verify with `GET /api/health` — if it returns `200`, the environment is configured correctly.
+
+Note: `ENCRYPTION_KEY` is a separate key used for SDK settings encryption. Missing `ENCRYPTION_KEY` affects settings decryption, not session authentication. See [session-signing-key.md](session-signing-key.md) for key separation details.
 
 ### `/api/healthcheck` vs `/api/health`
 
@@ -349,7 +351,7 @@ If the `oauth_state` cookie is missing or does not match the `state` query param
 
 ## Security Considerations
 
-- **Session tampering**: The `athena-session` cookie is HMAC-SHA256-signed with `ENCRYPTION_KEY`. Any modification to the cookie payload invalidates the signature and returns `401`.
+- **Session tampering**: The `athena-session` cookie is HMAC-SHA256-signed with `SESSION_SIGNING_KEY` (not `ENCRYPTION_KEY` — these are separate keys as of athena#99). Any modification to the cookie payload invalidates the signature and returns `401`. See [session-signing-key.md](session-signing-key.md) for key configuration and rotation.
 - **Cookie security**: In production, the cookie is `HttpOnly` and `Secure`. Do not disable these attributes. See [Cookie Security](#cookie-security) above.
 - **No fallback paths**: There is no alternative authentication path (API key, bearer token, basic auth). There is no secret endpoint. If the middleware is bypassed, only `/api/dashboard/layout` has an inline `verifySession()` call as a secondary layer — all other routes would be unprotected.
 - **Secret decryption route**: `GET /api/settings/:key?decrypt=true` returns the plaintext value of an AES-256-GCM encrypted secret. This route requires an admin session. See [athena#51](https://github.com/OlympusOSS/athena/issues/51) for the security fix that enforced this.
@@ -367,6 +369,7 @@ If the `oauth_state` cookie is missing or does not match the `state` query param
 - [athena#60](https://github.com/OlympusOSS/athena/issues/60) — Standardized 401/403 error response shape (`not_authenticated` / `forbidden`)
 - [athena#61](https://github.com/OlympusOSS/athena/issues/61) — This document
 - [athena#63](https://github.com/OlympusOSS/athena/issues/63) — PKCE + public client OAuth2 integration guide
+- [athena#99](https://github.com/OlympusOSS/athena/issues/99) — SESSION_SIGNING_KEY separation from ENCRYPTION_KEY (see [session-signing-key.md](session-signing-key.md))
 - [athena#66](https://github.com/OlympusOSS/athena/issues/66) — CI enforcement: `audit:cookies` step for `cookie-options.ts` usage
 
 ---
