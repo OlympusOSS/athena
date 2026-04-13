@@ -10,26 +10,58 @@ env:
   IMAGE_NAME: ghcr.io/olympusoss/athena
 
 jobs:
-  version:
+  validate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     outputs:
-      new_version: ${{ steps.bump.outputs.new_version }}
+      tag_version: ${{ steps.extract.outputs.tag_version }}
     steps:
+      - name: Extract tag version
+        id: extract
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "tag_version=${TAG_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Tag version: ${TAG_VERSION}"
+
+      - name: Validate tag-commit ancestry (athena#121 AC1)
+        # Uses GitHub API instead of git merge-base to avoid shallow clone issues.
+        # Status must be "behind" (tag is ancestor of main) or "identical" (tag IS main HEAD).
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STATUS=$(gh api repos/${{ github.repository }}/compare/main...${{ github.ref_name }} \
+            --jq '.status')
+          echo "Ancestry status: ${STATUS}"
+          if [[ "${STATUS}" != "identical" && "${STATUS}" != "behind" ]]; then
+            echo "::error::Tag ${{ github.ref_name }} is not reachable from main (status: ${STATUS}). Aborting deploy."
+            exit 1
+          fi
+
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
 
-      - name: Read version from package.json
-        id: bump
+      - name: Validate tag-version consistency (athena#121 AC2)
+        # Prevents orphan tags where package.json version doesn't match the tag.
+        # This is the critical gate — catches tags pushed without version bumps.
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "new_version=v${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Version: v${VERSION}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "package.json version: ${PKG_VERSION}"
+          echo "Tag version: ${TAG_VERSION}"
+          if [[ "${PKG_VERSION}" != "${TAG_VERSION}" ]]; then
+            echo "::error::Version mismatch: package.json=${PKG_VERSION}, tag=${TAG_VERSION}. Aborting deploy."
+            exit 1
+          fi
 
-      - name: Create tag (if not exists)
-        run: |
-          git tag ${{ steps.bump.outputs.new_version }} 2>/dev/null || true
-          git push origin ${{ steps.bump.outputs.new_version }} 2>/dev/null || true
+  version:
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: v${{ needs.validate.outputs.tag_version }}
+    steps:
+      - run: echo "Version v${{ needs.validate.outputs.tag_version }} passed validation"
 
   build:
     needs: version
@@ -147,7 +179,7 @@ jobs:
             || echo "Release ${VERSION} already exists"
 
   deploy:
-    needs: [version, release]
+    needs: [version, release, validate]
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-athena-production
@@ -209,6 +241,23 @@ jobs:
             echo "WARNING: Not all services healthy after 100s"; \
             podman ps --filter "name=athena" --format "table {{.Names}}\t{{.Status}}"; \
             exit 1'
+
+      - name: Verify deployed version (athena#121 AC3)
+        # Post-deploy version assertion: confirms the running application
+        # reports the expected version. Prevents silent false-positive deploys.
+        env:
+          EXPECTED_VERSION: ${{ needs.validate.outputs.tag_version }}
+        run: |
+          RESPONSE=$(ssh ${{ env.SSH_OPTS }} ${{ env.SSH_TARGET }} \
+            "curl -sf http://localhost:3000/api/health 2>/dev/null || echo '{}'")
+          DEPLOYED_VERSION=$(echo "${RESPONSE}" | jq -r '.version // "unknown"')
+          echo "Expected: ${EXPECTED_VERSION}"
+          echo "Deployed: ${DEPLOYED_VERSION}"
+          if [[ "${DEPLOYED_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+            echo "::error::Version mismatch post-deploy: expected=${EXPECTED_VERSION}, deployed=${DEPLOYED_VERSION}"
+            exit 1
+          fi
+          echo "Version verified: ${DEPLOYED_VERSION}"
 
       - name: Cleanup SSH key
         if: always()
