@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @source "../../node_modules/@olympusoss/canvas/src/**/*.{ts,tsx}";
 @import "@olympusoss/canvas/styles/tokens.css";
-@import "@olympusoss/canvas/styles/animations.css";
-@import "@olympusoss/canvas/styles/glass.css";
 
 @theme inline {
 	--color-background: hsl(var(--background));
@@ -21,10 +19,10 @@
 	--color-accent-foreground: hsl(var(--accent-foreground));
 	--color-destructive: hsl(var(--destructive));
 	--color-destructive-foreground: hsl(var(--destructive-foreground));
-	--color-success: hsl(var(--success));
-	--color-success-foreground: hsl(var(--success-foreground));
-	--color-amber: hsl(var(--amber));
-	--color-amber-foreground: hsl(var(--amber-foreground));
+	--color-success: hsl(160 84% 39%);
+	--color-success-foreground: hsl(152 81% 96%);
+	--color-amber: hsl(38 92% 50%);
+	--color-amber-foreground: hsl(0 0% 9%);
 	--color-border: hsl(var(--border));
 	--color-input: hsl(var(--input));
 	--color-ring: hsl(var(--ring));

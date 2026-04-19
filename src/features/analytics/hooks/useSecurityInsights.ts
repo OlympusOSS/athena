@@ -1,4 +1,18 @@
-import type { IconName, SecurityAlert } from "@olympusoss/canvas";
+import type { IconName } from "@olympusoss/canvas";
+
+export type SecurityAlertSeverity = "critical" | "warning" | "info";
+export type SecurityAlertCategory = string;
+
+export interface SecurityAlert {
+	id: string;
+	severity: SecurityAlertSeverity;
+	category: SecurityAlertCategory;
+	title: string;
+	description: string;
+	timestamp?: string;
+	icon: IconName;
+	link?: string;
+}
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { HydraAnalytics, SessionAnalytics } from "../types";

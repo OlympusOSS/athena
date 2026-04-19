@@ -20,7 +20,6 @@ import {
 	Icon,
 	Input,
 	Label,
-	StatCard,
 	Table,
 	TableBody,
 	TableCell,
@@ -42,6 +41,20 @@ import {
 	validateIntrospectTokenForm,
 } from "@/features/oauth2-tokens";
 import type { IntrospectedOAuth2Token } from "@/services/hydra";
+
+function StatCard({ title, value, icon, colorVariant }: { title: string; value: number; icon: React.ReactNode; colorVariant?: string }) {
+	return (
+		<Card>
+			<div className="flex items-center gap-4 p-6">
+				<div className="text-muted-foreground">{icon}</div>
+				<div>
+					<p className="text-sm text-muted-foreground">{title}</p>
+					<p className="text-2xl font-bold">{value}</p>
+				</div>
+			</div>
+		</Card>
+	);
+}
 
 // Type for items returned by the token introspection manager
 type IntrospectedTokenListItem = IntrospectedOAuth2Token & {

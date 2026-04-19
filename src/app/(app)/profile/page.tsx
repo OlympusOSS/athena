@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar, AvatarFallback, Badge, Card, CardContent, FieldDisplay, Icon, Input, Label, Toast, Toaster, useToast } from "@olympusoss/canvas";
+import { Avatar, AvatarFallback, Badge, Card, CardContent, FieldDisplay, Icon, Input, Label, Toaster } from "@olympusoss/canvas";
+import { toast } from "sonner";
 import { useState } from "react";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";
@@ -11,7 +12,6 @@ export default function ProfilePage() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [displayName, setDisplayName] = useState(user?.displayName || "");
 	const [email, setEmail] = useState(user?.email || "");
-	const { toast, show: showToast, dismiss } = useToast();
 
 	if (!user) {
 		return null; // Protected by AdminLayout
@@ -31,7 +31,7 @@ export default function ProfilePage() {
 		// In a real application, this would update the user profile
 		// For now, we'll just show a success message
 		setIsEditing(false);
-		showToast("Profile updated successfully!", "success");
+		toast.success("Profile updated successfully!");
 	};
 
 	return (
@@ -141,9 +141,7 @@ export default function ProfilePage() {
 				</div>
 			</div>
 
-			<Toaster>
-				<Toast {...toast} onClose={dismiss} />
-			</Toaster>
+			<Toaster />
 		</ProtectedPage>
 	);
 }
