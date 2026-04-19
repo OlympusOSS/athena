@@ -17,3 +17,4 @@ yarn-error.log*
 package-lock.json
 test-results/
 test-results/
+CLAUDE.md
