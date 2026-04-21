@@ -15,5 +15,8 @@ export async function register() {
 	if (process.env.NEXT_RUNTIME === "nodejs") {
 		const { validateSessionSigningKey } = await import("./lib/startup-validation");
 		validateSessionSigningKey();
+
+		const { validateOnStartup } = await import("@olympusoss/sdk");
+		validateOnStartup();
 	}
 }
