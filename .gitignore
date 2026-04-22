@@ -16,4 +16,7 @@ yarn-error.log*
 .vscode/
 package-lock.json
 test-results/
+coverage/
+.npmrc
+bunfig.toml
 CLAUDE.md
