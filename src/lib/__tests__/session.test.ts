@@ -147,9 +147,7 @@ describe("getHmacKey — missing SESSION_SIGNING_KEY", () => {
 	it("F4/F5: signSession throws when SESSION_SIGNING_KEY is missing (no fallback to ENCRYPTION_KEY)", async () => {
 		// ENCRYPTION_KEY is still set in vitest.config.ts — this proves there is
 		// no silent fallback to it (Security S5, QA F5).
-		await expect(signSession(validSession)).rejects.toThrow(
-			"SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32",
-		);
+		await expect(signSession(validSession)).rejects.toThrow("SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32");
 	});
 
 	it("F4: verifySession returns null (via catch) when SESSION_SIGNING_KEY is missing", async () => {
@@ -185,18 +183,11 @@ describe("F8: session.ts has zero ENCRYPTION_KEY references", () => {
 	it("F8: source code does not reference ENCRYPTION_KEY", async () => {
 		const fs = await import("node:fs");
 		const path = await import("node:path");
-		const sessionSource = fs.readFileSync(
-			path.resolve(__dirname, "../session.ts"),
-			"utf-8",
-		);
+		const sessionSource = fs.readFileSync(path.resolve(__dirname, "../session.ts"), "utf-8");
 		// The doc comment may mention it for historical context, but the functional
 		// code (process.env.*, error messages) must not reference ENCRYPTION_KEY.
-		const functionalLines = sessionSource
-			.split("\n")
-			.filter((line) => !line.trimStart().startsWith("*") && !line.trimStart().startsWith("//"));
-		const hasEncryptionKeyRef = functionalLines.some((line) =>
-			line.includes("ENCRYPTION_KEY"),
-		);
+		const functionalLines = sessionSource.split("\n").filter((line) => !line.trimStart().startsWith("*") && !line.trimStart().startsWith("//"));
+		const hasEncryptionKeyRef = functionalLines.some((line) => line.includes("ENCRYPTION_KEY"));
 		expect(hasEncryptionKeyRef).toBe(false);
 	});
 });

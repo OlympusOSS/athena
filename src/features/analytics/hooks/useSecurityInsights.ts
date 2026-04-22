@@ -13,6 +13,7 @@ export interface SecurityAlert {
 	icon: IconName;
 	link?: string;
 }
+
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { HydraAnalytics, SessionAnalytics } from "../types";

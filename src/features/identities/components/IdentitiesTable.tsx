@@ -187,7 +187,7 @@ const IdentitiesTable: React.FC = React.memo(() => {
 				headerName: "State",
 				minWidth: 100,
 				renderCell: (value: string) => (
-					<StatusBadge status={value === "active" ? "active" : "inactive"} label={value === "active" ? "Active" : "Inactive"} size="small" />
+					<StatusBadge status={value === "active" ? "success" : "neutral"}>{value === "active" ? "Active" : "Inactive"}</StatusBadge>
 				),
 			},
 			{
@@ -227,15 +227,15 @@ const IdentitiesTable: React.FC = React.memo(() => {
 	}, []);
 
 	if (isLoading && !baseIdentities.length) {
-		return <LoadingState variant="page" />;
+		return <LoadingState />;
 	}
 
 	if (isError) {
 		return (
 			<ErrorState
-				variant="page"
 				message={(error as Error)?.message || "Unable to fetch identities. Please check your connection and try again."}
-				action={{ label: "Retry", onClick: () => refetch() }}
+				retryLabel="Retry"
+				onRetry={() => refetch()}
 			/>
 		);
 	}
@@ -247,26 +247,26 @@ const IdentitiesTable: React.FC = React.memo(() => {
 				<div>
 					<Badge variant="outline">{selectedIds.size} selected</Badge>
 					<Button variant="destructive" size="sm" onClick={() => setBulkOperation("delete")}>
-						<Icon name="delete" />
+						<Icon name="Trash2" />
 						Delete
 					</Button>
 					<Button variant="outline" size="sm" onClick={() => setBulkOperation("deleteSessions")}>
-						<Icon name="logout" />
+						<Icon name="LogOut" />
 						Delete Sessions
 					</Button>
 					<Button variant="outline" size="sm" onClick={() => setBulkOperation("activate")}>
-						<Icon name="success" />
+						<Icon name="CircleCheck" />
 						Activate
 					</Button>
 					<Button variant="outline" size="sm" onClick={() => setBulkOperation("deactivate")}>
-						<Icon name="blocked" />
+						<Icon name="Ban" />
 						Deactivate
 					</Button>
 					<TooltipProvider delayDuration={0}>
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<Button variant="ghost" size="icon" onClick={() => setSelectedIds(new Set())}>
-									<Icon name="close" />
+									<Icon name="X" />
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent>Clear selection</TooltipContent>

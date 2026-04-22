@@ -28,14 +28,13 @@ import {
 	EmptyState,
 	ErrorState,
 	Icon,
-	StatCard,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@olympusoss/canvas";
 import { useCallback, useState } from "react";
-import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
+import { ActionBar, PageHeader, ProtectedPage, SectionCard, StatCard } from "@/components/layout";
 import {
 	CreateM2MClientModal,
 	DeleteM2MClientModal,
@@ -68,10 +67,10 @@ function HowToUsePanel({ clientId }: { clientId?: string }) {
 		<SectionCard>
 			<button type="button" className="flex w-full items-center justify-between" onClick={() => setExpanded((v) => !v)}>
 				<div className="flex items-center gap-2">
-					<Icon name="code" />
+					<Icon name="Code" />
 					<span className="text-sm font-medium text-foreground">How to use client credentials</span>
 				</div>
-				<Icon name="chevron-down" style={expanded ? { transform: "rotate(180deg)" } : undefined} />
+				<Icon name="ChevronDown" style={expanded ? { transform: "rotate(180deg)" } : undefined} />
 			</button>
 
 			{expanded && (
@@ -93,7 +92,7 @@ function HowToUsePanel({ clientId }: { clientId?: string }) {
 										onClick={() => copy(curlExample, "curl")}
 										aria-label="Copy curl example"
 									>
-										<Icon name={copiedField === "curl" ? "check" : "copy"} />
+										<Icon name={copiedField === "curl" ? "Check" : "Copy"} />
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>{copiedField === "curl" ? "Copied!" : "Copy"}</TooltipContent>
@@ -270,7 +269,7 @@ export default function M2MClientsPage() {
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="ghost" size="icon" onClick={(e: React.MouseEvent) => e.stopPropagation()} aria-label="Client actions">
-							<Icon name="more-vertical" />
+							<Icon name="EllipsisVertical" />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
@@ -280,7 +279,7 @@ export default function M2MClientsPage() {
 								copy(row.client_id, row.client_id);
 							}}
 						>
-							<Icon name="copy" />
+							<Icon name="Copy" />
 							Copy Client ID
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
@@ -290,18 +289,17 @@ export default function M2MClientsPage() {
 								handleRotateClick(row);
 							}}
 						>
-							<Icon name="refresh" />
+							<Icon name="RefreshCw" />
 							Rotate Secret
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							variant="destructive"
 							onClick={(e: React.MouseEvent) => {
 								e.stopPropagation();
 								handleDeleteClick(row);
 							}}
 						>
-							<Icon name="delete" />
+							<Icon name="Trash2" />
 							Delete Client
 						</DropdownMenuItem>
 					</DropdownMenuContent>
@@ -316,13 +314,13 @@ export default function M2MClientsPage() {
 				<PageHeader
 					title="Machine-to-Machine"
 					subtitle="Register OAuth2 clients for AI agents and automated services using the client credentials grant"
-					icon={<Icon name="server" />}
+					icon={<Icon name="Server" />}
 					breadcrumbs={[{ label: "Applications" }, { label: "Machine-to-Machine" }]}
 					actions={
 						<ActionBar
 							primaryAction={{
 								label: "Add M2M Client",
-								icon: <Icon name="add" />,
+								icon: <Icon name="Plus" />,
 								onClick: openCreate,
 							}}
 						/>
@@ -331,11 +329,11 @@ export default function M2MClientsPage() {
 
 				{/* Stats */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<StatCard title="Total M2M Clients" value={isLoading ? 0 : clients.length} icon={<Icon name="server" />} colorVariant="primary" />
+					<StatCard title="Total M2M Clients" value={isLoading ? 0 : clients.length} icon={<Icon name="Server" />} colorVariant="primary" />
 					<StatCard
 						title="Clients with Sessions:Invalidate"
 						value={isLoading ? 0 : clients.filter((c) => c.scope?.includes("sessions:invalidate")).length}
-						icon={<Icon name="danger" />}
+						icon={<Icon name="TriangleAlert" />}
 						colorVariant="warning"
 					/>
 					<StatCard
@@ -345,7 +343,7 @@ export default function M2MClientsPage() {
 								? "—"
 								: `${formatTokenLifetime(Math.round(clients.reduce((sum, c) => sum + getTokenLifetimeSeconds(c), 0) / clients.length))}`
 						}
-						icon={<Icon name="time" />}
+						icon={<Icon name="Timer" />}
 						colorVariant="blue"
 					/>
 				</div>
@@ -354,19 +352,18 @@ export default function M2MClientsPage() {
 				<HowToUsePanel clientId={lastCreatedClientId} />
 
 				{/* Error state */}
-				{listError && <ErrorState variant="inline" message={`Failed to load M2M clients: ${listError.message}`} />}
+				{listError && <ErrorState message={`Failed to load M2M clients: ${listError.message}`} />}
 
 				{/* Client list */}
 				<Card>
 					{!isLoading && clients.length === 0 && !listError ? (
 						<EmptyState
-							icon={<Icon name="server" />}
+							icon={<Icon name="Server" />}
 							title="No M2M clients registered"
 							description="Register a machine-to-machine client to allow AI agents and services to authenticate with client credentials."
 							action={{
 								label: "Add M2M Client",
 								onClick: openCreate,
-								icon: <Icon name="add" />,
 							}}
 						/>
 					) : (

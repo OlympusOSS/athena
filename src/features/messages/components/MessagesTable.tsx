@@ -12,15 +12,15 @@ interface MessagesTableProps {
 const getStatusIcon = (status: CourierMessageStatus): React.ReactNode => {
 	switch (status) {
 		case "sent":
-			return <Icon name="success-filled" />;
+			return <Icon name="CircleCheck" />;
 		case "queued":
-			return <Icon name="time" />;
+			return <Icon name="Timer" />;
 		case "processing":
-			return <Icon name="time" />;
+			return <Icon name="Timer" />;
 		case "abandoned":
-			return <Icon name="x-circle" />;
+			return <Icon name="CircleX" />;
 		default:
-			return <Icon name="error" />;
+			return <Icon name="CircleX" />;
 	}
 };
 
@@ -42,11 +42,11 @@ const _getStatusColor = (status: CourierMessageStatus): string => {
 const getMessageTypeIcon = (type: string): React.ReactNode => {
 	switch (type) {
 		case "email":
-			return <Icon name="mail" />;
+			return <Icon name="Mail" />;
 		case "sms":
-			return <Icon name="message" />;
+			return <Icon name="MessageSquare" />;
 		default:
-			return <Icon name="mail" />;
+			return <Icon name="Mail" />;
 	}
 };
 
@@ -85,7 +85,7 @@ export const MessagesTable: React.FC<MessagesTableProps> = React.memo(({ message
 				renderCell: (value: CourierMessageStatus) => (
 					<div>
 						{getStatusIcon(value)}
-						<StatusBadge status={value === "sent" ? "active" : value === "queued" ? "pending" : "inactive"} label={value} showIcon={false} />
+						<StatusBadge status={value === "sent" ? "success" : value === "queued" ? "warning" : "neutral"}>{value}</StatusBadge>
 					</div>
 				),
 			},

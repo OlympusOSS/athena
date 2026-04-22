@@ -25,7 +25,7 @@ export default function CreateOAuth2ClientPage() {
 				<PageHeader
 					title="Create OAuth2 Client"
 					subtitle="Configure a new OAuth2 client application"
-					icon={<Icon name="grid" />}
+					icon={<Icon name="LayoutGrid" />}
 					breadcrumbs={[{ label: "OAuth2 Clients", href: "/clients" }, { label: "Create" }]}
 				/>
 

@@ -133,13 +133,13 @@ export default function SchemasPage() {
 					<PageHeader
 						title="Identity Schemas"
 						subtitle="View and inspect your identity schemas and their properties"
-						icon={<Icon name="shapes" />}
+						icon={<Icon name="Shapes" />}
 						actions={
 							<TooltipProvider delayDuration={0}>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button variant="ghost" size="icon" onClick={() => refetch()}>
-											<Icon name="refresh" />
+											<Icon name="RefreshCw" />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>Refresh</TooltipContent>
@@ -158,11 +158,12 @@ export default function SchemasPage() {
 							</div>
 
 							{isLoading ? (
-								<LoadingState variant="section" message="Loading schemas..." />
+								<LoadingState message="Loading schemas..." />
 							) : error ? (
 								<ErrorState
 									message="Unable to fetch identity schemas. Please check your connection and try again."
-									action={{ label: "Retry", onClick: refetch }}
+									retryLabel="Retry"
+									onRetry={() => refetch()}
 								/>
 							) : (
 								<>
@@ -182,7 +183,7 @@ export default function SchemasPage() {
 													<TableRow>
 														<TableCell colSpan={5}>
 															<EmptyState
-																icon={<Icon name="file-text" />}
+																icon={<Icon name="FileText" />}
 																title="No schemas found"
 																description={searchQuery ? "Try a different search term" : "No schemas are currently configured"}
 															/>
@@ -204,11 +205,11 @@ export default function SchemasPage() {
 															<TableCell>
 																<div className="flex items-center gap-1">
 																	<Button variant="outline" size="sm" onClick={() => handleViewSchema(schema.id)}>
-																		<Icon name="code" />
+																		<Icon name="Code" />
 																		View Schema
 																	</Button>
 																	<Button variant="ghost" size="icon">
-																		<Icon name="more-vertical" />
+																		<Icon name="EllipsisVertical" />
 																	</Button>
 																</div>
 															</TableCell>
@@ -273,9 +274,9 @@ export default function SchemasPage() {
 							</DialogHeader>
 							<div className="space-y-4">
 								{schemaLoading ? (
-									<LoadingState variant="section" message="Loading schema details..." />
+									<LoadingState message="Loading schema details..." />
 								) : schemaContent ? (
-									<CodeBlock code={JSON.stringify(schemaContent, null, 2)} language="json" maxHeight="60vh" />
+									<CodeBlock code={JSON.stringify(schemaContent, null, 2)} language="json" />
 								) : (
 									<p className="text-sm text-muted-foreground">Failed to load schema content. Please try again.</p>
 								)}

@@ -120,7 +120,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 		return (
 			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
-					<LoadingState variant="section" />
+					<LoadingState />
 				</DialogContent>
 			</Dialog>
 		);
@@ -133,7 +133,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 					<DialogHeader>
 						<DialogTitle>Session Details</DialogTitle>
 					</DialogHeader>
-					<ErrorState variant="inline" message={`Failed to load session details: ${fetchError?.message || "Unknown error"}`} />
+					<ErrorState message={`Failed to load session details: ${fetchError?.message || "Unknown error"}`} />
 				</DialogContent>
 			</Dialog>
 		);
@@ -156,7 +156,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 							<div>
 								<span>{error}</span>
 								<button type="button" onClick={() => setError(null)}>
-									<Icon name="close" />
+									<Icon name="X" />
 								</button>
 							</div>
 						)}
@@ -164,7 +164,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 						{/* Basic Session Info */}
 						<div>
 							<div>
-								<Icon name="info" />
+								<Icon name="Info" />
 								<h3>Basic Information</h3>
 							</div>
 
@@ -177,7 +177,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 								<div>
 									<span>Status</span>
 									<div>
-										<StatusBadge status={session.active ? "active" : "inactive"} label={session.active ? "Active" : "Inactive"} showIcon />
+										<StatusBadge status={session.active ? "success" : "neutral"}>{session.active ? "Active" : "Inactive"}</StatusBadge>
 									</div>
 								</div>
 
@@ -208,7 +208,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 						{session.identity && (
 							<div>
 								<div>
-									<Icon name="user" />
+									<Icon name="User" />
 									<h3>Identity Information</h3>
 								</div>
 
@@ -255,7 +255,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 						{session.authentication_methods && session.authentication_methods.length > 0 && (
 							<div>
 								<div>
-									<Icon name="shield" />
+									<Icon name="Shield" />
 									<h3>Authentication Methods</h3>
 								</div>
 
@@ -276,7 +276,7 @@ export const SessionDetailDialog: React.FC<SessionDetailDialogProps> = React.mem
 						{session.devices && session.devices.length > 0 && (
 							<div>
 								<div>
-									<Icon name="monitor" />
+									<Icon name="Monitor" />
 									<h3>Devices</h3>
 								</div>
 

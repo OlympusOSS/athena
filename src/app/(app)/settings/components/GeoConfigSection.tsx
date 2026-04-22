@@ -61,13 +61,13 @@ export function GeoConfigSection() {
 			<div className="grid gap-4 sm:grid-cols-2">
 				<Card>
 					<CardContent className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-						<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+						<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 						Loading...
 					</CardContent>
 				</Card>
 				<Card>
 					<CardContent className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-						<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+						<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 						Loading...
 					</CardContent>
 				</Card>
@@ -84,7 +84,7 @@ export function GeoConfigSection() {
 				<Card>
 					<CardHeader>
 						<div className="flex items-center gap-2">
-							<Icon name="globe" className="h-4 w-4 text-muted-foreground" />
+							<Icon name="Globe" className="h-4 w-4 text-muted-foreground" />
 							<CardTitle className="text-base">Geolocation</CardTitle>
 						</div>
 					</CardHeader>
@@ -126,7 +126,7 @@ export function GeoConfigSection() {
 				<Card>
 					<CardHeader>
 						<div className="flex items-center gap-2">
-							<Icon name="globe" className="h-4 w-4 text-muted-foreground" />
+							<Icon name="Globe" className="h-4 w-4 text-muted-foreground" />
 							<CardTitle className="text-base">API Endpoint</CardTitle>
 						</div>
 					</CardHeader>
@@ -136,7 +136,7 @@ export function GeoConfigSection() {
 								Batch Endpoint
 							</Label>
 							<div className="relative">
-								<Icon name="globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+								<Icon name="Globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 								<Input
 									id="geo-endpoint"
 									placeholder="http://ip-api.com/batch"

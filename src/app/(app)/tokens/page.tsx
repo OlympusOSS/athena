@@ -135,7 +135,7 @@ export default function OAuth2TokensPage() {
 				<PageHeader
 					title="OAuth2 Access Tokens"
 					subtitle="Introspect and manage OAuth2 access tokens"
-					icon={<Icon name="key-round" />}
+					icon={<Icon name="KeyRound" />}
 					actions={
 						<Button variant="outline" onClick={clearAllIntrospections} disabled={introspectedTokens.length === 0}>
 							Clear All
@@ -145,10 +145,10 @@ export default function OAuth2TokensPage() {
 
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-					<StatCard title="Introspected Tokens" value={tokenStats?.totalTokens || 0} icon={<Icon name="receipt" />} colorVariant="primary" />
-					<StatCard title="Active Tokens" value={tokenStats?.activeTokens || 0} icon={<Icon name="success" />} colorVariant="success" />
-					<StatCard title="Expired Tokens" value={tokenStats?.expiredTokens || 0} icon={<Icon name="error" />} colorVariant="error" />
-					<StatCard title="Expiring in 24h" value={tokenStats?.tokensExpiringIn24h || 0} icon={<Icon name="time" />} colorVariant="warning" />
+					<StatCard title="Introspected Tokens" value={tokenStats?.totalTokens || 0} icon={<Icon name="Receipt" />} colorVariant="primary" />
+					<StatCard title="Active Tokens" value={tokenStats?.activeTokens || 0} icon={<Icon name="CircleCheck" />} colorVariant="success" />
+					<StatCard title="Expired Tokens" value={tokenStats?.expiredTokens || 0} icon={<Icon name="CircleX" />} colorVariant="error" />
+					<StatCard title="Expiring in 24h" value={tokenStats?.tokensExpiringIn24h || 0} icon={<Icon name="Timer" />} colorVariant="warning" />
 				</div>
 
 				{/* Tabs */}
@@ -207,7 +207,7 @@ export default function OAuth2TokensPage() {
 									</div>
 									<div className="flex items-center gap-2">
 										<Button type="submit" disabled={isIntrospecting}>
-											{isIntrospecting ? <Icon name="loading" /> : <Icon name="search" />}
+											{isIntrospecting ? <Icon name="LoaderCircle" /> : <Icon name="Search" />}
 											{isIntrospecting ? "Introspecting..." : "Introspect Token"}
 										</Button>
 										<Button variant="outline" type="button" onClick={() => setIntrospectFormData(getDefaultIntrospectTokenFormData())}>
@@ -218,7 +218,7 @@ export default function OAuth2TokensPage() {
 							</form>
 
 							{/* Error Display */}
-							{introspectionError && <ErrorState message={`Failed to introspect token: ${introspectionError.message}`} variant="inline" />}
+							{introspectionError && <ErrorState message={`Failed to introspect token: ${introspectionError.message}`} />}
 						</div>
 					)}
 
@@ -226,7 +226,7 @@ export default function OAuth2TokensPage() {
 						<div className="p-6">
 							{introspectedTokens.length === 0 ? (
 								<EmptyState
-									icon={<Icon name="key-round" />}
+									icon={<Icon name="KeyRound" />}
 									title="No tokens introspected yet"
 									description='Use the "Introspect Token" tab to analyze OAuth2 tokens'
 								/>
@@ -282,10 +282,10 @@ export default function OAuth2TokensPage() {
 														<TableCell>
 															<div className="flex items-center gap-1">
 																<Button variant="ghost" size="icon" onClick={() => handleViewToken(token)} title="View Details">
-																	<Icon name="view" />
+																	<Icon name="Eye" />
 																</Button>
 																<Button variant="ghost" size="icon" onClick={() => handleRevokeClick(token)} title="Revoke Token">
-																	<Icon name="delete" />
+																	<Icon name="Trash2" />
 																</Button>
 															</div>
 														</TableCell>
@@ -305,7 +305,7 @@ export default function OAuth2TokensPage() {
 					<DialogContent>
 						<DialogHeader>
 							<DialogTitle className="flex items-center gap-2">
-								<Icon name="shield" />
+								<Icon name="Shield" />
 								Token Details
 							</DialogTitle>
 						</DialogHeader>
@@ -313,7 +313,7 @@ export default function OAuth2TokensPage() {
 							<div className="space-y-4">
 								{/* Status Banner */}
 								<Alert variant={selectedToken.statusInfo?.isActive ? "default" : "destructive"}>
-									{selectedToken.statusInfo?.isActive ? <Icon name="success" /> : <Icon name="x-circle" />}
+									{selectedToken.statusInfo?.isActive ? <Icon name="CircleCheck" /> : <Icon name="CircleX" />}
 									<AlertDescription>
 										Token is {selectedToken.statusInfo?.isActive ? "active" : "inactive/expired"}
 										{selectedToken.statusInfo?.timeToExpiry && <> &bull; Expires in {selectedToken.statusInfo.timeToExpiry}</>}
@@ -442,7 +442,7 @@ export default function OAuth2TokensPage() {
 				{/* Revoke Error Display */}
 				{revokeTokenMutation.error && (
 					<Alert variant="destructive">
-						<Icon name="error" />
+						<Icon name="CircleX" />
 						<AlertDescription>Failed to revoke token: {revokeTokenMutation.error.message}</AlertDescription>
 					</Alert>
 				)}

@@ -30,32 +30,24 @@ describe("validateSessionSigningKey — missing key", () => {
 
 	it("F4: throws when SESSION_SIGNING_KEY is not set", async () => {
 		const { validateSessionSigningKey } = await loadModule();
-		expect(() => validateSessionSigningKey()).toThrow(
-			"SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32",
-		);
+		expect(() => validateSessionSigningKey()).toThrow("SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32");
 	});
 
 	it("F18: throws when SESSION_SIGNING_KEY is empty string", async () => {
 		process.env.SESSION_SIGNING_KEY = "";
 		const { validateSessionSigningKey } = await loadModule();
-		expect(() => validateSessionSigningKey()).toThrow(
-			"SESSION_SIGNING_KEY is required",
-		);
+		expect(() => validateSessionSigningKey()).toThrow("SESSION_SIGNING_KEY is required");
 	});
 
 	it("F18: throws when SESSION_SIGNING_KEY is whitespace only", async () => {
 		process.env.SESSION_SIGNING_KEY = "   ";
 		const { validateSessionSigningKey } = await loadModule();
-		expect(() => validateSessionSigningKey()).toThrow(
-			"SESSION_SIGNING_KEY is required",
-		);
+		expect(() => validateSessionSigningKey()).toThrow("SESSION_SIGNING_KEY is required");
 	});
 
 	it("DX-99-1: error message includes fix command", async () => {
 		const { validateSessionSigningKey } = await loadModule();
-		expect(() => validateSessionSigningKey()).toThrow(
-			"openssl rand -base64 32",
-		);
+		expect(() => validateSessionSigningKey()).toThrow("openssl rand -base64 32");
 	});
 
 	it("F5/S5: does not fall back to ENCRYPTION_KEY", async () => {
@@ -63,9 +55,7 @@ describe("validateSessionSigningKey — missing key", () => {
 		// The function must still throw — proving no fallback to ENCRYPTION_KEY.
 		expect(process.env.ENCRYPTION_KEY).toBeTruthy();
 		const { validateSessionSigningKey } = await loadModule();
-		expect(() => validateSessionSigningKey()).toThrow(
-			"SESSION_SIGNING_KEY is required",
-		);
+		expect(() => validateSessionSigningKey()).toThrow("SESSION_SIGNING_KEY is required");
 	});
 });
 
@@ -95,9 +85,7 @@ describe("validateSessionSigningKey — same value as ENCRYPTION_KEY", () => {
 
 		// The logger.error() call goes through console.error
 		const errorCalls = errorSpy.mock.calls.map((args) => args.join(" "));
-		const hasSameKeyWarning = errorCalls.some(
-			(msg) => msg.includes("same value") || msg.includes("key separation"),
-		);
+		const hasSameKeyWarning = errorCalls.some((msg) => msg.includes("same value") || msg.includes("key separation"));
 		expect(hasSameKeyWarning).toBe(true);
 
 		errorSpy.mockRestore();
@@ -116,9 +104,7 @@ describe("validateSessionSigningKey — same value as ENCRYPTION_KEY", () => {
 
 		// Should NOT log a warning because the raw strings are different
 		const errorCalls = errorSpy.mock.calls.map((args) => args.join(" "));
-		const hasSameKeyWarning = errorCalls.some(
-			(msg) => msg.includes("same value") || msg.includes("key separation"),
-		);
+		const hasSameKeyWarning = errorCalls.some((msg) => msg.includes("same value") || msg.includes("key separation"));
 		expect(hasSameKeyWarning).toBe(false);
 
 		errorSpy.mockRestore();
@@ -135,9 +121,7 @@ describe("validateSessionSigningKey — same value as ENCRYPTION_KEY", () => {
 		validateSessionSigningKey();
 
 		const errorCalls = errorSpy.mock.calls.map((args) => args.join(" "));
-		const hasFixCommand = errorCalls.some((msg) =>
-			msg.includes("openssl rand -base64 32"),
-		);
+		const hasFixCommand = errorCalls.some((msg) => msg.includes("openssl rand -base64 32"));
 		expect(hasFixCommand).toBe(true);
 
 		errorSpy.mockRestore();

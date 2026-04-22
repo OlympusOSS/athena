@@ -68,7 +68,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					field: "active",
 					headerName: "Status",
 					minWidth: 120,
-					renderCell: (value: boolean) => <StatusBadge status={value ? "active" : "inactive"} label={value ? "Active" : "Inactive"} showIcon />,
+					renderCell: (value: boolean) => <StatusBadge status={value ? "success" : "neutral"}>{value ? "Active" : "Inactive"}</StatusBadge>,
 				},
 				{
 					field: "authenticated_at",
@@ -77,7 +77,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 					renderCell: (value: string) =>
 						value ? (
 							<div>
-								<Icon name="time" />
+								<Icon name="Timer" />
 								<span>{formatDate(value)}</span>
 							</div>
 						) : (
@@ -96,7 +96,7 @@ export const SessionsTable: React.FC<SessionsTableProps> = React.memo(
 
 						return (
 							<div>
-								{isExpiringSoon && <Icon name="danger" />}
+								{isExpiringSoon && <Icon name="TriangleAlert" />}
 								<span>{timeRemaining}</span>
 							</div>
 						);

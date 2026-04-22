@@ -21,8 +21,8 @@
  */
 
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import "@/styles/globals.css";
 import Providers from "@/providers/Providers";
 

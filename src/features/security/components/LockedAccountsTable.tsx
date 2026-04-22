@@ -74,7 +74,7 @@ export function LockedAccountsTable({ accounts, isLoading, onUnlockSuccess, onUn
 				field: "lock_reason",
 				headerName: "Reason",
 				minWidth: 140,
-				renderCell: (value: string | null) => <StatusBadge status="inactive" label={value ?? "unknown"} showIcon />,
+				renderCell: (value: string | null) => <StatusBadge status="neutral">{value ?? "unknown"}</StatusBadge>,
 			},
 			{
 				field: "trigger_ip",
@@ -95,7 +95,7 @@ export function LockedAccountsTable({ accounts, isLoading, onUnlockSuccess, onUn
 				renderCell: (value: Date | null) =>
 					value ? (
 						<div className="flex items-center gap-1.5">
-							<Icon name="time" className="h-3.5 w-3.5 text-muted-foreground" />
+							<Icon name="Timer" className="h-3.5 w-3.5 text-muted-foreground" />
 							<span className="text-sm">{value.toLocaleString()}</span>
 						</div>
 					) : (
@@ -130,7 +130,7 @@ export function LockedAccountsTable({ accounts, isLoading, onUnlockSuccess, onUn
 						}}
 						disabled={unlockMutation.isPending}
 					>
-						<Icon name="key-round" className="h-3.5 w-3.5" />
+						<Icon name="KeyRound" className="h-3.5 w-3.5" />
 						Unlock
 					</Button>
 				),

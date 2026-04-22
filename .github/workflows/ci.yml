@@ -37,6 +37,8 @@ jobs:
         run: bun run audit:cookies
       - name: Run unit tests
         run: bun run test
+      - name: Run unit tests with coverage (80% threshold gate)
+        run: bun run test:coverage
       - run: bun run build
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium

@@ -16,7 +16,7 @@ const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchem
 	if (loading) {
 		return (
 			<div>
-				<LoadingState variant="section" message="Loading schemas..." />
+				<LoadingState message="Loading schemas..." />
 			</div>
 		);
 	}
@@ -24,7 +24,7 @@ const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchem
 	if (schemas.length === 0) {
 		return (
 			<div>
-				<EmptyState icon={<Icon name="file-code" />} title="No schemas found" description="No identity schemas are currently configured" />
+				<EmptyState icon={<Icon name="FileCode" />} title="No schemas found" description="No identity schemas are currently configured" />
 			</div>
 		);
 	}
@@ -38,7 +38,7 @@ const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchem
 				return (
 					<button key={schema.id} type="button" onClick={() => onSchemaSelect(schema)}>
 						<div>
-							<Icon name="file-code" />
+							<Icon name="FileCode" />
 						</div>
 						<div>
 							<div>

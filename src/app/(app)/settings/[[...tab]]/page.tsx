@@ -26,9 +26,8 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-	Toast,
 	Toaster,
-	useToast,
+	toast,
 } from "@olympusoss/canvas";
 import { useParams, useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
@@ -170,8 +169,6 @@ export default function SettingsPage() {
 		[activeTab, router],
 	);
 
-	const { toast, show: showSuccessToast, dismiss } = useToast();
-
 	// Settings store hooks
 	const hydraEnabled = useHydraEnabled();
 	const setHydraEnabled = useSetHydraEnabled();
@@ -189,7 +186,7 @@ export default function SettingsPage() {
 	});
 
 	// Success callback for all save operations
-	const showSuccess = () => showSuccessToast("Settings saved successfully!", "success");
+	const showSuccess = () => toast.success("Settings saved successfully!");
 
 	// Form hooks for Kratos and Hydra
 	const kratosForm = useServiceSettingsForm({
@@ -227,27 +224,27 @@ export default function SettingsPage() {
 			<Tabs value={activeTab} onValueChange={handleTabChange}>
 				<TabsList>
 					<TabsTrigger value="general">
-						<Icon name="settings" className="h-3.5 w-3.5" />
+						<Icon name="Settings" className="h-3.5 w-3.5" />
 						General
 					</TabsTrigger>
 					<TabsTrigger value="vault">
-						<Icon name="lock" className="h-3.5 w-3.5" />
+						<Icon name="Lock" className="h-3.5 w-3.5" />
 						Vault
 					</TabsTrigger>
 					<TabsTrigger value="kratos">
-						<Icon name="shield" className="h-3.5 w-3.5" />
+						<Icon name="Shield" className="h-3.5 w-3.5" />
 						Identity
 					</TabsTrigger>
 					<TabsTrigger value="hydra">
-						<Icon name="key" className="h-3.5 w-3.5" />
+						<Icon name="Key" className="h-3.5 w-3.5" />
 						OAuth2
 					</TabsTrigger>
 					<TabsTrigger value="geo">
-						<Icon name="globe" className="h-3.5 w-3.5" />
+						<Icon name="Globe" className="h-3.5 w-3.5" />
 						Geolocation
 					</TabsTrigger>
 					<TabsTrigger value="security">
-						<Icon name="shield" className="h-3.5 w-3.5" />
+						<Icon name="Shield" className="h-3.5 w-3.5" />
 						Security
 					</TabsTrigger>
 				</TabsList>
@@ -304,7 +301,7 @@ export default function SettingsPage() {
 							</CardHeader>
 							<CardContent className="pt-0">
 								<SettingRow
-									icon="grid"
+									icon="LayoutGrid"
 									label="Enable OAuth2"
 									description={
 										hydraEnabled ? "OAuth2 client management and analytics are available." : "Enable to manage OAuth2 clients and view analytics."
@@ -320,7 +317,7 @@ export default function SettingsPage() {
 								</SettingRow>
 
 								{hydraEnabled && (
-									<SettingRow icon="key" label="Default client" description="OAuth2 client used when users navigate directly to the login page." last>
+									<SettingRow icon="Key" label="Default client" description="OAuth2 client used when users navigate directly to the login page." last>
 										<Select value={defaultClientId || "none"} onValueChange={handleDefaultClientChange}>
 											<SelectTrigger className="w-[220px]">
 												<SelectValue placeholder="Select a client…" />
@@ -375,9 +372,7 @@ export default function SettingsPage() {
 				</TabsContent>
 			</Tabs>
 
-			<Toaster>
-				<Toast {...toast} onClose={dismiss} />
-			</Toaster>
+			<Toaster />
 
 			{/* Guard C: Hard-block tab navigation when MFA section has unsaved changes */}
 			<Dialog

@@ -102,7 +102,7 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2 text-destructive">
-						<Icon name="danger" className="h-5 w-5" />
+						<Icon name="TriangleAlert" className="h-5 w-5" />
 						Remove {displayName} Connection
 					</DialogTitle>
 				</DialogHeader>
@@ -110,7 +110,7 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 				<div className="space-y-4">
 					{/* Required impact statement (Security Review V8 — exact text from F20/F21) */}
 					<Alert variant="destructive">
-						<Icon name="danger" />
+						<Icon name="TriangleAlert" />
 						<AlertDescription>
 							<p>
 								<strong>Users who have only logged in via {displayName} will not be able to log in after deletion.</strong> Their accounts will remain
@@ -128,11 +128,11 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 					{/* Affected user count (best-effort, 5s timeout per DA C2) */}
 					<div className="rounded-lg border border-border bg-muted/50 p-4">
 						<div className="flex items-center gap-2 text-sm">
-							<Icon name="users" className="h-4 w-4 text-muted-foreground" />
+							<Icon name="Users" className="h-4 w-4 text-muted-foreground" />
 							<span className="font-medium">Potentially affected users:</span>
 							{countLoading ? (
 								<span className="text-muted-foreground">
-									<Icon name="loading" className="h-3 w-3 animate-spin inline" /> Checking...
+									<Icon name="LoaderCircle" className="h-3 w-3 animate-spin inline" /> Checking...
 								</span>
 							) : userCount.available && userCount.count !== null ? (
 								<span className="text-destructive font-medium">{userCount.count.toLocaleString()}</span>
@@ -150,7 +150,7 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 					{/* API error */}
 					{deleteMutation.isError && (
 						<Alert variant="destructive">
-							<Icon name="danger" />
+							<Icon name="TriangleAlert" />
 							<AlertDescription>{deleteMutation.error?.message ?? "Failed to delete connection. Please try again."}</AlertDescription>
 						</Alert>
 					)}
@@ -163,12 +163,12 @@ export function DeleteConnectionDialog({ open, provider, onSuccess, onCancel }: 
 					<Button type="button" variant="destructive" onClick={handleConfirm} disabled={deleteMutation.isPending}>
 						{deleteMutation.isPending ? (
 							<>
-								<Icon name="loading" className="h-4 w-4 animate-spin" />
+								<Icon name="LoaderCircle" className="h-4 w-4 animate-spin" />
 								Removing...
 							</>
 						) : (
 							<>
-								<Icon name="delete" className="h-4 w-4" />
+								<Icon name="Trash2" className="h-4 w-4" />
 								Remove {displayName}
 							</>
 						)}

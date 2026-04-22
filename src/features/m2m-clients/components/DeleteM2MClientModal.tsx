@@ -39,7 +39,7 @@ export function DeleteM2MClientModal({ open, onOpenChange, onConfirm, clientName
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Icon name="delete" />
+						<Icon name="Trash2" />
 						Delete M2M Client
 					</DialogTitle>
 					<DialogDescription>
@@ -49,7 +49,7 @@ export function DeleteM2MClientModal({ open, onOpenChange, onConfirm, clientName
 
 				<Alert variant="destructive">
 					<AlertDescription>
-						<Icon name="danger" />
+						<Icon name="TriangleAlert" />
 						Any AI agent or automated service currently using this client will immediately lose access. Existing access tokens remain valid until
 						their natural expiry.
 					</AlertDescription>
@@ -68,12 +68,12 @@ export function DeleteM2MClientModal({ open, onOpenChange, onConfirm, clientName
 					<Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
 						{isDeleting ? (
 							<>
-								<Icon name="loading" />
+								<Icon name="LoaderCircle" />
 								Deleting...
 							</>
 						) : (
 							<>
-								<Icon name="delete" />
+								<Icon name="Trash2" />
 								Delete Client
 							</>
 						)}

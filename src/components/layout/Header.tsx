@@ -16,13 +16,13 @@ import {
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
+	useTheme,
 } from "@olympusoss/canvas";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogout, useUser } from "@/features/auth/hooks/useAuth";
 import { navGuard } from "@/lib/navGuard";
-import { useTheme } from "@/providers/ThemeProvider";
 
 export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void }) {
 	const { theme, toggleTheme } = useTheme();
@@ -56,7 +56,7 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 				<div className="flex items-center gap-3">
 					{onMobileMenuToggle && (
 						<Button variant="ghost" size="icon" onClick={onMobileMenuToggle} className="md:hidden">
-							<Icon name="menu" />
+							<Icon name="Menu" />
 						</Button>
 					)}
 					<span className="text-sm font-medium text-foreground">{getPageTitle()}</span>
@@ -87,7 +87,7 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 										}
 									}}
 								>
-									<Icon name="settings" />
+									<Icon name="Settings" />
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent>Settings</TooltipContent>
@@ -117,17 +117,17 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 							)}
 							<DropdownMenuItem asChild disabled={pathname === "/profile"}>
 								<Link href="/profile">
-									<Icon name="user" className="mr-2 h-4 w-4" />
+									<Icon name="User" className="mr-2 h-4 w-4" />
 									Profile
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={toggleTheme}>
-								<Icon name={theme === "dark" ? "sun" : "moon"} className="mr-2 h-4 w-4" />
+								<Icon name={theme === "dark" ? "Sun" : "Moon"} className="mr-2 h-4 w-4" />
 								{theme === "dark" ? "Light mode" : "Dark mode"}
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive">
-								<Icon name="logout" className="mr-2 h-4 w-4" />
+								<Icon name="LogOut" className="mr-2 h-4 w-4" />
 								Logout
 							</DropdownMenuItem>
 						</DropdownMenuContent>

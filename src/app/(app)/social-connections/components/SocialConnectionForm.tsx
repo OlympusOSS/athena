@@ -116,7 +116,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 								className="sr-only"
 								{...register("provider", { required: true })}
 							/>
-							<Icon name="app" className="h-6 w-6" />
+							<Icon name="AppWindow" className="h-6 w-6" />
 							<span className="font-medium">{option.label}</span>
 							{!option.available && (
 								<Badge variant="secondary" className="text-xs">
@@ -131,7 +131,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 			{/* Kratos Callback URI — read-only callout (V10 mitigation) */}
 			{isGoogleSelected && (
 				<Alert>
-					<Icon name="info" />
+					<Icon name="Info" />
 					<AlertDescription className="space-y-2">
 						<p className="text-sm font-medium">Before saving, register this callback URI in your Google Cloud Console:</p>
 						<div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
@@ -196,7 +196,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 			{isGoogleSelected && (
 				<div className="space-y-4 rounded-lg border border-border bg-muted/50 p-4">
 					<div className="flex items-center gap-2">
-						<Icon name="lock" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="Lock" className="h-4 w-4 text-muted-foreground" />
 						<span className="text-sm font-medium text-muted-foreground">Google OAuth2 Endpoints (pre-configured, read-only)</span>
 					</div>
 					<div className="space-y-3">
@@ -235,7 +235,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 			{/* API error */}
 			{createMutation.isError && (
 				<Alert variant="destructive">
-					<Icon name="danger" />
+					<Icon name="TriangleAlert" />
 					<AlertDescription>{createMutation.error?.message ?? "Failed to save connection. Please try again."}</AlertDescription>
 				</Alert>
 			)}
@@ -248,7 +248,7 @@ export function SocialConnectionForm({ mode, existingConnection, onSuccess, onCa
 				<Button type="submit" disabled={isSubmitting || createMutation.isPending}>
 					{createMutation.isPending ? (
 						<>
-							<Icon name="loading" className="h-4 w-4 animate-spin" />
+							<Icon name="LoaderCircle" className="h-4 w-4 animate-spin" />
 							Saving...
 						</>
 					) : mode === "create" ? (

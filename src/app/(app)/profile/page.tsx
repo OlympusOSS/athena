@@ -1,7 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, Badge, Card, CardContent, FieldDisplay, Icon, Input, Label, Toaster } from "@olympusoss/canvas";
-import { toast } from "sonner";
+import { Avatar, AvatarFallback, Badge, Card, CardContent, FieldDisplay, Icon, Input, Label, Toaster, toast } from "@olympusoss/canvas";
 import { useState } from "react";
 import { ActionBar, FlexBox, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
 import { UserRole } from "@/features/auth";
@@ -45,7 +44,7 @@ export default function ProfilePage() {
 								<ActionBar
 									primaryAction={{
 										label: "Edit Profile",
-										icon: <Icon name="edit" />,
+										icon: <Icon name="Pencil" />,
 										onClick: handleEdit,
 									}}
 								/>
@@ -53,13 +52,13 @@ export default function ProfilePage() {
 								<ActionBar
 									primaryAction={{
 										label: "Save",
-										icon: <Icon name="save" />,
+										icon: <Icon name="Save" />,
 										onClick: handleSave,
 									}}
 									secondaryActions={[
 										{
 											label: "Cancel",
-											icon: <Icon name="close" />,
+											icon: <Icon name="X" />,
 											onClick: handleCancel,
 											variant: "outline",
 										},
@@ -88,7 +87,7 @@ export default function ProfilePage() {
 							<SectionCard
 								title={
 									<FlexBox align="center" gap={1}>
-										<Icon name="user" />
+										<Icon name="User" />
 										<span>Personal Information</span>
 									</FlexBox>
 								}
@@ -121,7 +120,7 @@ export default function ProfilePage() {
 							<SectionCard
 								title={
 									<FlexBox align="center" gap={1}>
-										<Icon name="lock" />
+										<Icon name="Lock" />
 										<span>Account Information</span>
 									</FlexBox>
 								}
@@ -132,7 +131,7 @@ export default function ProfilePage() {
 									</div>
 
 									<div className="space-y-2">
-										<FieldDisplay label="Role" value={user.role} valueType="chip" />
+										<FieldDisplay label="Role" value={user.role} />
 									</div>
 								</div>
 							</SectionCard>

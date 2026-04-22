@@ -215,7 +215,7 @@ export function OAuth2ClientForm({
 							}}
 						/>
 						<Button type="button" variant="outline" onClick={addRedirectUri}>
-							<Icon name="add" />
+							<Icon name="Plus" />
 							Add
 						</Button>
 					</div>
@@ -225,7 +225,7 @@ export function OAuth2ClientForm({
 							<Badge key={index} variant="secondary">
 								{uri}
 								<button type="button" onClick={() => removeRedirectUri(index)}>
-									<Icon name="close" />
+									<Icon name="X" />
 								</button>
 							</Badge>
 						))}
@@ -290,7 +290,7 @@ export function OAuth2ClientForm({
 								}}
 							/>
 							<Button type="button" variant="outline" onClick={addContact}>
-								<Icon name="add" />
+								<Icon name="Plus" />
 								Add
 							</Button>
 						</div>
@@ -299,7 +299,7 @@ export function OAuth2ClientForm({
 								<Badge key={index} variant="secondary">
 									{contact}
 									<button type="button" onClick={() => removeContact(index)}>
-										<Icon name="close" />
+										<Icon name="X" />
 									</button>
 								</Badge>
 							))}
@@ -321,7 +321,7 @@ export function OAuth2ClientForm({
 								}}
 							/>
 							<Button type="button" variant="outline" onClick={addAudience}>
-								<Icon name="add" />
+								<Icon name="Plus" />
 								Add
 							</Button>
 						</div>
@@ -330,7 +330,7 @@ export function OAuth2ClientForm({
 								<Badge key={index} variant="secondary">
 									{aud}
 									<button type="button" onClick={() => removeAudience(index)}>
-										<Icon name="close" />
+										<Icon name="X" />
 									</button>
 								</Badge>
 							))}
@@ -354,7 +354,7 @@ export function OAuth2ClientForm({
 			{/* Error Display */}
 			{error && (
 				<div>
-					<Icon name="error" />
+					<Icon name="CircleX" />
 					{error.message}
 				</div>
 			)}

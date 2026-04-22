@@ -84,7 +84,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Icon name="link" />
+						<Icon name="Link" />
 						Generate Recovery Link
 					</DialogTitle>
 					<DialogDescription>
@@ -105,14 +105,14 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 
 					{loading && (
 						<div>
-							<Icon name="loading" />
+							<Icon name="LoaderCircle" />
 						</div>
 					)}
 
 					{recoveryLink && (
 						<div>
 							<Alert>
-								<Icon name="success" />
+								<Icon name="CircleCheck" />
 								<AlertDescription>Recovery link generated successfully! The link is valid for a limited time.</AlertDescription>
 							</Alert>
 
@@ -121,7 +121,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 								<div>
 									<textarea readOnly value={recoveryLink} rows={3} />
 									<Button variant="ghost" size="icon" onClick={handleCopyToClipboard} title="Copy to clipboard">
-										<Icon name="copy" />
+										<Icon name="Copy" />
 									</Button>
 								</div>
 							</div>
@@ -135,7 +135,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 
 				{isDemo && (
 					<Alert>
-						<Icon name="lock" />
+						<Icon name="Lock" />
 						<AlertDescription>Password recovery is disabled for demo accounts.</AlertDescription>
 					</Alert>
 				)}
@@ -143,7 +143,7 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 				<DialogFooter>
 					{!recoveryLink && (
 						<Button onClick={handleGenerateRecoveryLink} disabled={loading || isDemo}>
-							{loading ? <Icon name="loading" /> : <Icon name="link" />}
+							{loading ? <Icon name="LoaderCircle" /> : <Icon name="Link" />}
 							Generate Recovery Link
 						</Button>
 					)}

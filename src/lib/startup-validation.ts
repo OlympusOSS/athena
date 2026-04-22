@@ -24,9 +24,7 @@ export function validateSessionSigningKey(): void {
 	const sessionSigningKey = process.env.SESSION_SIGNING_KEY;
 
 	if (!sessionSigningKey || sessionSigningKey.trim() === "") {
-		throw new Error(
-			"SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32",
-		);
+		throw new Error("SESSION_SIGNING_KEY is required. Generate one with: openssl rand -base64 32");
 	}
 
 	const encryptionKey = process.env.ENCRYPTION_KEY;

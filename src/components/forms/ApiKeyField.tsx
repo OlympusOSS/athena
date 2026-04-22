@@ -47,7 +47,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 			<div className="space-y-1.5">
 				{label && <Label>{label}</Label>}
 				<div className="relative flex items-center">
-					<Icon name="lock" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
+					<Icon name="Lock" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
 					<Input value="••••••••••••••••" disabled className="pl-8 pr-10 text-sm" />
 					<TooltipProvider>
 						<Tooltip>
@@ -60,7 +60,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 									type="button"
 									className="absolute right-1 h-7 w-7"
 								>
-									<Icon name="edit" className="h-3.5 w-3.5" />
+									<Icon name="Pencil" className="h-3.5 w-3.5" />
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent>Edit API key</TooltipContent>
@@ -81,7 +81,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 				<div className="space-y-1.5">
 					{label && <Label>{label}</Label>}
 					<div className="relative flex items-center">
-						<Icon name="key" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
+						<Icon name="Key" className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
 						<Input {...field} placeholder={placeholder} type={showPassword ? "text" : "password"} className="pl-8 pr-10 text-sm" />
 						<TooltipProvider>
 							<Tooltip>
@@ -94,7 +94,7 @@ export function ApiKeyField<TFieldValues extends FieldValues = FieldValues>({
 										type="button"
 										className="absolute right-1 h-7 w-7"
 									>
-										{showPassword ? <Icon name="eye-off" className="h-3.5 w-3.5" /> : <Icon name="view" className="h-3.5 w-3.5" />}
+										{showPassword ? <Icon name="EyeOff" className="h-3.5 w-3.5" /> : <Icon name="Eye" className="h-3.5 w-3.5" />}
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>{showPassword ? "Hide API key" : "Show API key"}</TooltipContent>

@@ -10,13 +10,12 @@ import {
 	CardHeader,
 	CardTitle,
 	Icon,
-	Toast,
 	Toaster,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-	useToast,
+	toast,
 } from "@olympusoss/canvas";
 import { AdminLayout, PageHeader } from "@/components/layout";
 import { UserRole } from "@/features/auth";
@@ -25,18 +24,17 @@ import { LockedAccountsTable } from "@/features/security/components/LockedAccoun
 import { useLockedAccounts } from "@/features/security/hooks/useLockedAccounts";
 
 export default function SecurityPage() {
-	const { toast, show: showToast, dismiss } = useToast();
 	const { data, isLoading, isError, error, refetch, isFetching } = useLockedAccounts();
 
 	const accounts = data?.data ?? [];
 	const total = data?.total ?? 0;
 
 	const handleUnlockSuccess = (identifier: string) => {
-		showToast(`Account "${identifier}" has been unlocked.`, "success");
+		toast.success(`Account "${identifier}" has been unlocked.`);
 	};
 
 	const handleUnlockError = (_identifier: string, err: Error) => {
-		showToast(err.message || "Failed to unlock account.", "destructive");
+		toast.error(err.message || "Failed to unlock account.");
 	};
 
 	return (
@@ -46,13 +44,13 @@ export default function SecurityPage() {
 					<PageHeader
 						title="Locked Accounts"
 						subtitle="View and manually unlock accounts locked due to too many failed login attempts"
-						icon={<Icon name="lock" />}
+						icon={<Icon name="Lock" />}
 						actions={
 							<TooltipProvider delayDuration={0}>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button variant="ghost" size="icon" onClick={() => refetch()} disabled={isFetching}>
-											<Icon name={isFetching ? "loading" : "refresh"} className={isFetching ? "animate-spin" : undefined} />
+											<Icon name={isFetching ? "LoaderCircle" : "RefreshCw"} className={isFetching ? "animate-spin" : undefined} />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>Refresh</TooltipContent>
@@ -63,7 +61,7 @@ export default function SecurityPage() {
 
 					{data?.truncated && (
 						<Alert variant="default">
-							<Icon name="danger" />
+							<Icon name="TriangleAlert" />
 							<AlertDescription>Showing 500 of {total} locked accounts. Some accounts may not be displayed.</AlertDescription>
 						</Alert>
 					)}
@@ -82,10 +80,10 @@ export default function SecurityPage() {
 						<CardContent className="pt-0">
 							{isError ? (
 								<div className="flex flex-col items-center gap-4 py-10 text-center">
-									<Icon name="danger" className="h-8 w-8 text-destructive" />
+									<Icon name="TriangleAlert" className="h-8 w-8 text-destructive" />
 									<p className="text-sm text-muted-foreground">{error?.message ?? "Failed to load locked accounts. Please try again."}</p>
 									<Button variant="outline" onClick={() => refetch()}>
-										<Icon name="refresh" className="h-4 w-4" />
+										<Icon name="RefreshCw" className="h-4 w-4" />
 										Retry
 									</Button>
 								</div>
@@ -112,9 +110,7 @@ export default function SecurityPage() {
 					</Card>
 				</div>
 
-				<Toaster>
-					<Toast {...toast} onClose={dismiss} />
-				</Toaster>
+				<Toaster />
 			</AdminLayout>
 		</ProtectedRoute>
 	);

@@ -39,7 +39,7 @@ export function RotateSecretModal({ open, onOpenChange, onConfirm, clientName, c
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Icon name="refresh" />
+						<Icon name="RefreshCw" />
 						Rotate Client Secret
 					</DialogTitle>
 					<DialogDescription>
@@ -49,7 +49,7 @@ export function RotateSecretModal({ open, onOpenChange, onConfirm, clientName, c
 
 				<Alert>
 					<AlertDescription>
-						<Icon name="danger" />
+						<Icon name="TriangleAlert" />
 						<strong>This will immediately invalidate the current secret.</strong> Any agent currently using the old secret will return 401 until
 						reconfigured with the new secret.
 					</AlertDescription>
@@ -68,12 +68,12 @@ export function RotateSecretModal({ open, onOpenChange, onConfirm, clientName, c
 					<Button onClick={onConfirm} disabled={isRotating}>
 						{isRotating ? (
 							<>
-								<Icon name="loading" />
+								<Icon name="LoaderCircle" />
 								Rotating...
 							</>
 						) : (
 							<>
-								<Icon name="refresh" />
+								<Icon name="RefreshCw" />
 								Rotate Secret
 							</>
 						)}

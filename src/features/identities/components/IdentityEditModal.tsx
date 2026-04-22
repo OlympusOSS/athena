@@ -9,25 +9,17 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	type IChangeEvent,
 	Icon,
+	SchemaForm,
 } from "@olympusoss/canvas";
 import type { Identity } from "@ory/kratos-client";
-import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import React, { useEffect, useState } from "react";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { uiLogger } from "@/lib/logger";
 import { useUpdateIdentity } from "../hooks/useIdentities";
-import {
-	convertKratosSchemaToRJSF,
-	createUISchema,
-	FieldTemplate,
-	ObjectFieldTemplate,
-	SelectWidget,
-	SubmitButton,
-	TelWidget,
-	TextWidget,
-} from "./shared-form-widgets";
+import { convertKratosSchemaToRJSF, createUISchema, TelWidget } from "./shared-form-widgets";
 
 // Add custom format for tel to avoid validation warnings
 validator.ajv.addFormat("tel", {
@@ -50,27 +42,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 	const [formData, setFormData] = useState<Record<string, unknown>>({});
 	const [formSchema, setFormSchema] = useState<Record<string, unknown> | null>(null);
 
-	// Custom widgets for better form experience
-	const widgets = React.useMemo(
-		() => ({
-			tel: TelWidget,
-			TextWidget: TextWidget,
-			SelectWidget: SelectWidget,
-			text: TextWidget,
-			email: TextWidget,
-		}),
-		[],
-	);
-
-	// Custom templates for styling
-	const templates = React.useMemo(
-		() => ({
-			FieldTemplate: FieldTemplate,
-			ObjectFieldTemplate: ObjectFieldTemplate,
-			SubmitButton: SubmitButton,
-		}),
-		[],
-	);
+	const widgets = React.useMemo(() => ({ tel: TelWidget }), []);
 
 	// Initialize form data when identity changes
 	useEffect(() => {
@@ -137,20 +109,20 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 				<div>
 					{updateIdentityMutation.isError && (
 						<Alert variant="destructive">
-							<Icon name="danger" />
+							<Icon name="TriangleAlert" />
 							<AlertDescription>Failed to update identity: {(updateIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 						</Alert>
 					)}
 
 					{schemasLoading && (
 						<div>
-							<Icon name="loading" />
+							<Icon name="LoaderCircle" />
 						</div>
 					)}
 
 					{!schemasLoading && formSchema && (
 						<div>
-							<Form
+							<SchemaForm
 								schema={formSchema}
 								uiSchema={createUISchema(formSchema)}
 								formData={formData}
@@ -162,7 +134,6 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 								}}
 								validator={validator}
 								widgets={widgets}
-								templates={templates}
 								disabled={updateIdentityMutation.isPending}
 								showErrorList={false}
 								noHtml5Validate
@@ -172,17 +143,17 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({ open, onCl
 										Cancel
 									</Button>
 									<Button type="submit" disabled={updateIdentityMutation.isPending}>
-										{updateIdentityMutation.isPending && <Icon name="loading" />}
+										{updateIdentityMutation.isPending && <Icon name="LoaderCircle" />}
 										Save Changes
 									</Button>
 								</DialogFooter>
-							</Form>
+							</SchemaForm>
 						</div>
 					)}
 
 					{!schemasLoading && !formSchema && (
 						<Alert>
-							<Icon name="danger" />
+							<Icon name="TriangleAlert" />
 							<AlertDescription>Schema not found for this identity</AlertDescription>
 						</Alert>
 					)}

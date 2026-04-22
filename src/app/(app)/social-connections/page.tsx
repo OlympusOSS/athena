@@ -13,13 +13,12 @@ import {
 	DialogTitle,
 	Icon,
 	Switch,
-	Toast,
 	Toaster,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-	useToast,
+	toast,
 } from "@olympusoss/canvas";
 import { useState } from "react";
 import { AdminLayout, PageHeader } from "@/components/layout";
@@ -33,8 +32,6 @@ import { SocialConnectionForm } from "./components/SocialConnectionForm";
 type FormMode = "create" | "edit";
 
 export default function SocialConnectionsPage() {
-	const { toast, show: showToast, dismiss } = useToast();
-
 	const { data, isLoading, isError, error, refetch, isFetching } = useSocialConnections();
 	const toggleMutation = useToggleSocialConnection();
 
@@ -71,20 +68,17 @@ export default function SocialConnectionsPage() {
 				onSuccess: (result) => {
 					const label = result.enabled ? "enabled" : "disabled";
 					if (result.reloadStatus === "reloaded") {
-						showToast(`Google ${label} and configuration applied.`, "success");
+						toast.success(`Google ${label} and configuration applied.`);
 					} else if (result.reloadStatus === "skipped") {
-						showToast(`Google ${label}. A Kratos restart is required to apply the change.`, "default");
+						toast(`Google ${label}. A Kratos restart is required to apply the change.`);
 					} else if (result.reloadStatus === "auth_failed") {
-						showToast("Reload authentication failed. Check CIAM_RELOAD_API_KEY configuration.", "destructive");
+						toast.error("Reload authentication failed. Check CIAM_RELOAD_API_KEY configuration.");
 					} else {
-						showToast(
-							`Google ${label}. Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.`,
-							"default",
-						);
+						toast(`Google ${label}. Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.`);
 					}
 				},
 				onError: (err) => {
-					showToast(err.message || "Failed to toggle connection.", "destructive");
+					toast.error(err.message || "Failed to toggle connection.");
 				},
 			},
 		);
@@ -93,18 +87,17 @@ export default function SocialConnectionsPage() {
 	const handleFormSuccess = (reloadStatus: string, secretChanged: boolean) => {
 		setFormOpen(false);
 		if (secretChanged) {
-			showToast(
+			toast(
 				"Saving a new client secret requires a Kratos service restart to take effect (~15-30s). Contact your platform administrator or use octl.",
-				"default",
 			);
 		} else if (reloadStatus === "reloaded") {
-			showToast("Configuration applied successfully.", "success");
+			toast.success("Configuration applied successfully.");
 		} else if (reloadStatus === "auth_failed") {
-			showToast("Reload authentication failed. Check CIAM_RELOAD_API_KEY configuration.", "destructive");
+			toast.error("Reload authentication failed. Check CIAM_RELOAD_API_KEY configuration.");
 		} else if (reloadStatus === "misconfigured") {
-			showToast("Configuration saved. CIAM_RELOAD_SIDECAR_URL is not configured — changes require a Kratos restart.", "default");
+			toast("Configuration saved. CIAM_RELOAD_SIDECAR_URL is not configured — changes require a Kratos restart.");
 		} else {
-			showToast("Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.", "default");
+			toast("Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.");
 		}
 	};
 
@@ -112,12 +105,9 @@ export default function SocialConnectionsPage() {
 		setDeleteDialogOpen(false);
 		setDeletingProvider(null);
 		if (reloadStatus === "reloaded") {
-			showToast("Social connection removed and configuration applied.", "success");
+			toast.success("Social connection removed and configuration applied.");
 		} else {
-			showToast(
-				"Social connection removed. Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.",
-				"default",
-			);
+			toast("Social connection removed. Configuration saved, but automatic reload failed. Changes will take effect after the next Kratos restart.");
 		}
 	};
 
@@ -128,20 +118,20 @@ export default function SocialConnectionsPage() {
 					<PageHeader
 						title="Social Connections"
 						subtitle="Configure OAuth2 social login providers for the CIAM platform"
-						icon={<Icon name="app" />}
+						icon={<Icon name="AppWindow" />}
 						actions={
 							<TooltipProvider delayDuration={0}>
 								<div className="flex items-center gap-2">
 									<Tooltip>
 										<TooltipTrigger asChild>
 											<Button variant="ghost" size="icon" onClick={() => refetch()} disabled={isFetching}>
-												<Icon name={isFetching ? "loading" : "refresh"} className={isFetching ? "animate-spin" : undefined} />
+												<Icon name={isFetching ? "LoaderCircle" : "RefreshCw"} className={isFetching ? "animate-spin" : undefined} />
 											</Button>
 										</TooltipTrigger>
 										<TooltipContent>Refresh</TooltipContent>
 									</Tooltip>
 									<Button onClick={handleAddConnection}>
-										<Icon name="add" className="h-4 w-4" />
+										<Icon name="Plus" className="h-4 w-4" />
 										Add Connection
 									</Button>
 								</div>
@@ -153,10 +143,10 @@ export default function SocialConnectionsPage() {
 						<Card>
 							<CardContent className="pt-6">
 								<div className="flex flex-col items-center gap-4 py-10 text-center">
-									<Icon name="danger" className="h-8 w-8 text-destructive" />
+									<Icon name="TriangleAlert" className="h-8 w-8 text-destructive" />
 									<p className="text-sm text-muted-foreground">{error?.message ?? "Failed to load social connections. Please try again."}</p>
 									<Button variant="outline" onClick={() => refetch()}>
-										<Icon name="refresh" className="h-4 w-4" />
+										<Icon name="RefreshCw" className="h-4 w-4" />
 										Retry
 									</Button>
 								</div>
@@ -169,7 +159,7 @@ export default function SocialConnectionsPage() {
 							<CardContent className="pt-6">
 								<div className="flex flex-col items-center gap-4 py-16 text-center">
 									<div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-										<Icon name="app" className="h-8 w-8 text-muted-foreground" />
+										<Icon name="AppWindow" className="h-8 w-8 text-muted-foreground" />
 									</div>
 									<div className="space-y-2">
 										<h3 className="text-lg font-medium">No social connections configured</h3>
@@ -178,7 +168,7 @@ export default function SocialConnectionsPage() {
 										</p>
 									</div>
 									<Button onClick={handleAddConnection}>
-										<Icon name="add" className="h-4 w-4" />
+										<Icon name="Plus" className="h-4 w-4" />
 										Add Connection
 									</Button>
 								</div>
@@ -201,7 +191,7 @@ export default function SocialConnectionsPage() {
 							<CardContent className="pt-0">
 								{isLoading ? (
 									<div className="flex items-center justify-center py-10">
-										<Icon name="loading" className="h-6 w-6 animate-spin text-muted-foreground" />
+										<Icon name="LoaderCircle" className="h-6 w-6 animate-spin text-muted-foreground" />
 									</div>
 								) : (
 									<div className="divide-y">
@@ -250,9 +240,7 @@ export default function SocialConnectionsPage() {
 					/>
 				)}
 
-				<Toaster>
-					<Toast {...toast} onClose={dismiss} />
-				</Toaster>
+				<Toaster />
 			</AdminLayout>
 		</ProtectedRoute>
 	);
@@ -271,7 +259,7 @@ function SocialConnectionRow({ connection, onEdit, onDelete, onToggle, isTogglin
 		<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
 			<div className="flex items-center gap-4">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-					<Icon name="app" className="h-5 w-5 text-muted-foreground" />
+					<Icon name="AppWindow" className="h-5 w-5 text-muted-foreground" />
 				</div>
 				<div>
 					<div className="flex items-center gap-2">
@@ -298,10 +286,10 @@ function SocialConnectionRow({ connection, onEdit, onDelete, onToggle, isTogglin
 					</Tooltip>
 				</TooltipProvider>
 				<Button variant="ghost" size="icon" onClick={onEdit}>
-					<Icon name="edit" className="h-4 w-4" />
+					<Icon name="Pencil" className="h-4 w-4" />
 				</Button>
 				<Button variant="ghost" size="icon" onClick={onDelete} className="text-destructive hover:text-destructive">
-					<Icon name="delete" className="h-4 w-4" />
+					<Icon name="Trash2" className="h-4 w-4" />
 				</Button>
 			</div>
 		</div>

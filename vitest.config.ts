@@ -1,12 +1,18 @@
 import path from "node:path";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+	plugins: [react()],
 	test: {
-		// Node environment — these are API/unit tests, not browser tests
-		environment: "node",
+		// jsdom environment — supports both React component/hook tests and Node-style tests.
+		// The existing lib/__tests__ suite is compatible with jsdom.
+		environment: "jsdom",
+		globals: true,
+		setupFiles: ["./tests/setup.ts"],
+		include: ["src/**/*.test.ts", "src/**/*.test.tsx", "tests/**/*.test.ts", "tests/**/*.test.tsx"],
 		// Exclude Playwright e2e tests
-		exclude: ["tests/**/*.spec.ts", "tests/**/*.spec.tsx", "node_modules/**"],
+		exclude: ["tests/**/*.spec.ts", "tests/**/*.spec.tsx", "tests/e2e/**", "node_modules/**"],
 		// Make keys available in tests.
 		// SESSION_SIGNING_KEY must be a valid base64-encoded 32-byte key (athena#99).
 		// ENCRYPTION_KEY is kept for SDK settings tests — it is intentionally different
@@ -18,8 +24,27 @@ export default defineConfig({
 		},
 		coverage: {
 			provider: "v8",
-			include: ["src/**/*.ts", "src/**/*.tsx"],
-			exclude: ["src/**/*.d.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/index.ts", "src/styles/**"],
+			reporter: ["text", "html", "json-summary"],
+			// Scope coverage to the testable modules only.
+			include: ["src/lib/**", "src/hooks/**", "src/utils/**"],
+			exclude: [
+				"src/lib/__tests__/**",
+				"src/**/__tests__/**",
+				"src/**/*.test.ts",
+				"src/**/*.test.tsx",
+				"src/**/*.d.ts",
+				"src/**/constants.ts",
+				"src/**/types.ts",
+				"src/**/*.config.ts",
+				"src/**/index.ts",
+				"src/styles/**",
+			],
+			thresholds: {
+				lines: 80,
+				statements: 80,
+				functions: 80,
+				branches: 80,
+			},
 		},
 	},
 	resolve: {

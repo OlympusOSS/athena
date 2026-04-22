@@ -82,7 +82,7 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 					</div>
 
 					<Alert variant="destructive">
-						<Icon name="danger" />
+						<Icon name="TriangleAlert" />
 						<AlertDescription>
 							<p>
 								<strong>Warning:</strong> Deleting this identity will:
@@ -98,7 +98,7 @@ export const IdentityDeleteDialog: React.FC<IdentityDeleteDialogProps> = ({ open
 
 					{isDemo && (
 						<Alert>
-							<Icon name="lock" />
+							<Icon name="Lock" />
 							<AlertDescription>This is a protected demo account and cannot be deleted.</AlertDescription>
 						</Alert>
 					)}

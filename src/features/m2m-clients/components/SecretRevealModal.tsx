@@ -128,7 +128,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 					<>
 						<DialogHeader>
 							<DialogTitle>
-								<Icon name="danger" />
+								<Icon name="TriangleAlert" />
 								Are you sure?
 							</DialogTitle>
 							<DialogDescription>
@@ -143,7 +143,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 						</Alert>
 						<DialogFooter>
 							<Button variant="outline" onClick={handleGoBack}>
-								<Icon name="arrow-left" />
+								<Icon name="ArrowLeft" />
 								Go back — I still need to save the secret
 							</Button>
 							<Button variant="destructive" onClick={handleAbandonConfirm}>
@@ -156,7 +156,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 					<>
 						<DialogHeader>
 							<DialogTitle>
-								<Icon name="key-round" />
+								<Icon name="KeyRound" />
 								{title}
 							</DialogTitle>
 							<DialogDescription>
@@ -166,7 +166,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 
 						<Alert>
 							<AlertDescription>
-								<Icon name="shield-alert" />
+								<Icon name="ShieldAlert" />
 								<strong>Save your secret in a password manager or secrets manager before closing this dialog.</strong> If you lose it, you will need
 								to rotate the secret to generate a new one.
 							</AlertDescription>
@@ -179,7 +179,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 								<div className="flex items-center gap-2">
 									<code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-sm text-foreground">{clientId}</code>
 									<Button type="button" variant="outline" size="icon" onClick={() => copy(clientId, "client_id")} aria-label="Copy client ID">
-										<Icon name={copiedField === "client_id" ? "check" : "copy"} />
+										<Icon name={copiedField === "client_id" ? "Check" : "Copy"} />
 									</Button>
 								</div>
 							</div>
@@ -201,7 +201,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 										onClick={() => copy(clientSecret, "client_secret")}
 										aria-label="Copy client secret"
 									>
-										<Icon name={copiedField === "client_secret" ? "check" : "copy"} />
+										<Icon name={copiedField === "client_secret" ? "Check" : "Copy"} />
 									</Button>
 								</div>
 							</div>
@@ -217,7 +217,7 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 
 						<DialogFooter>
 							<Button type="button" onClick={handleDone} disabled={!confirmed} aria-disabled={!confirmed}>
-								<Icon name="check" />
+								<Icon name="Check" />
 								Done
 							</Button>
 						</DialogFooter>

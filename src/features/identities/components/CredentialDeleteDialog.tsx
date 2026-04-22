@@ -102,7 +102,7 @@ export const CredentialDeleteDialog: React.FC<CredentialDeleteDialogProps> = ({
 					</div>
 
 					<Alert variant="destructive">
-						<Icon name="danger" />
+						<Icon name="TriangleAlert" />
 						<AlertDescription>
 							<p>
 								<strong>Warning:</strong> Deleting this credential will:

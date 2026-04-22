@@ -18,7 +18,7 @@ export default function LoginPage() {
 
 	return (
 		<AuthLayout>
-			<LoadingState variant="page" message="Redirecting to login..." />
+			<LoadingState message="Redirecting to login..." />
 		</AuthLayout>
 	);
 }

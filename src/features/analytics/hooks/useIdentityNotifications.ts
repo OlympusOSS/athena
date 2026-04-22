@@ -55,7 +55,7 @@ export function useIdentityNotifications({
 				severity: "critical",
 				title: "Identity service is down",
 				description: "Identity service is unreachable or unhealthy",
-				icon: "heart-broken",
+				icon: "HeartCrack",
 			});
 		}
 
@@ -65,7 +65,7 @@ export function useIdentityNotifications({
 				severity: "critical",
 				title: "OAuth2 service is down",
 				description: "OAuth2 service is unreachable or unhealthy",
-				icon: "heart-broken",
+				icon: "HeartCrack",
 			});
 		}
 
@@ -77,7 +77,7 @@ export function useIdentityNotifications({
 					severity: "critical",
 					title: "Admin service is down",
 					description: serviceHealthData.athena.error || "Admin dashboard is unreachable",
-					icon: "heart-broken",
+					icon: "HeartCrack",
 				});
 			}
 			if (!serviceHealthData.hera.isHealthy) {
@@ -86,7 +86,7 @@ export function useIdentityNotifications({
 					severity: "critical",
 					title: "Auth service is down",
 					description: serviceHealthData.hera.error || "Login portal is unreachable",
-					icon: "heart-broken",
+					icon: "HeartCrack",
 				});
 			}
 		}
@@ -98,7 +98,7 @@ export function useIdentityNotifications({
 				severity: "warning",
 				title: "Identity service update available",
 				description: `v${kratosRelease.latestRelease.version} available (running ${kratosRelease.runningVersion || "unknown"})`,
-				icon: "info",
+				icon: "Info",
 			});
 		}
 
@@ -108,7 +108,7 @@ export function useIdentityNotifications({
 				severity: "warning",
 				title: "OAuth2 service update available",
 				description: `v${hydraRelease.latestRelease.version} available (running ${hydraRelease.runningVersion || "unknown"})`,
-				icon: "info",
+				icon: "Info",
 			});
 		}
 
@@ -121,7 +121,7 @@ export function useIdentityNotifications({
 					severity: "critical",
 					title: "Unusual registration spike",
 					description: `Registrations increased ${percentageChange}% vs last week`,
-					icon: "trending-up",
+					icon: "TrendingUp",
 				});
 			} else if (percentageChange > 150) {
 				notifications.push({
@@ -129,7 +129,7 @@ export function useIdentityNotifications({
 					severity: "warning",
 					title: "Registration spike detected",
 					description: `Registrations increased ${percentageChange}% vs last week`,
-					icon: "trending-up",
+					icon: "TrendingUp",
 				});
 			}
 		}
@@ -150,7 +150,7 @@ export function useIdentityNotifications({
 							severity: "warning",
 							title: "Login from unusual location",
 							description: `Single session from ${point.label} (~${Math.round(distance)}km from primary base)`,
-							icon: "globe",
+							icon: "Globe",
 						});
 					}
 				}

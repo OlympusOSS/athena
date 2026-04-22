@@ -1,0 +1,2 @@
+[install.scopes]
+"@olympusoss" = { token = "$GITHUB_TOKEN", url = "https://npm.pkg.github.com/" }

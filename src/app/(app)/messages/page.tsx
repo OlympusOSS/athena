@@ -115,13 +115,13 @@ export default function MessagesPage() {
 					<PageHeader
 						title="Messages"
 						subtitle="Monitor email and SMS messages sent through the identity service"
-						icon={<Icon name="mail" />}
+						icon={<Icon name="Mail" />}
 						actions={
 							<TooltipProvider delayDuration={0}>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button variant="ghost" size="icon" onClick={() => refetch()}>
-											<Icon name="refresh" />
+											<Icon name="RefreshCw" />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>Refresh</TooltipContent>
@@ -156,7 +156,7 @@ export default function MessagesPage() {
 
 								{(searchQuery || statusFilter) && (
 									<Button variant="outline" onClick={handleClearFilters}>
-										<Icon name="close" />
+										<Icon name="X" />
 										Clear Filters
 									</Button>
 								)}
@@ -166,10 +166,11 @@ export default function MessagesPage() {
 							{isError ? (
 								<ErrorState
 									message={error?.message || "Unable to fetch messages. Please check your connection and try again."}
-									action={{ label: "Retry", onClick: refetch }}
+									retryLabel="Retry"
+									onRetry={refetch}
 								/>
 							) : isLoading ? (
-								<LoadingState variant="section" message="Loading messages..." />
+								<LoadingState message="Loading messages..." />
 							) : (
 								<>
 									<MessagesTable messages={messages} isLoading={isLoading} onMessageClick={handleMessageClick} />
@@ -179,12 +180,12 @@ export default function MessagesPage() {
 										<div className="flex items-center justify-center py-4">
 											{searchQuery_.isAutoSearching ? (
 												<div className="flex items-center gap-2 text-sm text-muted-foreground">
-													<Icon name="loading" />
+													<Icon name="LoaderCircle" />
 													<span>Searching for more messages...</span>
 												</div>
 											) : (
 												<Button variant="outline" onClick={() => searchQuery_.loadMoreMatches()}>
-													<Icon name="chevron-down" />
+													<Icon name="ChevronDown" />
 													Load More Matches
 												</Button>
 											)}
@@ -195,7 +196,7 @@ export default function MessagesPage() {
 									{!isSearching && hasNextPage && (
 										<div className="flex items-center justify-center py-4">
 											<Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-												{isFetchingNextPage ? <Icon name="loading" /> : <Icon name="chevron-down" />}
+												{isFetchingNextPage ? <Icon name="LoaderCircle" /> : <Icon name="ChevronDown" />}
 												{isFetchingNextPage ? "Loading..." : "Load More Messages"}
 											</Button>
 										</div>

@@ -10,8 +10,8 @@ const IdentitiesTable = lazy(() => import("@/features/identities/components/Iden
 export default function IdentitiesPage() {
 	return (
 		<ProtectedPage requiredRole={UserRole.ADMIN}>
-			<PageHeader title="Identities" subtitle="Manage user identities in your identity service" icon={<Icon name="users" />} />
-			<Suspense fallback={<LoadingState variant="page" />}>
+			<PageHeader title="Identities" subtitle="Manage user identities in your identity service" icon={<Icon name="Users" />} />
+			<Suspense fallback={<LoadingState />}>
 				<IdentitiesTable />
 			</Suspense>
 		</ProtectedPage>

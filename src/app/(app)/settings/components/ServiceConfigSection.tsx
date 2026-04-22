@@ -23,12 +23,12 @@ export interface ServiceConfigSectionProps {
 
 const serviceConfig = {
 	Kratos: {
-		iconName: "shield" as const,
+		iconName: "Shield" as const,
 		displayName: "Identity Service",
 		description: "Identity & User Management",
 	},
 	Hydra: {
-		iconName: "key" as const,
+		iconName: "Key" as const,
 		displayName: "OAuth2 Service",
 		description: "OAuth2 & OpenID Connect",
 	},
@@ -79,7 +79,7 @@ export function ServiceConfigSection({
 							render={({ field }) => (
 								<>
 									<div className="relative">
-										<Icon name="globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+										<Icon name="Globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 										<Input {...field} id={`${serviceName}-publicUrl`} placeholder={publicUrlPlaceholder} className="pl-8 text-sm" />
 									</div>
 									<p className={cn("text-xs", errors.publicUrl ? "text-destructive" : "text-muted-foreground")}>
@@ -100,7 +100,7 @@ export function ServiceConfigSection({
 							render={({ field }) => (
 								<>
 									<div className="relative">
-										<Icon name="lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+										<Icon name="Lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 										<Input {...field} id={`${serviceName}-adminUrl`} placeholder={adminUrlPlaceholder} className="pl-8 text-sm" />
 									</div>
 									<p className={cn("text-xs", errors.adminUrl ? "text-destructive" : "text-muted-foreground")}>

@@ -14,7 +14,7 @@ const SchemaViewer: React.FC<SchemaViewerProps> = ({ schema, loading = false }) 
 	if (loading) {
 		return (
 			<div>
-				<LoadingState variant="section" message="Loading schema details..." />
+				<LoadingState message="Loading schema details..." />
 			</div>
 		);
 	}

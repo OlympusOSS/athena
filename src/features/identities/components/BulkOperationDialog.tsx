@@ -202,7 +202,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 				{phase === "confirm" && (
 					<div>
 						<Alert variant={operationType === "activate" ? "default" : "destructive"}>
-							{operationType === "activate" ? <Icon name="info" /> : <Icon name="danger" />}
+							{operationType === "activate" ? <Icon name="Info" /> : <Icon name="TriangleAlert" />}
 							<AlertDescription>{config.warning}</AlertDescription>
 						</Alert>
 
@@ -222,7 +222,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 
 						{demoCount > 0 && (
 							<Alert>
-								<Icon name="lock" />
+								<Icon name="Lock" />
 								<AlertDescription>
 									{demoCount} demo {demoCount === 1 ? "account is" : "accounts are"} protected and will be skipped.
 								</AlertDescription>
@@ -260,7 +260,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 					<div>
 						{errors.length === 0 ? (
 							<Alert>
-								<Icon name="success" />
+								<Icon name="CircleCheck" />
 								<AlertDescription>
 									Successfully processed {succeeded} {succeeded === 1 ? "identity" : "identities"}.
 								</AlertDescription>
@@ -268,7 +268,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 						) : (
 							<>
 								<Alert variant="destructive">
-									<Icon name="danger" />
+									<Icon name="TriangleAlert" />
 									<AlertDescription>
 										{succeeded} succeeded, {errors.length} failed.
 									</AlertDescription>

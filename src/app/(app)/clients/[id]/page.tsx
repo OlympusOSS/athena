@@ -88,7 +88,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 		return (
 			<ProtectedPage>
 				<div className="space-y-6">
-					<ErrorState message={`Failed to load client: ${error.message}`} variant="page" />
+					<ErrorState message={`Failed to load client: ${error.message}`} />
 				</div>
 			</ProtectedPage>
 		);
@@ -101,12 +101,12 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
-							<Icon name="arrow-left" />
+							<Icon name="ArrowLeft" />
 						</Button>
-						<Icon name="grid" />
+						<Icon name="LayoutGrid" />
 						<div className="space-y-1">
 							{isLoading ? (
-								<LoadingState variant="inline" />
+								<LoadingState />
 							) : (
 								<>
 									<h1 className="text-2xl font-bold text-foreground">{client?.client_name || "Unnamed Client"}</h1>
@@ -122,14 +122,14 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 															onClick={() => copyToClipboard(client.client_id!, "client_id")}
 															aria-label="Copy client ID"
 														>
-															<Icon name="copy" />
+															<Icon name="Copy" />
 														</Button>
 													</TooltipTrigger>
 													<TooltipContent>{copiedField === "client_id" ? "Copied!" : "Copy Client ID"}</TooltipContent>
 												</Tooltip>
 											</TooltipProvider>
 										)}
-										{clientType && <StatusBadge status={clientType.toLowerCase() === "public" ? "active" : "inactive"} label={clientType} />}
+										{clientType && <StatusBadge status={clientType.toLowerCase() === "public" ? "success" : "neutral"}>{clientType}</StatusBadge>}
 									</div>
 								</>
 							)}
@@ -139,23 +139,23 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 					{!isLoading && client && (
 						<div className="flex items-center gap-2">
 							<Button variant="outline" size="sm" onClick={handleEdit}>
-								<Icon name="edit" />
+								<Icon name="Pencil" />
 								Edit
 							</Button>
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<Button variant="ghost" size="icon" aria-label="More options">
-										<Icon name="more-vertical" />
+										<Icon name="EllipsisVertical" />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
 									<DropdownMenuItem onClick={handleEdit}>
-										<Icon name="edit" />
+										<Icon name="Pencil" />
 										Edit Client
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
-										<Icon name="delete" />
+									<DropdownMenuItem onClick={handleDeleteClick}>
+										<Icon name="Trash2" />
 										Delete Client
 									</DropdownMenuItem>
 								</DropdownMenuContent>
@@ -291,7 +291,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<Button variant="ghost" size="icon" onClick={() => copyToClipboard(uri, `redirect_${index}`)}>
-																<Icon name="copy" />
+																<Icon name="Copy" />
 															</Button>
 														</TooltipTrigger>
 														<TooltipContent>{copiedField === `redirect_${index}` ? "Copied!" : "Copy URI"}</TooltipContent>
@@ -314,7 +314,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 							<Card>
 								<CardHeader>
 									<CardTitle>
-										<Icon name="shield-check" />
+										<Icon name="ShieldCheck" />
 										Client Credentials
 									</CardTitle>
 								</CardHeader>
@@ -328,7 +328,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<Button variant="ghost" size="icon" onClick={() => copyToClipboard(client.client_id!, "client_id_sidebar")}>
-																<Icon name="copy" />
+																<Icon name="Copy" />
 															</Button>
 														</TooltipTrigger>
 														<TooltipContent>{copiedField === "client_id_sidebar" ? "Copied!" : "Copy"}</TooltipContent>
@@ -344,7 +344,7 @@ export default function OAuth2ClientDetailPage({ params }: Props) {
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<Button variant="ghost" size="icon" disabled>
-																<Icon name="copy" />
+																<Icon name="Copy" />
 															</Button>
 														</TooltipTrigger>
 														<TooltipContent>Client secret is hidden for security</TooltipContent>

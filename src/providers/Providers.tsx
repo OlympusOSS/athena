@@ -1,10 +1,10 @@
 "use client";
 
+import { ThemeProvider } from "@olympusoss/canvas";
 import type { ReactNode } from "react";
 import { SettingsInitializer } from "@/components/SettingsInitializer";
 import { AuthProvider } from "./AuthProvider";
 import { QueryProvider } from "./QueryProvider";
-import { ThemeProvider } from "./ThemeProvider";
 
 interface ProvidersProps {
 	children: ReactNode;

@@ -6,9 +6,11 @@ import {
 	CardContent,
 	CardHeader,
 	CardTitle,
+	type IChangeEvent,
 	Icon,
 	Label,
 	LoadingState,
+	SchemaForm,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -21,22 +23,12 @@ import {
 	TooltipTrigger,
 } from "@olympusoss/canvas";
 import type { IdentitySchemaContainer } from "@ory/kratos-client";
-import Form, { type IChangeEvent } from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useSchemas } from "@/features/schemas/hooks/useSchemas";
 import { useCreateIdentity } from "../hooks/useIdentities";
-import {
-	convertKratosSchemaToRJSF,
-	createUISchema,
-	FieldTemplate,
-	ObjectFieldTemplate,
-	SelectWidget,
-	SubmitButton,
-	TelWidget,
-	TextWidget,
-} from "./shared-form-widgets";
+import { convertKratosSchemaToRJSF, createUISchema, TelWidget } from "./shared-form-widgets";
 
 // Add custom format for tel to avoid validation warnings
 validator.ajv.addFormat("tel", {
@@ -61,27 +53,8 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 	const [formData, setFormData] = useState<Record<string, unknown>>({});
 	const [formSchema, setFormSchema] = useState<Record<string, unknown> | null>(null);
 
-	// Custom widgets for better form experience
-	const widgets = React.useMemo(
-		() => ({
-			tel: TelWidget,
-			TextWidget: TextWidget,
-			SelectWidget: SelectWidget,
-			text: TextWidget,
-			email: TextWidget,
-		}),
-		[],
-	);
-
-	// Custom templates for styling
-	const templates = React.useMemo(
-		() => ({
-			FieldTemplate: FieldTemplate,
-			ObjectFieldTemplate: ObjectFieldTemplate,
-			SubmitButton: SubmitButton,
-		}),
-		[],
-	);
+	// Kratos-specific TelWidget override; Canvas SchemaForm provides the rest.
+	const widgets = React.useMemo(() => ({ tel: TelWidget }), []);
 
 	const handleSchemaChange = (schemaId: string) => {
 		setSelectedSchemaId(schemaId);
@@ -129,7 +102,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 			<CardContent>
 				{createIdentityMutation.isError && (
 					<Alert variant="destructive">
-						<Icon name="error" />
+						<Icon name="CircleX" />
 						<AlertDescription>Failed to create identity: {(createIdentityMutation.error as Error)?.message || "Unknown error"}</AlertDescription>
 					</Alert>
 				)}
@@ -163,7 +136,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 						<CardTitle>Identity Traits</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<Form
+						<SchemaForm
 							schema={formSchema}
 							uiSchema={createUISchema(formSchema)}
 							formData={formData}
@@ -174,12 +147,8 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 								if (data.formData) handleSubmit(data.formData as Record<string, unknown>);
 							}}
 							validator={validator}
-							customValidate={(_, errors) => {
-								// Allow submission even with empty optional fields
-								return errors;
-							}}
+							customValidate={(_, errors) => errors}
 							widgets={widgets}
-							templates={templates}
 							disabled={createIdentityMutation.isPending}
 							showErrorList={false}
 							noHtml5Validate
@@ -190,15 +159,15 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 							<Separator />
 							<CardContent>
 								<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending} type="button">
-									<Icon name="close" />
+									<Icon name="X" />
 									Cancel
 								</Button>
 								<Button type="submit" disabled={createIdentityMutation.isPending || !selectedSchemaId}>
-									{createIdentityMutation.isPending ? <Icon name="loading" /> : <Icon name="save" />}
+									{createIdentityMutation.isPending ? <Icon name="LoaderCircle" /> : <Icon name="Save" />}
 									{createIdentityMutation.isPending ? "Creating..." : "Create Identity"}
 								</Button>
 							</CardContent>
-						</Form>
+						</SchemaForm>
 					</CardContent>
 				</>
 			)}
@@ -208,7 +177,7 @@ const CreateIdentityForm: React.FC<CreateIdentityFormProps> = ({ onSuccess, onCa
 					<Separator />
 					<CardContent>
 						<Button variant="outline" onClick={handleCancel} disabled={createIdentityMutation.isPending}>
-							<Icon name="close" />
+							<Icon name="X" />
 							Cancel
 						</Button>
 						<Button disabled>No form fields available</Button>

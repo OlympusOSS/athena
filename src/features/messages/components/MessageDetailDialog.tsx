@@ -32,15 +32,15 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 	const getStatusIcon = (status: CourierMessageStatus): React.ReactNode => {
 		switch (status) {
 			case "sent":
-				return <Icon name="success-filled" />;
+				return <Icon name="CircleCheck" />;
 			case "queued":
-				return <Icon name="time" />;
+				return <Icon name="Timer" />;
 			case "processing":
-				return <Icon name="loading" />;
+				return <Icon name="LoaderCircle" />;
 			case "abandoned":
-				return <Icon name="x-circle" />;
+				return <Icon name="CircleX" />;
 			default:
-				return <Icon name="error" />;
+				return <Icon name="CircleX" />;
 		}
 	};
 
@@ -62,11 +62,11 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 	const getMessageTypeIcon = (type: string): React.ReactNode => {
 		switch (type) {
 			case "email":
-				return <Icon name="mail" />;
+				return <Icon name="Mail" />;
 			case "sms":
-				return <Icon name="message" />;
+				return <Icon name="MessageSquare" />;
 			default:
-				return <Icon name="mail" />;
+				return <Icon name="Mail" />;
 		}
 	};
 
@@ -74,7 +74,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 		return (
 			<Dialog open={open} onOpenChange={() => onClose()}>
 				<DialogContent>
-					<LoadingState variant="section" />
+					<LoadingState />
 				</DialogContent>
 			</Dialog>
 		);
@@ -87,7 +87,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 					<DialogHeader>
 						<DialogTitle>Message Details</DialogTitle>
 					</DialogHeader>
-					<ErrorState variant="inline" message={`Failed to load message details: ${fetchError?.message || "Unknown error"}`} />
+					<ErrorState message={`Failed to load message details: ${fetchError?.message || "Unknown error"}`} />
 				</DialogContent>
 			</Dialog>
 		);
@@ -108,7 +108,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 						{/* Basic Message Info */}
 						<div>
 							<div>
-								<Icon name="info" />
+								<Icon name="Info" />
 								<h3>Basic Information</h3>
 							</div>
 
@@ -130,11 +130,9 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 									<span>Status</span>
 									<div>
 										{getStatusIcon(message.status)}
-										<StatusBadge
-											status={message.status === "sent" ? "active" : message.status === "queued" ? "pending" : "inactive"}
-											label={message.status}
-											showIcon={false}
-										/>
+										<StatusBadge status={message.status === "sent" ? "success" : message.status === "queued" ? "warning" : "neutral"}>
+											{message.status}
+										</StatusBadge>
 									</div>
 								</div>
 
@@ -168,7 +166,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 						{/* Recipient Information */}
 						<div>
 							<div>
-								<Icon name="user" />
+								<Icon name="User" />
 								<h3>Recipient Information</h3>
 							</div>
 
@@ -215,7 +213,7 @@ export const MessageDetailDialog: React.FC<MessageDetailDialogProps> = ({ open, 
 														<div>
 															<span>Status</span>
 															<div>
-																<StatusBadge status={dispatch.status === "failed" ? "inactive" : "active"} label={dispatch.status} />
+																<StatusBadge status={dispatch.status === "failed" ? "neutral" : "success"}>{dispatch.status}</StatusBadge>
 															</div>
 														</div>
 

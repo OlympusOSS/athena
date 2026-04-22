@@ -26,42 +26,42 @@ const mainNavItems: NavItem[] = [
 	{
 		title: "Dashboard",
 		path: "/dashboard",
-		icon: "dashboard",
+		icon: "LayoutDashboard",
 		iconColor: "text-blue-500",
 		requiredRole: UserRole.VIEWER,
 	},
 	{
 		title: "Identities",
 		path: "/identities",
-		icon: "users",
+		icon: "Users",
 		iconColor: "text-purple-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Sessions",
 		path: "/sessions",
-		icon: "shield",
+		icon: "Shield",
 		iconColor: "text-emerald-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Messages",
 		path: "/messages",
-		icon: "mail",
+		icon: "Mail",
 		iconColor: "text-amber-500",
 		requiredRole: UserRole.ADMIN,
 	},
 	{
 		title: "Schemas",
 		path: "/schemas",
-		icon: "file-text",
+		icon: "FileText",
 		iconColor: "text-cyan-500",
 		requiredRole: UserRole.VIEWER,
 	},
 	{
 		title: "Security",
 		path: "/security",
-		icon: "lock",
+		icon: "Lock",
 		iconColor: "text-red-500",
 		requiredRole: UserRole.ADMIN,
 	},
@@ -79,7 +79,7 @@ const navSections: NavSection[] = [
 			{
 				title: "Social Connections",
 				path: "/social-connections",
-				icon: "app",
+				icon: "AppWindow",
 				iconColor: "text-indigo-500",
 				requiredRole: UserRole.ADMIN,
 			},
@@ -91,7 +91,7 @@ const hydraNavItems: NavItem[] = [
 	{
 		title: "OAuth2 Clients",
 		path: "/clients",
-		icon: "app",
+		icon: "AppWindow",
 		iconColor: "text-rose-500",
 	},
 ];
@@ -110,7 +110,7 @@ const applicationsNavSection: NavSection = {
 		{
 			title: "Machine-to-Machine",
 			path: "/applications/m2m",
-			icon: "server",
+			icon: "Server",
 			iconColor: "text-violet-500",
 			requiredRole: UserRole.ADMIN,
 		},
@@ -209,7 +209,7 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 								className="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
 								style={{ color: "hsl(var(--sidebar-fg))" }}
 							>
-								<Icon name="panel-left" className="h-4 w-4" />
+								<Icon name="PanelLeft" className="h-4 w-4" />
 							</button>
 						</>
 					) : (
@@ -232,7 +232,7 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 											d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
 										/>
 									</svg>
-									<Icon name="panel-left" className="absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+									<Icon name="PanelLeft" className="absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent side="right">Expand sidebar</TooltipContent>
@@ -310,7 +310,7 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 								)}
 								style={{ color: "hsl(var(--sidebar-fg))" }}
 							>
-								<Icon name="logout" className="h-4 w-4 shrink-0" />
+								<Icon name="LogOut" className="h-4 w-4 shrink-0" />
 								{expanded && <span>Logout</span>}
 							</button>
 						</TooltipTrigger>

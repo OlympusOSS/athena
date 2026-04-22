@@ -153,7 +153,7 @@ export default function IdentityDetailPage() {
 	if (isLoading) {
 		return (
 			<ProtectedPage requiredRole={UserRole.ADMIN}>
-				<LoadingState variant="page" />
+				<LoadingState />
 			</ProtectedPage>
 		);
 	}
@@ -180,7 +180,7 @@ export default function IdentityDetailPage() {
 					title={
 						<FlexBox align="center" gap={2}>
 							<Button variant="ghost" size="icon" onClick={handleBack} aria-label="Go back">
-								<Icon name="arrow-left" />
+								<Icon name="ArrowLeft" />
 							</Button>
 							<div className="space-y-1">
 								<FlexBox align="center" gap={2}>
@@ -197,22 +197,22 @@ export default function IdentityDetailPage() {
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button variant="ghost" size="icon" onClick={() => refetch()} aria-label="Refresh">
-											<Icon name="refresh" />
+											<Icon name="RefreshCw" />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>Refresh</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
 							<Button variant="outline" onClick={handleEdit}>
-								<Icon name="edit" />
+								<Icon name="Pencil" />
 								Edit
 							</Button>
 							<Button variant="outline" onClick={handleRecover} disabled={isDemo}>
-								<Icon name="link" />
+								<Icon name="Link" />
 								Recover
 							</Button>
 							<Button variant="outline" onClick={handleResetPassword} disabled={isDemo}>
-								<Icon name="key-round" />
+								<Icon name="KeyRound" />
 								Reset Password
 							</Button>
 							<Button
@@ -222,18 +222,18 @@ export default function IdentityDetailPage() {
 							>
 								{identity.state === "active" ? (
 									<>
-										<Icon name="blocked" />
+										<Icon name="Ban" />
 										Deactivate
 									</>
 								) : (
 									<>
-										<Icon name="success" />
+										<Icon name="CircleCheck" />
 										Activate
 									</>
 								)}
 							</Button>
 							<Button variant="destructive" onClick={handleDelete} disabled={isDemo}>
-								<Icon name="delete" />
+								<Icon name="Trash2" />
 								Delete
 							</Button>
 						</FlexBox>
@@ -247,10 +247,10 @@ export default function IdentityDetailPage() {
 							<div className="grid gap-4">
 								<span className="text-sm font-medium text-muted-foreground">Status</span>
 								<div className="flex items-center gap-2">
-									<StatusBadge status={identity.state === "active" ? "active" : "inactive"} label={identity.state || "active"} />
+									<StatusBadge status={identity.state === "active" ? "success" : "neutral"}>{identity.state || "active"}</StatusBadge>
 								</div>
 							</div>
-							<FieldDisplay label="Schema ID" value={identity.schema_id} valueType="code" copyable />
+							<FieldDisplay label="Schema ID" value={identity.schema_id} mono />
 							<FieldDisplay label="Created At" value={formatDate(identity.created_at || "")} />
 							<FieldDisplay label="Updated At" value={formatDate(identity.updated_at || "")} />
 						</div>
@@ -265,7 +265,7 @@ export default function IdentityDetailPage() {
 										key={key}
 										label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ")}
 										value={typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
-										valueType={typeof value === "object" ? "code" : "text"}
+										mono={typeof value === "object"}
 									/>
 								))}
 							</div>
@@ -279,7 +279,7 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
-								<CodeBlock code={JSON.stringify(identity.metadata_public, null, 2)} language="json" maxHeight="400px" />
+								<CodeBlock code={JSON.stringify(identity.metadata_public, null, 2)} language="json" />
 							) : (
 								<p className="text-sm text-muted-foreground">No public metadata available</p>
 							)}
@@ -293,7 +293,7 @@ export default function IdentityDetailPage() {
 							<Separator />
 
 							{identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
-								<CodeBlock code={JSON.stringify(identity.metadata_admin, null, 2)} language="json" maxHeight="400px" />
+								<CodeBlock code={JSON.stringify(identity.metadata_admin, null, 2)} language="json" />
 							) : (
 								<p className="text-sm text-muted-foreground">No admin metadata available</p>
 							)}
@@ -306,7 +306,7 @@ export default function IdentityDetailPage() {
 							<CardContent className="space-y-4">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-2">
-										<Icon name="key-round" />
+										<Icon name="KeyRound" />
 										<h3 className="text-lg font-semibold text-foreground">Credentials</h3>
 									</div>
 								</div>
@@ -331,7 +331,7 @@ export default function IdentityDetailPage() {
 															<Tooltip>
 																<TooltipTrigger asChild>
 																	<Button variant="ghost" size="icon" onClick={() => setCredentialToDelete({ type, identifier })}>
-																		<Icon name="delete" />
+																		<Icon name="Trash2" />
 																	</Button>
 																</TooltipTrigger>
 																<TooltipContent>Delete {CREDENTIAL_TYPE_LABELS[type] || type} credential</TooltipContent>
@@ -354,7 +354,7 @@ export default function IdentityDetailPage() {
 															<Tooltip>
 																<TooltipTrigger asChild>
 																	<span className="text-sm text-muted-foreground">
-																		<Icon name="lock" />
+																		<Icon name="Lock" />
 																	</span>
 																</TooltipTrigger>
 																<TooltipContent>Cannot be deleted via API</TooltipContent>
@@ -365,7 +365,7 @@ export default function IdentityDetailPage() {
 															<Tooltip>
 																<TooltipTrigger asChild>
 																	<Button variant="ghost" size="icon" onClick={() => setCredentialToDelete({ type })}>
-																		<Icon name="delete" />
+																		<Icon name="Trash2" />
 																	</Button>
 																</TooltipTrigger>
 																<TooltipContent>Delete {CREDENTIAL_TYPE_LABELS[type] || type} credential</TooltipContent>
@@ -391,7 +391,7 @@ export default function IdentityDetailPage() {
 							<CardContent className="space-y-4">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-2">
-										<Icon name="user" />
+										<Icon name="User" />
 										<h3 className="text-lg font-semibold text-foreground">Sessions</h3>
 									</div>
 									<div className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export default function IdentityDetailPage() {
 											<Tooltip>
 												<TooltipTrigger asChild>
 													<Button variant="ghost" size="icon" onClick={() => refetchSessions()}>
-														<Icon name="refresh" />
+														<Icon name="RefreshCw" />
 													</Button>
 												</TooltipTrigger>
 												<TooltipContent>Refresh Sessions</TooltipContent>
@@ -411,7 +411,7 @@ export default function IdentityDetailPage() {
 											onClick={handleDeleteAllSessions}
 											disabled={deleteSessionsMutation.isPending || sessionsLoading || !sessionsData?.data?.length}
 										>
-											<Icon name="delete" />
+											<Icon name="Trash2" />
 											Delete All Sessions
 										</Button>
 									</div>
@@ -424,7 +424,7 @@ export default function IdentityDetailPage() {
 									</Alert>
 								) : sessionsLoading ? (
 									<div className="flex items-center justify-center py-8">
-										<Icon name="loading" />
+										<Icon name="LoaderCircle" />
 									</div>
 								) : !sessionsData?.data?.length ? (
 									<div className="py-6 text-center">
@@ -455,7 +455,7 @@ export default function IdentityDetailPage() {
 							<CardContent className="space-y-4">
 								<h3 className="text-lg font-semibold text-foreground">Raw Data</h3>
 								<Separator />
-								<CodeBlock code={JSON.stringify(identity, null, 2)} language="json" title="Identity JSON" maxHeight="60vh" />
+								<CodeBlock code={JSON.stringify(identity, null, 2)} language="json" />
 							</CardContent>
 						</Card>
 					</div>

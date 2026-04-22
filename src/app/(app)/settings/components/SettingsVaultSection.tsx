@@ -199,7 +199,7 @@ export function SettingsVaultSection() {
 						<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 							<DialogTrigger asChild>
 								<Button size="sm" onClick={handleOpenAdd}>
-									<Icon name="add" className="h-3.5 w-3.5" />
+									<Icon name="Plus" className="h-3.5 w-3.5" />
 									Add Setting
 								</Button>
 							</DialogTrigger>
@@ -289,12 +289,12 @@ export function SettingsVaultSection() {
 
 				{loading ? (
 					<div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-						<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+						<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 						Loading settings...
 					</div>
 				) : settings.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-8 text-center">
-						<Icon name="settings" className="mb-2 h-8 w-8 text-muted-foreground/50" />
+						<Icon name="Settings" className="mb-2 h-8 w-8 text-muted-foreground/50" />
 						<p className="text-sm text-muted-foreground">No settings configured yet</p>
 						<p className="text-xs text-muted-foreground/70">Add your first setting to get started</p>
 					</div>
@@ -325,7 +325,7 @@ export function SettingsVaultSection() {
 												<TableCell className="text-sm font-mono">{setting.key}</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-1.5">
-														{setting.encrypted && <Icon name="lock" className="h-3 w-3 text-muted-foreground" />}
+														{setting.encrypted && <Icon name="Lock" className="h-3 w-3 text-muted-foreground" />}
 														<code
 															className={cn(
 																"rounded bg-muted px-1.5 py-0.5 text-xs",
@@ -340,7 +340,7 @@ export function SettingsVaultSection() {
 												<TableCell className="text-right">
 													<div className="flex items-center justify-end gap-1">
 														<Button variant="ghost" size="sm" onClick={() => handleOpenEdit(setting)} className="h-7 w-7 p-0">
-															<Icon name="edit" className="h-3.5 w-3.5" />
+															<Icon name="Pencil" className="h-3.5 w-3.5" />
 														</Button>
 														<Button
 															variant="ghost"
@@ -351,7 +351,7 @@ export function SettingsVaultSection() {
 															}}
 															className="h-7 w-7 p-0 text-destructive hover:text-destructive"
 														>
-															<Icon name="delete" className="h-3.5 w-3.5" />
+															<Icon name="Trash2" className="h-3.5 w-3.5" />
 														</Button>
 													</div>
 												</TableCell>

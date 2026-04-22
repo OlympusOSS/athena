@@ -95,13 +95,13 @@ export default function SessionsPage() {
 					<PageHeader
 						title="Active Sessions"
 						subtitle="Monitor and manage user sessions across your system"
-						icon={<Icon name="shield" />}
+						icon={<Icon name="Shield" />}
 						actions={
 							<TooltipProvider delayDuration={0}>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button variant="ghost" size="icon" onClick={() => refetch()}>
-											<Icon name="refresh" />
+											<Icon name="RefreshCw" />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>Refresh</TooltipContent>
@@ -122,10 +122,8 @@ export default function SessionsPage() {
 							{isError ? (
 								<ErrorState
 									message={error?.message || "Unable to fetch sessions. Please check your connection and try again."}
-									action={{
-										label: "Retry",
-										onClick: refetch,
-									}}
+									retryLabel="Retry"
+									onRetry={refetch}
 								/>
 							) : (
 								<>
@@ -143,12 +141,12 @@ export default function SessionsPage() {
 										<div className="flex items-center justify-center py-4">
 											{searchQuery_.isAutoSearching ? (
 												<div className="flex items-center gap-2 text-sm text-muted-foreground">
-													<Icon name="loading" className="h-4 w-4 animate-spin" />
+													<Icon name="LoaderCircle" className="h-4 w-4 animate-spin" />
 													<span>Searching for more sessions...</span>
 												</div>
 											) : (
 												<Button variant="outline" onClick={() => searchQuery_.loadMoreMatches()}>
-													<Icon name="chevron-down" />
+													<Icon name="ChevronDown" />
 													Load More Matches
 												</Button>
 											)}
@@ -159,7 +157,7 @@ export default function SessionsPage() {
 									{!isSearching && hasNextPage && (
 										<div className="flex items-center justify-center py-4">
 											<Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-												{isFetchingNextPage ? <Icon name="loading" /> : <Icon name="chevron-down" />}
+												{isFetchingNextPage ? <Icon name="LoaderCircle" /> : <Icon name="ChevronDown" />}
 												{isFetchingNextPage ? "Loading..." : "Load More Sessions"}
 											</Button>
 										</div>

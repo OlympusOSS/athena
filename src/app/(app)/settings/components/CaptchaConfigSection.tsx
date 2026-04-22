@@ -60,7 +60,7 @@ export function CaptchaConfigSection() {
 		return (
 			<Card>
 				<CardContent className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-					<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+					<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 					Loading CAPTCHA settings...
 				</CardContent>
 			</Card>
@@ -72,7 +72,7 @@ export function CaptchaConfigSection() {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center gap-2">
-						<Icon name="shield" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="Shield" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">Cloudflare Turnstile</CardTitle>
 						<span className="text-xs text-muted-foreground">&mdash; Bot protection for login and registration</span>
 					</div>
@@ -99,7 +99,7 @@ export function CaptchaConfigSection() {
 							Site Key
 						</Label>
 						<div className="relative">
-							<Icon name="globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+							<Icon name="Globe" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
 								id="captcha-site-key"
 								placeholder="0x4AAAAAAA..."
@@ -122,7 +122,7 @@ export function CaptchaConfigSection() {
 							Secret Key
 						</Label>
 						<div className="relative">
-							<Icon name="key" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+							<Icon name="Key" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
 								id="captcha-secret-key"
 								type="password"

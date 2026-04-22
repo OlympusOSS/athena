@@ -27,7 +27,30 @@
 			},
 			"style": {
 				"noNonNullAssertion": "off",
-				"useImportType": "error"
+				"useImportType": "error",
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"lucide-react": "Canvas wraps lucide; import `Icon` from `@olympusoss/canvas`.",
+							"framer-motion": "Canvas owns motion primitives; use those instead.",
+							"sonner": "Import `Toaster` from `@olympusoss/canvas`; use `toast` helpers via Canvas if needed.",
+							"@radix-ui/react-dialog": "Import Dialog primitives from `@olympusoss/canvas`.",
+							"@radix-ui/react-dropdown-menu": "Import DropdownMenu primitives from `@olympusoss/canvas`.",
+							"@radix-ui/react-tabs": "Import Tabs from `@olympusoss/canvas`.",
+							"@radix-ui/react-popover": "Import Popover from `@olympusoss/canvas`.",
+							"@radix-ui/react-tooltip": "Import Tooltip from `@olympusoss/canvas`.",
+							"@radix-ui/react-select": "Import Select from `@olympusoss/canvas`.",
+							"@radix-ui/react-checkbox": "Import Checkbox from `@olympusoss/canvas`.",
+							"@radix-ui/react-switch": "Import Switch from `@olympusoss/canvas`.",
+							"@radix-ui/react-avatar": "Import Avatar from `@olympusoss/canvas`.",
+							"@radix-ui/react-label": "Import Label from `@olympusoss/canvas`.",
+							"@nivo/core": "Use Canvas charts; avoid importing @nivo directly.",
+							"@nivo/line": "Use Canvas charts; avoid importing @nivo directly.",
+							"@nivo/pie": "Use Canvas charts; avoid importing @nivo directly."
+						}
+					}
+				}
 			},
 			"a11y": {
 				"noStaticElementInteractions": "off",

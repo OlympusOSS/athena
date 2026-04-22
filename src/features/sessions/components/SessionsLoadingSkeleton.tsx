@@ -5,5 +5,5 @@ interface SessionsLoadingSkeletonProps {
 }
 
 export const SessionsLoadingSkeleton = ({ rows: _rows = 5 }: SessionsLoadingSkeletonProps) => {
-	return <LoadingState variant="section" message="Loading sessions..." />;
+	return <LoadingState message="Loading sessions..." />;
 };

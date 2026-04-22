@@ -52,7 +52,7 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 		return (
 			<AdminLayout>
 				<div className="space-y-6">
-					<ErrorState message={`Failed to load client: ${error.message}`} variant="page" />
+					<ErrorState message={`Failed to load client: ${error.message}`} />
 				</div>
 			</AdminLayout>
 		);
@@ -62,7 +62,7 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 		return (
 			<AdminLayout>
 				<div className="space-y-6">
-					<LoadingState variant="page" />
+					<LoadingState />
 				</div>
 			</AdminLayout>
 		);
@@ -74,7 +74,7 @@ export default function EditOAuth2ClientPage({ params }: Props) {
 				<PageHeader
 					title="Edit OAuth2 Client"
 					subtitle="Update client configuration"
-					icon={<Icon name="grid" />}
+					icon={<Icon name="LayoutGrid" />}
 					breadcrumbs={[{ label: "OAuth2 Clients", href: "/clients" }, { label: "Edit" }]}
 				/>
 

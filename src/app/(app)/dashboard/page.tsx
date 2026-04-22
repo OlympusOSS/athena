@@ -9,9 +9,7 @@ export default function DashboardPage() {
 			<div className="space-y-6">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-					<p className="text-muted-foreground">
-						Overview of your identity platform.
-					</p>
+					<p className="text-muted-foreground">Overview of your identity platform.</p>
 				</div>
 
 				<Card>
@@ -22,9 +20,7 @@ export default function DashboardPage() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<p className="text-sm text-muted-foreground">
-							Dashboard widgets are being rebuilt with the new design system. Check back soon.
-						</p>
+						<p className="text-sm text-muted-foreground">Dashboard widgets are being rebuilt with the new design system. Check back soon.</p>
 					</CardContent>
 				</Card>
 			</div>

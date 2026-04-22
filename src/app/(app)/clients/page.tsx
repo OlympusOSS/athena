@@ -21,11 +21,10 @@ import {
 	ErrorState,
 	Icon,
 	SearchBar,
-	StatCard,
 } from "@olympusoss/canvas";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { ActionBar, PageHeader, ProtectedPage, SectionCard } from "@/components/layout";
+import { ActionBar, PageHeader, ProtectedPage, SectionCard, StatCard } from "@/components/layout";
 import { formatClientId, getClientType, transformOAuth2ClientForTable, useAllOAuth2Clients, useDeleteOAuth2Client } from "@/features/oauth2-clients";
 import { useHydraEnabled } from "@/features/settings/hooks/useSettings";
 import { useDialog } from "@/hooks";
@@ -171,21 +170,21 @@ export default function OAuth2ClientsPage() {
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-							<Icon name="more-vertical" />
+							<Icon name="EllipsisVertical" />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuItem onClick={() => handleView(row.id)}>
-							<Icon name="view" />
+							<Icon name="Eye" />
 							View Details
 						</DropdownMenuItem>
 						<DropdownMenuItem onClick={() => handleEdit(row.id)}>
-							<Icon name="edit" />
+							<Icon name="Pencil" />
 							Edit Client
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem variant="destructive" onClick={() => handleDeleteClick(row.id)}>
-							<Icon name="delete" />
+						<DropdownMenuItem onClick={() => handleDeleteClick(row.id)}>
+							<Icon name="Trash2" />
 							Delete Client
 						</DropdownMenuItem>
 					</DropdownMenuContent>
@@ -199,16 +198,19 @@ export default function OAuth2ClientsPage() {
 		return (
 			<ProtectedPage>
 				<div className="space-y-6">
-					<PageHeader title="OAuth2 Clients" subtitle="Manage OAuth2 client applications and their configurations" icon={<Icon name="grid" />} />
+					<PageHeader
+						title="OAuth2 Clients"
+						subtitle="Manage OAuth2 client applications and their configurations"
+						icon={<Icon name="LayoutGrid" />}
+					/>
 					<Card>
 						<EmptyState
-							icon={<Icon name="cloud-off" />}
+							icon={<Icon name="CloudOff" />}
 							title="OAuth2 Integration Disabled"
 							description="OAuth2 integration is currently disabled. Enable it in Settings to manage OAuth2 clients."
 							action={{
 								label: "Go to Settings",
 								onClick: () => router.push("/settings"),
-								icon: <Icon name="settings" />,
 							}}
 						/>
 					</Card>
@@ -223,12 +225,12 @@ export default function OAuth2ClientsPage() {
 				<PageHeader
 					title="OAuth2 Clients"
 					subtitle="Manage OAuth2 client applications and their configurations"
-					icon={<Icon name="grid" />}
+					icon={<Icon name="LayoutGrid" />}
 					actions={
 						<ActionBar
 							primaryAction={{
 								label: "Create Client",
-								icon: <Icon name="add" />,
+								icon: <Icon name="Plus" />,
 								onClick: () => router.push("/clients/create"),
 							}}
 						/>
@@ -237,18 +239,18 @@ export default function OAuth2ClientsPage() {
 
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-					<StatCard title="Total Clients" value={clientsData?.totalCount || 0} icon={<Icon name="users" />} colorVariant="primary" />
-					<StatCard title="Public Clients" value={clients.filter((c) => !c.client_secret).length} icon={<Icon name="globe" />} colorVariant="blue" />
+					<StatCard title="Total Clients" value={clientsData?.totalCount || 0} icon={<Icon name="Users" />} colorVariant="primary" />
+					<StatCard title="Public Clients" value={clients.filter((c) => !c.client_secret).length} icon={<Icon name="Globe" />} colorVariant="blue" />
 					<StatCard
 						title="Confidential Clients"
 						value={clients.filter((c) => !!c.client_secret).length}
-						icon={<Icon name="lock" />}
+						icon={<Icon name="Lock" />}
 						colorVariant="purple"
 					/>
 					<StatCard
 						title="Auth Code Flow"
 						value={clients.filter((c) => c.grant_types?.includes("authorization_code")).length}
-						icon={<Icon name="key-round" />}
+						icon={<Icon name="KeyRound" />}
 						colorVariant="success"
 					/>
 				</div>
@@ -259,7 +261,7 @@ export default function OAuth2ClientsPage() {
 				</SectionCard>
 
 				{/* Error Display */}
-				{error && <ErrorState variant="inline" message={`Failed to load OAuth2 clients: ${error.message}`} />}
+				{error && <ErrorState message={`Failed to load OAuth2 clients: ${error.message}`} />}
 
 				{/* Data Table */}
 				<Card>

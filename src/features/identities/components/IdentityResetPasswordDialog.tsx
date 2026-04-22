@@ -77,7 +77,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Icon name="key-round" />
+						<Icon name="KeyRound" />
 						Reset Password
 					</DialogTitle>
 					<DialogDescription>Set a new password for this identity. The password will take effect immediately.</DialogDescription>
@@ -90,7 +90,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 
 					{isDemo && (
 						<Alert>
-							<Icon name="lock" />
+							<Icon name="Lock" />
 							<AlertDescription>Password reset is disabled for demo accounts.</AlertDescription>
 						</Alert>
 					)}
@@ -150,7 +150,7 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 
 					{showSuccess && (
 						<Alert>
-							<Icon name="success" />
+							<Icon name="CircleCheck" />
 							<AlertDescription>Password has been reset successfully.</AlertDescription>
 						</Alert>
 					)}
@@ -164,12 +164,12 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 						<Button onClick={handleSubmit} disabled={!canSubmit}>
 							{resetPasswordMutation.isPending ? (
 								<>
-									<Icon name="loading" />
+									<Icon name="LoaderCircle" />
 									Resetting…
 								</>
 							) : (
 								<>
-									<Icon name="key-round" />
+									<Icon name="KeyRound" />
 									Reset Password
 								</>
 							)}

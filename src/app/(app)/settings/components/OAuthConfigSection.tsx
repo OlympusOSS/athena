@@ -58,7 +58,7 @@ export function OAuthConfigSection() {
 		return (
 			<Card>
 				<CardContent className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-					<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+					<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 					Loading OAuth settings...
 				</CardContent>
 			</Card>
@@ -70,7 +70,7 @@ export function OAuthConfigSection() {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center gap-2">
-						<Icon name="key" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="Key" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">OAuth2 Client Credentials</CardTitle>
 						<span className="text-xs text-muted-foreground">&mdash; Used by this admin instance to authenticate with the OAuth2 service</span>
 					</div>
@@ -83,7 +83,7 @@ export function OAuthConfigSection() {
 							Client ID
 						</Label>
 						<div className="relative">
-							<Icon name="user" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+							<Icon name="User" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
 								id="oauth-client-id"
 								placeholder="athena-iam-client"
@@ -106,7 +106,7 @@ export function OAuthConfigSection() {
 							Client Secret
 						</Label>
 						<div className="relative">
-							<Icon name="lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+							<Icon name="Lock" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 							<Input
 								id="oauth-client-secret"
 								type="password"

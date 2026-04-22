@@ -1,7 +1,7 @@
 "use client";
 
+import { PageHeader } from "@olympusoss/canvas";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { UserRole } from "@/features/auth";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import CreateIdentityForm from "@/features/identities/components/CreateIdentityForm";

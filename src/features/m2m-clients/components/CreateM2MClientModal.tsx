@@ -121,7 +121,7 @@ export function CreateM2MClientModal({ open, onOpenChange, onSubmit, isSubmittin
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Icon name="add" />
+						<Icon name="Plus" />
 						Add M2M Client
 					</DialogTitle>
 					<DialogDescription>Register a machine-to-machine OAuth2 client for an AI agent or automated service.</DialogDescription>
@@ -209,7 +209,7 @@ export function CreateM2MClientModal({ open, onOpenChange, onSubmit, isSubmittin
 						{error && (
 							<Alert variant="destructive">
 								<AlertDescription>
-									<Icon name="danger" />
+									<Icon name="TriangleAlert" />
 									{error.message}
 								</AlertDescription>
 							</Alert>
@@ -224,12 +224,12 @@ export function CreateM2MClientModal({ open, onOpenChange, onSubmit, isSubmittin
 					<Button type="submit" form="create-m2m-form" disabled={isSubmitting || (selectedScopes ?? []).length === 0}>
 						{isSubmitting ? (
 							<>
-								<Icon name="loading" />
+								<Icon name="LoaderCircle" />
 								Creating...
 							</>
 						) : (
 							<>
-								<Icon name="add" />
+								<Icon name="Plus" />
 								Create Client
 							</>
 						)}

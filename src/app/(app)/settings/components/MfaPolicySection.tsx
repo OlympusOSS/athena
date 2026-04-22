@@ -301,7 +301,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 		return (
 			<Card>
 				<CardContent className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-					<Icon name="loading" className="mr-2 h-4 w-4 animate-spin" />
+					<Icon name="LoaderCircle" className="mr-2 h-4 w-4 animate-spin" />
 					Loading MFA policy settings...
 				</CardContent>
 			</Card>
@@ -315,7 +315,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 		<div className="space-y-4">
 			{/* SR-MFA-6: Browser-scope enforcement notice (non-dismissable, info) */}
 			<Alert className="py-2">
-				<Icon name="info" className="h-4 w-4" />
+				<Icon name="Info" className="h-4 w-4" />
 				<AlertDescription className="text-xs">
 					MFA enforcement applies to browser-based logins. API integrations and direct Kratos session flows are not covered by this policy.
 				</AlertDescription>
@@ -332,7 +332,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			{/* AC6: Unsaved changes indicator — visible whenever form is dirty */}
 			{isDirty && (
 				<div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
-					<Icon name="warning" className="h-3.5 w-3.5 flex-shrink-0" />
+					<Icon name="TriangleAlert" className="h-3.5 w-3.5 flex-shrink-0" />
 					<span>You have unsaved changes. Click "Save MFA Policy" to apply them.</span>
 				</div>
 			)}
@@ -341,7 +341,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center gap-2">
-						<Icon name="bar-chart" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="ChartBar" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">Enrollment Statistics</CardTitle>
 					</div>
 				</CardHeader>
@@ -352,7 +352,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 						</div>
 					) : stats === null ? (
 						<div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
-							<Icon name="loading" className="h-3.5 w-3.5 animate-spin" />
+							<Icon name="LoaderCircle" className="h-3.5 w-3.5 animate-spin" />
 							Loading stats...
 						</div>
 					) : (
@@ -383,7 +383,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center gap-2">
-						<Icon name="shield" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="Shield" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">Enrollment Policy</CardTitle>
 					</div>
 				</CardHeader>
@@ -418,7 +418,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 								Grace period (days)
 							</Label>
 							<div className="relative">
-								<Icon name="time" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+								<Icon name="Timer" className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 								<Input
 									id="mfa-grace-period"
 									type="number"
@@ -444,7 +444,7 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center gap-2">
-						<Icon name="key" className="h-4 w-4 text-muted-foreground" />
+						<Icon name="Key" className="h-4 w-4 text-muted-foreground" />
 						<CardTitle className="text-base">Allowed MFA Methods</CardTitle>
 					</div>
 				</CardHeader>
@@ -512,12 +512,12 @@ export function MfaPolicySection({ onDirtyChange }: MfaPolicySectionProps) {
 				<Button size="sm" onClick={handleSave} disabled={saveDisabled}>
 					{saving ? (
 						<>
-							<Icon name="loading" className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+							<Icon name="LoaderCircle" className="mr-1.5 h-3.5 w-3.5 animate-spin" />
 							Saving...
 						</>
 					) : (
 						<>
-							<Icon name="check" className="mr-1.5 h-3.5 w-3.5" />
+							<Icon name="Check" className="mr-1.5 h-3.5 w-3.5" />
 							Save MFA Policy
 						</>
 					)}
