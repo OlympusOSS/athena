@@ -67,7 +67,7 @@
 		"husky": "^9.1.0",
 		"jsdom": "^29.0.2",
 		"lint-staged": "^16.0.0",
-		"typescript": "^5.9.3",
+		"typescript": "^6.0.3",
 		"vitest": "^3.2.4"
 	},
 	"overrides": {
