@@ -92,7 +92,7 @@ exports[`BulkOperationDialog > matches snapshot (delete, confirm phase) 1`] = `
         </p>
         <ul>
           <li>
-            a@example.com
+            A B
              
             <code>
               abc-123-

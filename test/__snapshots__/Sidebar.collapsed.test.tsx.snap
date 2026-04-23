@@ -1,0 +1,210 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Sidebar — collapsed, viewer role, Hydra disabled > renders collapsed sidebar with viewer-only nav 1`] = `
+<div>
+  <aside
+    class="glass-nav fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 w-14"
+  >
+    <div
+      class="flex h-14 items-center justify-center px-1"
+    >
+      <button
+        class="group relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700"
+        data-state="closed"
+        type="button"
+      >
+        <svg
+          aria-label="Olympus"
+          class="h-5 w-5 transition-opacity duration-200 group-hover:opacity-0"
+          viewBox="332 290 736 440"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+            fill="#fff"
+            fill-rule="evenodd"
+          />
+        </svg>
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-panel-left shrink-0 absolute h-4 w-4 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            height="18"
+            rx="2"
+            width="18"
+            x="3"
+            y="3"
+          />
+          <path
+            d="M9 3v18"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="relative overflow-hidden flex-1 py-2 px-1.5"
+      dir="ltr"
+      style="position: relative; --radix-scroll-area-corner-width: 0px; --radix-scroll-area-corner-height: 0px;"
+    >
+      <style>
+        [data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}
+      </style>
+      <div
+        class="h-full w-full rounded-[inherit]"
+        data-radix-scroll-area-viewport=""
+        style="overflow-x: hidden; overflow-y: scroll;"
+      >
+        <div
+          style="min-width: 100%; display: table;"
+        >
+          <nav
+            class="flex flex-col gap-0.5"
+          >
+            <a
+              class="relative block"
+              data-state="closed"
+              href="/dashboard"
+            >
+              <div
+                class="flex items-center rounded-md text-sm transition-colors duration-150 justify-center px-2 py-2 opacity-75 hover:opacity-100"
+                style="color: hsl(var(--sidebar-fg));"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-layout-dashboard h-4 w-4 shrink-0 text-blue-500"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="3"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="3"
+                  />
+                  <rect
+                    height="9"
+                    rx="1"
+                    width="7"
+                    x="14"
+                    y="12"
+                  />
+                  <rect
+                    height="5"
+                    rx="1"
+                    width="7"
+                    x="3"
+                    y="16"
+                  />
+                </svg>
+              </div>
+            </a>
+            <a
+              class="relative block"
+              data-state="closed"
+              href="/schemas"
+            >
+              <div
+                class="flex items-center rounded-md text-sm transition-colors duration-150 justify-center px-2 py-2 opacity-75 hover:opacity-100"
+                style="color: hsl(var(--sidebar-fg));"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-file-text h-4 w-4 shrink-0 text-cyan-500"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+                  />
+                  <path
+                    d="M14 2v5a1 1 0 0 0 1 1h5"
+                  />
+                  <path
+                    d="M10 9H8"
+                  />
+                  <path
+                    d="M16 13H8"
+                  />
+                  <path
+                    d="M16 17H8"
+                  />
+                </svg>
+              </div>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <div
+      class="mx-3"
+      style="border-bottom: 1px solid hsl(var(--sidebar-border));"
+    />
+    <div
+      class="p-2.5 px-1.5"
+    >
+      <button
+        class="flex w-full items-center rounded-md text-sm opacity-60 transition-all duration-150 hover:opacity-100 justify-center px-2 py-2"
+        data-state="closed"
+        style="color: hsl(var(--sidebar-fg));"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-log-out h-4 w-4 shrink-0"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m16 17 5-5-5-5"
+          />
+          <path
+            d="M21 12H9"
+          />
+          <path
+            d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+          />
+        </svg>
+      </button>
+    </div>
+  </aside>
+</div>
+`;

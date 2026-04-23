@@ -5,8 +5,10 @@ import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 
 import "./snapshot-setup";
 
+const pushMock = vi.fn();
+
 vi.mock("next/navigation", () => ({
-	useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+	useRouter: () => ({ push: pushMock, replace: vi.fn(), back: vi.fn() }),
 	useSearchParams: () => new URLSearchParams(),
 	usePathname: () => "/",
 }));
@@ -24,5 +26,24 @@ describe("ProtectedRoute", () => {
 			</ProtectedRoute>,
 		);
 		expect(container).toMatchSnapshot();
+	});
+
+	it("renders children when no requiredRole provided", () => {
+		const { getByText } = render(
+			<ProtectedRoute>
+				<div>child-content</div>
+			</ProtectedRoute>,
+		);
+		expect(getByText("child-content")).toBeInTheDocument();
+	});
+
+	it("renders children when user has required permission", async () => {
+		const { UserRole } = await import("@/features/auth");
+		const { getByText } = render(
+			<ProtectedRoute requiredRole={UserRole.VIEWER}>
+				<div>perm-ok</div>
+			</ProtectedRoute>,
+		);
+		expect(getByText("perm-ok")).toBeInTheDocument();
 	});
 });

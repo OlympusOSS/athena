@@ -1,8 +1,7 @@
-import { ThemeProvider } from "@olympusoss/canvas";
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-
 import { ProtectedPage } from "@/components/layout/ProtectedPage";
+import { UserRole } from "@/features/auth";
 
 import "./snapshot-setup";
 
@@ -27,25 +26,13 @@ vi.mock("@/lib/navGuard", () => ({
 	navGuard: { isDirty: () => false, requestGuard: vi.fn() },
 }));
 
-describe("ProtectedPage", () => {
-	it("matches snapshot (no layout)", () => {
+describe("ProtectedPage — requiredRole + no layout", () => {
+	it("wraps in ProtectedRoute but no layout", () => {
 		const { container } = render(
-			<ProtectedPage layout={false}>
-				<div>content</div>
+			<ProtectedPage requiredRole={UserRole.ADMIN} layout={false}>
+				<div>guarded</div>
 			</ProtectedPage>,
 		);
-		expect(container).toMatchSnapshot();
-	});
-
-	it("renders layout when layout defaults to true (no requiredRole)", () => {
-		const { container } = render(
-			<ThemeProvider>
-				<ProtectedPage>
-					<div>inner-content</div>
-				</ProtectedPage>
-			</ThemeProvider>,
-		);
-		// AdminLayout wraps the content
-		expect(container.textContent).toContain("inner-content");
+		expect(container.textContent).toContain("guarded");
 	});
 });

@@ -19,4 +19,20 @@ describe("SchemaViewer", () => {
 		const { container } = render(<SchemaViewer schema={schema as never} />);
 		expect(container).toMatchSnapshot();
 	});
+
+	it("shows loading state", () => {
+		const { container } = render(<SchemaViewer schema={{ id: "x" } as never} loading={true} />);
+		expect(container.textContent).toMatch(/Loading schema details/);
+	});
+
+	it("parses string schema JSON", () => {
+		const schemaString = JSON.stringify({
+			title: "Parsed",
+			type: "object",
+			properties: { traits: { type: "object", properties: { email: {} } } },
+		});
+		const schema = { id: "id", schema: schemaString };
+		const { container } = render(<SchemaViewer schema={schema as never} />);
+		expect(container.textContent).toMatch(/email/);
+	});
 });
