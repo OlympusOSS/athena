@@ -84,10 +84,7 @@ describe("useKratosRequest", () => {
 		await act(async () => {
 			await expect(result.current.execute()).rejects.toBe(err);
 		});
-		expect(errorSpy).toHaveBeenCalledWith(
-			"[Kratos Request] HTTP Error:",
-			expect.objectContaining({ status: 500, url: "http://x" }),
-		);
+		expect(errorSpy).toHaveBeenCalledWith("[Kratos Request] HTTP Error:", expect.objectContaining({ status: 500, url: "http://x" }));
 	});
 
 	it("logs NetworkError", async () => {

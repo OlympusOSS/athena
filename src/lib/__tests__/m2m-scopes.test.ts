@@ -10,15 +10,7 @@ import { M2M_HIGH_RISK_SCOPES, M2M_PERMITTED_SCOPES, M2M_SCOPE_DESCRIPTIONS } fr
 
 describe("M2M_PERMITTED_SCOPES allowlist", () => {
 	it("contains the expected V1 scopes", () => {
-		const expected = [
-			"identities:read",
-			"identities:write",
-			"sessions:read",
-			"sessions:invalidate",
-			"settings:read",
-			"audit:read",
-			"webhooks:write",
-		];
+		const expected = ["identities:read", "identities:write", "sessions:read", "sessions:invalidate", "settings:read", "audit:read", "webhooks:write"];
 		expect([...M2M_PERMITTED_SCOPES]).toEqual(expected);
 	});
 

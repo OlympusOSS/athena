@@ -93,10 +93,7 @@ describe("HttpClient error paths", () => {
 	});
 
 	it("throws NetworkError when fetch rejects with a network-like message", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn().mockRejectedValue(new Error("fetch failed: ECONNRESET")),
-		);
+		vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("fetch failed: ECONNRESET")));
 		const client = new HttpClient({ maxRetries: 0 });
 		await expect(client.get("http://example.com")).rejects.toBeInstanceOf(NetworkError);
 	});

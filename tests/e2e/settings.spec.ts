@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Settings API", () => {
 	test("GET /api/settings returns settings list", async ({ request }) => {
@@ -17,9 +17,7 @@ test.describe("Settings API", () => {
 		expect([200, 401]).toContain(response.status());
 	});
 
-	test("unauthenticated POST /api/settings returns 401", async ({
-		request,
-	}) => {
+	test("unauthenticated POST /api/settings returns 401", async ({ request }) => {
 		const response = await request.post("/api/settings", {
 			data: { key: "test.key", value: "test-value" },
 		});

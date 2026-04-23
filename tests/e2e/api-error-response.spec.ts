@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#60: standardize API error response shape
@@ -8,9 +8,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("API Error Response Shape - Functional Tests", () => {
-	test("F1: 401 response has correct structured shape", async ({
-		request,
-	}) => {
+	test("F1: 401 response has correct structured shape", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 
@@ -22,9 +20,7 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 		});
 	});
 
-	test("F3: error key is preserved for backward compatibility", async ({
-		request,
-	}) => {
+	test("F3: error key is preserved for backward compatibility", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 
@@ -45,15 +41,10 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 		}
 	});
 
-	test("F5: 401 from locked-accounts/unlock route uses new shape", async ({
-		request,
-	}) => {
-		const response = await request.post(
-			"/api/security/locked-accounts/unlock",
-			{
-				data: { identity_id: "test" },
-			},
-		);
+	test("F5: 401 from locked-accounts/unlock route uses new shape", async ({ request }) => {
+		const response = await request.post("/api/security/locked-accounts/unlock", {
+			data: { identity_id: "test" },
+		});
 		if (response.status() === 401) {
 			const body = await response.json();
 			expect(body).toHaveProperty("error", "not_authenticated");
@@ -62,9 +53,7 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 		}
 	});
 
-	test("F6: 401 from dashboard/layout GET uses new shape", async ({
-		request,
-	}) => {
+	test("F6: 401 from dashboard/layout GET uses new shape", async ({ request }) => {
 		const response = await request.get("/api/dashboard/layout");
 		if (response.status() === 401) {
 			const body = await response.json();
@@ -74,9 +63,7 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 		}
 	});
 
-	test("F7: 401 from dashboard/layout PUT uses new shape", async ({
-		request,
-	}) => {
+	test("F7: 401 from dashboard/layout PUT uses new shape", async ({ request }) => {
 		const response = await request.put("/api/dashboard/layout", {
 			data: { layout: [] },
 		});
@@ -88,9 +75,7 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 		}
 	});
 
-	test("F8: all three fields present on 401 response", async ({
-		request,
-	}) => {
+	test("F8: all three fields present on 401 response", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 
@@ -115,9 +100,7 @@ test.describe("API Error Response Shape - Functional Tests", () => {
 });
 
 test.describe("API Error Response Shape - Edge Cases", () => {
-	test("E1: malformed session cookie returns 401 with new shape", async ({
-		request,
-	}) => {
+	test("E1: malformed session cookie returns 401 with new shape", async ({ request }) => {
 		const response = await request.get("/api/settings", {
 			headers: {
 				cookie: "athena-session=corrupted-data",
@@ -132,11 +115,7 @@ test.describe("API Error Response Shape - Edge Cases", () => {
 	});
 
 	test("E4: all three fields present on auth errors", async ({ request }) => {
-		const endpoints = [
-			"/api/settings",
-			"/api/kratos-admin/identities",
-			"/api/hydra-admin/clients",
-		];
+		const endpoints = ["/api/settings", "/api/kratos-admin/identities", "/api/hydra-admin/clients"];
 
 		for (const endpoint of endpoints) {
 			const response = await request.get(endpoint);
@@ -151,9 +130,7 @@ test.describe("API Error Response Shape - Edge Cases", () => {
 });
 
 test.describe("API Error Response Shape - Security Tests", () => {
-	test("S1: no internal details leaked in error responses", async ({
-		request,
-	}) => {
+	test("S1: no internal details leaked in error responses", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 
@@ -172,9 +149,7 @@ test.describe("API Error Response Shape - Security Tests", () => {
 		expect(bodyStr).not.toContain("postgres");
 	});
 
-	test("S2: 403 hint does not contain specific role identifiers", async ({
-		request,
-	}) => {
+	test("S2: 403 hint does not contain specific role identifiers", async ({ request }) => {
 		// Send a request that might trigger 403 (would need valid session with wrong role)
 		// Since we can't easily create a non-admin session, verify 401 shape doesn't leak roles
 		const response = await request.get("/api/settings");
@@ -186,9 +161,7 @@ test.describe("API Error Response Shape - Security Tests", () => {
 		expect(bodyStr).not.toContain("iam-admin");
 	});
 
-	test("S3: error responses do not leak middleware internals", async ({
-		request,
-	}) => {
+	test("S3: error responses do not leak middleware internals", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#57: session cookie secure flag
@@ -12,9 +12,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Session Cookie Secure Flag - Functional Tests", () => {
-	test("F1: callback route sets athena-session cookie with correct attributes", async ({
-		request,
-	}) => {
+	test("F1: callback route sets athena-session cookie with correct attributes", async ({ request }) => {
 		// Trigger login flow to inspect cookie attributes
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
@@ -28,9 +26,7 @@ test.describe("Session Cookie Secure Flag - Functional Tests", () => {
 		expect(cookies).toContain("pkce_verifier");
 	});
 
-	test("F2: dev mode cookies do not include Secure flag", async ({
-		request,
-	}) => {
+	test("F2: dev mode cookies do not include Secure flag", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -38,9 +34,7 @@ test.describe("Session Cookie Secure Flag - Functional Tests", () => {
 		// In dev mode (HTTP), Secure flag should be absent
 		// Split cookies and check oauth_state specifically
 		const cookieParts = cookies.split(",").map((c: string) => c.trim());
-		const oauthStateCookie = cookieParts.find((c: string) =>
-			c.includes("oauth_state"),
-		);
+		const oauthStateCookie = cookieParts.find((c: string) => c.includes("oauth_state"));
 		if (oauthStateCookie) {
 			// Dev mode should not have Secure (we're on HTTP)
 			// This is expected behavior per AC
@@ -48,9 +42,7 @@ test.describe("Session Cookie Secure Flag - Functional Tests", () => {
 		}
 	});
 
-	test("F3: cookie attributes match between set and clear operations", async ({
-		request,
-	}) => {
+	test("F3: cookie attributes match between set and clear operations", async ({ request }) => {
 		// Verify logout clears cookies properly
 		const response = await request.get("/api/auth/logout", {
 			maxRedirects: 0,
@@ -66,9 +58,7 @@ test.describe("Session Cookie Secure Flag - Functional Tests", () => {
 });
 
 test.describe("Session Cookie Secure Flag - Edge Cases", () => {
-	test("E1: login cookies include HttpOnly attribute", async ({
-		request,
-	}) => {
+	test("E1: login cookies include HttpOnly attribute", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -76,9 +66,7 @@ test.describe("Session Cookie Secure Flag - Edge Cases", () => {
 		expect(cookies).toContain("HttpOnly");
 	});
 
-	test("E2: login cookies include SameSite attribute", async ({
-		request,
-	}) => {
+	test("E2: login cookies include SameSite attribute", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -88,9 +76,7 @@ test.describe("Session Cookie Secure Flag - Edge Cases", () => {
 });
 
 test.describe("Session Cookie Secure Flag - Security Tests", () => {
-	test("S1: session cookie not accessible via JavaScript (HttpOnly)", async ({
-		request,
-	}) => {
+	test("S1: session cookie not accessible via JavaScript (HttpOnly)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});

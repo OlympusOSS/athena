@@ -62,16 +62,12 @@ describe("withApiErrorHandling", () => {
 
 	it("extracts error.response.data.error.message", async () => {
 		const err = { response: { status: 400, data: { error: { message: "v2-msg" } } } };
-		await expect(withApiErrorHandling(() => Promise.reject(err))).rejects.toSatisfy(
-			(e) => (e as ApiCallError).message === "v2-msg",
-		);
+		await expect(withApiErrorHandling(() => Promise.reject(err))).rejects.toSatisfy((e) => (e as ApiCallError).message === "v2-msg");
 	});
 
 	it("extracts error.response.data.message", async () => {
 		const err = { response: { status: 400, data: { message: "v3-msg" } } };
-		await expect(withApiErrorHandling(() => Promise.reject(err))).rejects.toSatisfy(
-			(e) => (e as ApiCallError).message === "v3-msg",
-		);
+		await expect(withApiErrorHandling(() => Promise.reject(err))).rejects.toSatisfy((e) => (e as ApiCallError).message === "v3-msg");
 	});
 
 	it("falls back to response.statusText", async () => {
@@ -118,8 +114,8 @@ describe("withApiErrorHandling", () => {
 	});
 
 	it("falls through to message-only error", async () => {
-		await expect(withApiErrorHandling(() => Promise.reject(new Error("generic")), "API")).rejects.toSatisfy((e) =>
-			(e as ApiCallError).message === "generic",
+		await expect(withApiErrorHandling(() => Promise.reject(new Error("generic")), "API")).rejects.toSatisfy(
+			(e) => (e as ApiCallError).message === "generic",
 		);
 	});
 

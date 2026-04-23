@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#66: shared cookie options helper
@@ -8,9 +8,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Cookie Options Helper - Functional Tests", () => {
-	test("F4: cookie attributes include HttpOnly (secure flag gated on NODE_ENV)", async ({
-		request,
-	}) => {
+	test("F4: cookie attributes include HttpOnly (secure flag gated on NODE_ENV)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -18,9 +16,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 		expect(cookies).toContain("HttpOnly");
 	});
 
-	test("F6: SameSite, httpOnly, path attributes correct", async ({
-		request,
-	}) => {
+	test("F6: SameSite, httpOnly, path attributes correct", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -30,9 +26,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 		expect(cookies).toContain("Path=/");
 	});
 
-	test("F7: set and clear attributes match (logout clears correctly)", async ({
-		request,
-	}) => {
+	test("F7: set and clear attributes match (logout clears correctly)", async ({ request }) => {
 		const logoutResponse = await request.get("/api/auth/logout", {
 			maxRedirects: 0,
 		});
@@ -46,9 +40,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 		}
 	});
 
-	test("F8: callback route sets cookies with helper attributes", async ({
-		request,
-	}) => {
+	test("F8: callback route sets cookies with helper attributes", async ({ request }) => {
 		// The callback would set athena-session; we can verify the login flow
 		// sets cookies with correct attributes as a proxy test
 		const response = await request.get("/api/auth/login", {
@@ -59,9 +51,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
-	test("F9: logout route clears cookie with matching attributes", async ({
-		request,
-	}) => {
+	test("F9: logout route clears cookie with matching attributes", async ({ request }) => {
 		const response = await request.get("/api/auth/logout", {
 			maxRedirects: 0,
 		});
@@ -92,9 +82,7 @@ test.describe("Cookie Options Helper - Functional Tests", () => {
 });
 
 test.describe("Cookie Options Helper - Edge Cases", () => {
-	test("E4: cookies set in dev mode without Secure flag", async ({
-		request,
-	}) => {
+	test("E4: cookies set in dev mode without Secure flag", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -106,9 +94,7 @@ test.describe("Cookie Options Helper - Edge Cases", () => {
 		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
-	test("E5: login route flow-state cookies have correct attributes", async ({
-		request,
-	}) => {
+	test("E5: login route flow-state cookies have correct attributes", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -123,9 +109,7 @@ test.describe("Cookie Options Helper - Edge Cases", () => {
 });
 
 test.describe("Cookie Options Helper - Security Tests", () => {
-	test("S1: session cookies use HttpOnly (not accessible via JavaScript)", async ({
-		request,
-	}) => {
+	test("S1: session cookies use HttpOnly (not accessible via JavaScript)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -133,9 +117,7 @@ test.describe("Cookie Options Helper - Security Tests", () => {
 		expect(cookies).toContain("HttpOnly");
 	});
 
-	test("S3: cookies use SameSite=Lax for CSRF protection", async ({
-		request,
-	}) => {
+	test("S3: cookies use SameSite=Lax for CSRF protection", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});

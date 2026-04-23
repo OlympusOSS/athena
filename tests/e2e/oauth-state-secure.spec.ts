@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#100: secure flag on oauth_state/pkce_verifier
@@ -26,18 +26,14 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 		expect(cookies).toContain("pkce_verifier");
 	});
 
-	test("F3: oauth_state has correct attributes in dev", async ({
-		request,
-	}) => {
+	test("F3: oauth_state has correct attributes in dev", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		// In dev mode, Secure should be absent (HTTP localhost)
 		const cookieLines = cookies.split(/,(?=[^;]*=)/);
-		const oauthCookie = cookieLines.find((c: string) =>
-			c.includes("oauth_state="),
-		);
+		const oauthCookie = cookieLines.find((c: string) => c.includes("oauth_state="));
 		expect(oauthCookie).toBeDefined();
 		if (oauthCookie) {
 			expect(oauthCookie).toContain("HttpOnly");
@@ -45,17 +41,13 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 		}
 	});
 
-	test("F4: pkce_verifier has correct attributes in dev", async ({
-		request,
-	}) => {
+	test("F4: pkce_verifier has correct attributes in dev", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		const cookieLines = cookies.split(/,(?=[^;]*=)/);
-		const pkceCookie = cookieLines.find((c: string) =>
-			c.includes("pkce_verifier="),
-		);
+		const pkceCookie = cookieLines.find((c: string) => c.includes("pkce_verifier="));
 		expect(pkceCookie).toBeDefined();
 		if (pkceCookie) {
 			expect(pkceCookie).toContain("HttpOnly");
@@ -69,9 +61,7 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		const cookieLines = cookies.split(/,(?=[^;]*=)/);
-		const oauthCookie = cookieLines.find((c: string) =>
-			c.includes("oauth_state="),
-		);
+		const oauthCookie = cookieLines.find((c: string) => c.includes("oauth_state="));
 		expect(oauthCookie).toBeDefined();
 		if (oauthCookie) {
 			expect(oauthCookie).toContain("Max-Age=300");
@@ -84,18 +74,14 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		const cookieLines = cookies.split(/,(?=[^;]*=)/);
-		const pkceCookie = cookieLines.find((c: string) =>
-			c.includes("pkce_verifier="),
-		);
+		const pkceCookie = cookieLines.find((c: string) => c.includes("pkce_verifier="));
 		expect(pkceCookie).toBeDefined();
 		if (pkceCookie) {
 			expect(pkceCookie).toContain("Max-Age=300");
 		}
 	});
 
-	test("F7: SameSite=Lax on both cookies (not Strict)", async ({
-		request,
-	}) => {
+	test("F7: SameSite=Lax on both cookies (not Strict)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -105,18 +91,14 @@ test.describe("OAuth State Secure Flag - Functional Tests", () => {
 		expect(cookies.toLowerCase()).not.toContain("samesite=strict");
 	});
 
-	test("F10: buildSessionCookieOptions NOT used for flow-state cookies", async ({
-		request,
-	}) => {
+	test("F10: buildSessionCookieOptions NOT used for flow-state cookies", async ({ request }) => {
 		// Verify flow-state cookies have Max-Age=300, not the session helper's 28800 cap
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		const cookieLines = cookies.split(/,(?=[^;]*=)/);
-		const oauthCookie = cookieLines.find((c: string) =>
-			c.includes("oauth_state="),
-		);
+		const oauthCookie = cookieLines.find((c: string) => c.includes("oauth_state="));
 		if (oauthCookie) {
 			// Should NOT have session-level maxAge (28800)
 			expect(oauthCookie).not.toContain("Max-Age=28800");
@@ -144,9 +126,7 @@ test.describe("OAuth State Secure Flag - Edge Cases", () => {
 		expect(cookies.toLowerCase()).toContain("samesite=lax");
 	});
 
-	test("E5: cookies have short 300s lifetime (5 minutes)", async ({
-		request,
-	}) => {
+	test("E5: cookies have short 300s lifetime (5 minutes)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -157,9 +137,7 @@ test.describe("OAuth State Secure Flag - Edge Cases", () => {
 });
 
 test.describe("OAuth State Secure Flag - Security Tests", () => {
-	test("S1: flow-state cookies are HttpOnly (CSRF protection)", async ({
-		request,
-	}) => {
+	test("S1: flow-state cookies are HttpOnly (CSRF protection)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -168,9 +146,7 @@ test.describe("OAuth State Secure Flag - Security Tests", () => {
 		expect(cookies).toContain("HttpOnly");
 	});
 
-	test("S3: state cookie has short expiry (300s attack window)", async ({
-		request,
-	}) => {
+	test("S3: state cookie has short expiry (300s attack window)", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -182,9 +158,7 @@ test.describe("OAuth State Secure Flag - Security Tests", () => {
 		expect(cookies).not.toContain("Max-Age=28800");
 	});
 
-	test("S4: cross-origin state injection blocked by SameSite=Lax + HttpOnly", async ({
-		request,
-	}) => {
+	test("S4: cross-origin state injection blocked by SameSite=Lax + HttpOnly", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});

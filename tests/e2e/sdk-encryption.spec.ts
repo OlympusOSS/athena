@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * SDK Encryption E2E Tests (sdk#5)
@@ -16,9 +16,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("SDK Encryption — Health & Startup Validation", () => {
-	test("health endpoint confirms SDK initialized with valid encryption key (F4/F8)", async ({
-		request,
-	}) => {
+	test("health endpoint confirms SDK initialized with valid encryption key (F4/F8)", async ({ request }) => {
 		// If the SDK's validateOnStartup() failed, the container would have
 		// exited with process.exit(1) via instrumentation.ts — the health
 		// endpoint being reachable at all proves startup validation passed.
@@ -30,9 +28,7 @@ test.describe("SDK Encryption — Health & Startup Validation", () => {
 		expect(body).toHaveProperty("version");
 	});
 
-	test("health endpoint responds within acceptable latency", async ({
-		request,
-	}) => {
+	test("health endpoint responds within acceptable latency", async ({ request }) => {
 		const start = Date.now();
 		const response = await request.get("/api/health");
 		const elapsed = Date.now() - start;
@@ -56,9 +52,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 	const testKey = `e2e.sdk5.encryption.${Date.now()}`;
 	const testSecret = "sdk5-e2e-secret-value-do-not-leak";
 
-	test("POST /api/settings with encrypted=true requires admin auth", async ({
-		request,
-	}) => {
+	test("POST /api/settings with encrypted=true requires admin auth", async ({ request }) => {
 		const response = await request.post("/api/settings", {
 			data: {
 				key: testKey,
@@ -80,9 +74,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("POST /api/settings with encrypted=false stores plaintext", async ({
-		request,
-	}) => {
+	test("POST /api/settings with encrypted=false stores plaintext", async ({ request }) => {
 		const plaintextKey = `e2e.sdk5.plaintext.${Date.now()}`;
 
 		const response = await request.post("/api/settings", {
@@ -103,9 +95,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("GET /api/settings lists settings with encrypted values masked", async ({
-		request,
-	}) => {
+	test("GET /api/settings lists settings with encrypted values masked", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect([200, 401]).toContain(response.status());
 
@@ -131,9 +121,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("GET /api/settings with category filter returns filtered results", async ({
-		request,
-	}) => {
+	test("GET /api/settings with category filter returns filtered results", async ({ request }) => {
 		const response = await request.get("/api/settings?category=e2e-test");
 		expect([200, 401]).toContain(response.status());
 
@@ -148,9 +136,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("GET /api/settings/:key returns individual setting with encrypted flag", async ({
-		request,
-	}) => {
+	test("GET /api/settings/:key returns individual setting with encrypted flag", async ({ request }) => {
 		const response = await request.get(`/api/settings/${testKey}`);
 		expect([200, 401, 404]).toContain(response.status());
 
@@ -168,12 +154,8 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("GET /api/settings/:key?decrypt=true returns decrypted value (AC4)", async ({
-		request,
-	}) => {
-		const response = await request.get(
-			`/api/settings/${testKey}?decrypt=true`,
-		);
+	test("GET /api/settings/:key?decrypt=true returns decrypted value (AC4)", async ({ request }) => {
+		const response = await request.get(`/api/settings/${testKey}?decrypt=true`);
 		expect([200, 401, 404]).toContain(response.status());
 
 		if (response.status() === 200) {
@@ -186,9 +168,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 		}
 	});
 
-	test("DELETE /api/settings/:key requires admin auth", async ({
-		request,
-	}) => {
+	test("DELETE /api/settings/:key requires admin auth", async ({ request }) => {
 		const response = await request.delete(`/api/settings/${testKey}`);
 		expect([200, 401, 404]).toContain(response.status());
 
@@ -200,9 +180,7 @@ test.describe("SDK Encryption — Settings API (Authenticated)", () => {
 });
 
 test.describe("SDK Encryption — Auth Enforcement on Settings Routes", () => {
-	test("unauthenticated POST to /api/settings returns 401 (F9 gate)", async ({
-		request,
-	}) => {
+	test("unauthenticated POST to /api/settings returns 401 (F9 gate)", async ({ request }) => {
 		// This verifies the middleware auth gate is active for settings routes.
 		// The SDK encryption path is only reachable through authenticated requests.
 		const response = await request.post("/api/settings", {
@@ -222,9 +200,7 @@ test.describe("SDK Encryption — Auth Enforcement on Settings Routes", () => {
 		expect(body.message).toBe("Authentication required.");
 	});
 
-	test("unauthenticated GET to /api/settings returns 401", async ({
-		request,
-	}) => {
+	test("unauthenticated GET to /api/settings returns 401", async ({ request }) => {
 		const response = await request.get("/api/settings");
 		expect(response.status()).toBe(401);
 
@@ -232,9 +208,7 @@ test.describe("SDK Encryption — Auth Enforcement on Settings Routes", () => {
 		expect(body.error).toBe("not_authenticated");
 	});
 
-	test("unauthenticated DELETE to /api/settings/:key returns 401", async ({
-		request,
-	}) => {
+	test("unauthenticated DELETE to /api/settings/:key returns 401", async ({ request }) => {
 		const response = await request.delete("/api/settings/any-key");
 		expect(response.status()).toBe(401);
 
@@ -278,12 +252,8 @@ test.describe("SDK Encryption — Validation & Edge Cases", () => {
 		}
 	});
 
-	test("GET /api/settings/:key for non-existent key returns 404", async ({
-		request,
-	}) => {
-		const response = await request.get(
-			"/api/settings/e2e.sdk5.nonexistent.key.99999",
-		);
+	test("GET /api/settings/:key for non-existent key returns 404", async ({ request }) => {
+		const response = await request.get("/api/settings/e2e.sdk5.nonexistent.key.99999");
 
 		// 401 (unauthenticated) or 404 (key not found)
 		expect([401, 404]).toContain(response.status());
@@ -294,9 +264,7 @@ test.describe("SDK Encryption — Validation & Edge Cases", () => {
 		}
 	});
 
-	test("encrypted value in listing never exposes plaintext secret (S3)", async ({
-		request,
-	}) => {
+	test("encrypted value in listing never exposes plaintext secret (S3)", async ({ request }) => {
 		// Security test: even if we can list settings, encrypted values must
 		// be masked — no raw secrets in the API response.
 		const response = await request.get("/api/settings");

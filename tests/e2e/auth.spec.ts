@@ -1,17 +1,13 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Authentication Flow", () => {
-	test("unauthenticated request to root redirects to login", async ({
-		page,
-	}) => {
+	test("unauthenticated request to root redirects to login", async ({ page }) => {
 		const response = await page.goto("/");
 		// Should redirect to login or show auth-required state
 		expect(response?.status()).toBeLessThan(500);
 	});
 
-	test("GET /api/auth/login redirects to Hydra authorize endpoint", async ({
-		request,
-	}) => {
+	test("GET /api/auth/login redirects to Hydra authorize endpoint", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});
@@ -23,9 +19,7 @@ test.describe("Authentication Flow", () => {
 		expect(location).toContain("code_challenge_method=S256");
 	});
 
-	test("login sets oauth_state and pkce_verifier cookies", async ({
-		request,
-	}) => {
+	test("login sets oauth_state and pkce_verifier cookies", async ({ request }) => {
 		const response = await request.get("/api/auth/login", {
 			maxRedirects: 0,
 		});

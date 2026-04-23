@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#111: SDK ENCRYPTION_KEY validation
@@ -13,9 +13,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("SDK Encryption Key Validation - Functional Tests", () => {
-	test("F1: SDK barrel import does not crash app at startup", async ({
-		request,
-	}) => {
+	test("F1: SDK barrel import does not crash app at startup", async ({ request }) => {
 		// If the SDK module-level validation was still throwing,
 		// the entire Athena app would be down
 		const response = await request.get("/api/health");
@@ -24,9 +22,7 @@ test.describe("SDK Encryption Key Validation - Functional Tests", () => {
 		expect(body.status).toBe("ok");
 	});
 
-	test("F3: encrypt operation returns error when key is missing/invalid", async ({
-		request,
-	}) => {
+	test("F3: encrypt operation returns error when key is missing/invalid", async ({ request }) => {
 		// Try to create an encrypted setting (POST /api/settings)
 		// This should either succeed (if key is valid) or fail gracefully
 		const response = await request.post("/api/settings", {
@@ -41,27 +37,19 @@ test.describe("SDK Encryption Key Validation - Functional Tests", () => {
 		expect(response.status()).not.toBe(502); // Not a gateway error (app crashed)
 	});
 
-	test("F4: decrypt operation returns error when key is missing/invalid", async ({
-		request,
-	}) => {
-		const response = await request.get(
-			"/api/settings/test.key?decrypt=true",
-		);
+	test("F4: decrypt operation returns error when key is missing/invalid", async ({ request }) => {
+		const response = await request.get("/api/settings/test.key?decrypt=true");
 		// Either 401 (auth required) or controlled error -- NOT a crash
 		expect(response.status()).toBeLessThan(502);
 	});
 
-	test("F5: non-encryption SDK operations work normally", async ({
-		request,
-	}) => {
+	test("F5: non-encryption SDK operations work normally", async ({ request }) => {
 		// Health check exercises the app without needing encryption
 		const response = await request.get("/api/health");
 		expect(response.ok()).toBeTruthy();
 	});
 
-	test("F6: app starts and serves requests (deferred validation working)", async ({
-		request,
-	}) => {
+	test("F6: app starts and serves requests (deferred validation working)", async ({ request }) => {
 		// Multiple endpoints should be accessible, proving the app started
 		const healthResponse = await request.get("/api/health");
 		expect(healthResponse.ok()).toBeTruthy();
@@ -82,9 +70,7 @@ test.describe("SDK Encryption Key Validation - Functional Tests", () => {
 
 		// IAM (port 4001)
 		try {
-			const iamHealth = await request.fetch(
-				"http://localhost:4001/api/health",
-			);
+			const iamHealth = await request.fetch("http://localhost:4001/api/health");
 			if (iamHealth.ok()) {
 				const body = await iamHealth.json();
 				expect(body.status).toBe("ok");
@@ -97,9 +83,7 @@ test.describe("SDK Encryption Key Validation - Functional Tests", () => {
 });
 
 test.describe("SDK Encryption Key Validation - Edge Cases", () => {
-	test("E3: error messages do not contain key material", async ({
-		request,
-	}) => {
+	test("E3: error messages do not contain key material", async ({ request }) => {
 		// Any error response should not leak encryption keys
 		const response = await request.get("/api/settings");
 		const text = await response.text();
@@ -109,15 +93,9 @@ test.describe("SDK Encryption Key Validation - Edge Cases", () => {
 		expect(text).not.toMatch(/[A-Za-z0-9+/]{32,}={0,2}/); // base64 key pattern (only match long ones)
 	});
 
-	test("E4: multiple requests do not cause repeated validation throws", async ({
-		request,
-	}) => {
+	test("E4: multiple requests do not cause repeated validation throws", async ({ request }) => {
 		// Make several requests in quick succession
-		const responses = await Promise.all([
-			request.get("/api/health"),
-			request.get("/api/health"),
-			request.get("/api/health"),
-		]);
+		const responses = await Promise.all([request.get("/api/health"), request.get("/api/health"), request.get("/api/health")]);
 
 		// All should succeed -- no cascading failures from repeated validation
 		for (const response of responses) {
@@ -127,9 +105,7 @@ test.describe("SDK Encryption Key Validation - Edge Cases", () => {
 });
 
 test.describe("SDK Encryption Key Validation - Security Tests", () => {
-	test("S1: Containerfile does not expose ENCRYPTION_KEY", async ({
-		request,
-	}) => {
+	test("S1: Containerfile does not expose ENCRYPTION_KEY", async ({ request }) => {
 		// Verify the app is running (meaning build succeeded without dummy key)
 		const response = await request.get("/api/health");
 		expect(response.ok()).toBeTruthy();
@@ -137,14 +113,10 @@ test.describe("SDK Encryption Key Validation - Security Tests", () => {
 		// This is an indirect verification that no dummy key was baked in
 	});
 
-	test("S3: encryption operations do not silently return bad data", async ({
-		request,
-	}) => {
+	test("S3: encryption operations do not silently return bad data", async ({ request }) => {
 		// When ENCRYPTION_KEY is invalid or missing, operations should
 		// error out, not return corrupted/unencrypted data
-		const response = await request.get(
-			"/api/settings/nonexistent?decrypt=true",
-		);
+		const response = await request.get("/api/settings/nonexistent?decrypt=true");
 		// Should be 401 (auth) or 404 (not found) -- not 200 with bad data
 		expect([401, 404]).toContain(response.status());
 	});

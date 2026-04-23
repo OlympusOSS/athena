@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * E2E tests for athena#99: separate SESSION_SIGNING_KEY
@@ -12,9 +12,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Session Signing Key - Functional Tests", () => {
-	test("F10: invalid sessions return 401 (cookie cleared)", async ({
-		request,
-	}) => {
+	test("F10: invalid sessions return 401 (cookie cleared)", async ({ request }) => {
 		// A session signed with the wrong key should be rejected
 		const response = await request.get("/api/settings", {
 			headers: {
@@ -49,9 +47,7 @@ test.describe("Session Signing Key - Functional Tests", () => {
 		expect(redirects.length).toBeLessThan(5);
 	});
 
-	test("F16: session endpoint rejects unauthenticated requests", async ({
-		request,
-	}) => {
+	test("F16: session endpoint rejects unauthenticated requests", async ({ request }) => {
 		const response = await request.get("/api/auth/session");
 		// Should return 401 for unauthenticated requests
 		if (response.status() === 401) {
@@ -62,12 +58,9 @@ test.describe("Session Signing Key - Functional Tests", () => {
 });
 
 test.describe("Session Signing Key - Edge Cases", () => {
-	test("E3: existing sessions with old key material rejected", async ({
-		request,
-	}) => {
+	test("E3: existing sessions with old key material rejected", async ({ request }) => {
 		// A JWT signed with a different key should be rejected
-		const oldKeyJwt =
-			"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTkwMDAwMH0.fakesignature";
+		const oldKeyJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTkwMDAwMH0.fakesignature";
 		const response = await request.get("/api/settings", {
 			headers: {
 				cookie: `athena-session=${oldKeyJwt}`,
@@ -76,9 +69,7 @@ test.describe("Session Signing Key - Edge Cases", () => {
 		expect(response.status()).toBe(401);
 	});
 
-	test("E4: same-value keys (SESSION_SIGNING_KEY === ENCRYPTION_KEY) still functions", async ({
-		request,
-	}) => {
+	test("E4: same-value keys (SESSION_SIGNING_KEY === ENCRYPTION_KEY) still functions", async ({ request }) => {
 		// The app should still work even if keys happen to be the same
 		// (just with a warning). Auth flow should function.
 		const response = await request.get("/api/auth/login", {
@@ -87,9 +78,7 @@ test.describe("Session Signing Key - Edge Cases", () => {
 		expect(response.status()).toBe(307);
 	});
 
-	test("E7: middleware returns 401 without crash on invalid session", async ({
-		request,
-	}) => {
+	test("E7: middleware returns 401 without crash on invalid session", async ({ request }) => {
 		// Various malformed session values should return 401, not 500
 		const malformedValues = [
 			"",
@@ -113,12 +102,9 @@ test.describe("Session Signing Key - Edge Cases", () => {
 });
 
 test.describe("Session Signing Key - Security Tests", () => {
-	test("S1: session cookie forged with wrong key is rejected", async ({
-		request,
-	}) => {
+	test("S1: session cookie forged with wrong key is rejected", async ({ request }) => {
 		// Craft a JWT that looks valid but is signed with a random key
-		const forgedJwt =
-			"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTkwMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.tampered";
+		const forgedJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTkwMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.tampered";
 		const response = await request.get("/api/settings", {
 			headers: {
 				cookie: `athena-session=${forgedJwt}`,
@@ -127,9 +113,7 @@ test.describe("Session Signing Key - Security Tests", () => {
 		expect(response.status()).toBe(401);
 	});
 
-	test("S3: invalid session does not cause redirect loop (fixation)", async ({
-		page,
-	}) => {
+	test("S3: invalid session does not cause redirect loop (fixation)", async ({ page }) => {
 		await page.context().addCookies([
 			{
 				name: "athena-session",
@@ -154,23 +138,17 @@ test.describe("Session Signing Key - Security Tests", () => {
 		expect(requestCount).toBeLessThan(20);
 	});
 
-	test("S6: cross-instance session reuse blocked (CIAM session on IAM)", async ({
-		request,
-	}) => {
+	test("S6: cross-instance session reuse blocked (CIAM session on IAM)", async ({ request }) => {
 		// A CIAM session token should not work on IAM instance
 		// This verifies that different instances use different keys
-		const ciamToken =
-			"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaWFtLXVzZXIiLCJkb21haW4iOiJjaWFtIn0.invalidsig";
+		const ciamToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaWFtLXVzZXIiLCJkb21haW4iOiJjaWFtIn0.invalidsig";
 
 		try {
-			const iamResponse = await request.fetch(
-				"http://localhost:4001/api/settings",
-				{
-					headers: {
-						cookie: `athena-session=${ciamToken}`,
-					},
+			const iamResponse = await request.fetch("http://localhost:4001/api/settings", {
+				headers: {
+					cookie: `athena-session=${ciamToken}`,
 				},
-			);
+			});
 			expect(iamResponse.status()).toBe(401);
 		} catch {
 			// IAM instance may not be running -- skip gracefully

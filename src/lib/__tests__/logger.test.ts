@@ -3,7 +3,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { apiLogger, authLogger, logger, Logger, LogLevel, replaceConsole, uiLogger } from "../logger";
+import { apiLogger, authLogger, Logger, LogLevel, logger, replaceConsole, uiLogger } from "../logger";
 
 describe("Logger class", () => {
 	let debug: ReturnType<typeof vi.spyOn>;

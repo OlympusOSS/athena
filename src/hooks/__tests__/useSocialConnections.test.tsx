@@ -6,12 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import React, { type PropsWithChildren } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	useCreateSocialConnection,
-	useDeleteSocialConnection,
-	useSocialConnections,
-	useToggleSocialConnection,
-} from "../useSocialConnections";
+import { useCreateSocialConnection, useDeleteSocialConnection, useSocialConnections, useToggleSocialConnection } from "../useSocialConnections";
 
 function wrapperFactory() {
 	const queryClient = new QueryClient({
@@ -20,13 +15,9 @@ function wrapperFactory() {
 			mutations: { retry: false },
 		},
 	});
-	const Wrapper: React.FC<PropsWithChildren> = ({ children }) =>
-		React.createElement(QueryClientProvider, { client: queryClient }, children);
+	const Wrapper: React.FC<PropsWithChildren> = ({ children }) => React.createElement(QueryClientProvider, { client: queryClient }, children);
 	return { Wrapper, queryClient };
 }
-
-type FetchInput = Parameters<typeof fetch>[0];
-type FetchInit = Parameters<typeof fetch>[1];
 
 describe("useSocialConnections (GET)", () => {
 	let fetchMock: ReturnType<typeof vi.fn>;
@@ -41,9 +32,7 @@ describe("useSocialConnections (GET)", () => {
 	});
 
 	it("fetches and returns connections on success", async () => {
-		fetchMock.mockResolvedValue(
-			new Response(JSON.stringify({ connections: [{ provider: "google" }] }), { status: 200 }),
-		);
+		fetchMock.mockResolvedValue(new Response(JSON.stringify({ connections: [{ provider: "google" }] }), { status: 200 }));
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useSocialConnections(), { wrapper: Wrapper });
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -111,9 +100,7 @@ describe("useCreateSocialConnection (POST)", () => {
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useCreateSocialConnection(), { wrapper: Wrapper });
 		await act(async () => {
-			await expect(
-				result.current.mutateAsync({ provider: "google", client_id: "id", enabled: true }),
-			).rejects.toThrow("bad");
+			await expect(result.current.mutateAsync({ provider: "google", client_id: "id", enabled: true })).rejects.toThrow("bad");
 		});
 	});
 
@@ -124,9 +111,7 @@ describe("useCreateSocialConnection (POST)", () => {
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useCreateSocialConnection(), { wrapper: Wrapper });
 		await act(async () => {
-			await expect(
-				result.current.mutateAsync({ provider: "google", client_id: "id", enabled: true }),
-			).rejects.toThrow(/400/);
+			await expect(result.current.mutateAsync({ provider: "google", client_id: "id", enabled: true })).rejects.toThrow(/400/);
 		});
 	});
 });
@@ -145,10 +130,7 @@ describe("useToggleSocialConnection (PATCH)", () => {
 
 	it("PATCHes to /api/connections/social/<provider> with { enabled }", async () => {
 		fetchMock.mockResolvedValue(
-			new Response(
-				JSON.stringify({ success: true, provider: "google", enabled: false, reloadStatus: "reloaded" }),
-				{ status: 200 },
-			),
+			new Response(JSON.stringify({ success: true, provider: "google", enabled: false, reloadStatus: "reloaded" }), { status: 200 }),
 		);
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useToggleSocialConnection(), { wrapper: Wrapper });
@@ -163,10 +145,7 @@ describe("useToggleSocialConnection (PATCH)", () => {
 
 	it("url-encodes the provider slug", async () => {
 		fetchMock.mockResolvedValue(
-			new Response(
-				JSON.stringify({ success: true, provider: "weird/provider", enabled: true, reloadStatus: "reloaded" }),
-				{ status: 200 },
-			),
+			new Response(JSON.stringify({ success: true, provider: "weird/provider", enabled: true, reloadStatus: "reloaded" }), { status: 200 }),
 		);
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useToggleSocialConnection(), { wrapper: Wrapper });
@@ -211,18 +190,13 @@ describe("useDeleteSocialConnection (DELETE)", () => {
 	});
 
 	it("DELETEs the provider endpoint", async () => {
-		fetchMock.mockResolvedValue(
-			new Response(JSON.stringify({ success: true, provider: "google", reloadStatus: "reloaded" }), { status: 200 }),
-		);
+		fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true, provider: "google", reloadStatus: "reloaded" }), { status: 200 }));
 		const { Wrapper } = wrapperFactory();
 		const { result } = renderHook(() => useDeleteSocialConnection(), { wrapper: Wrapper });
 		await act(async () => {
 			await result.current.mutateAsync("google");
 		});
-		expect(fetchMock).toHaveBeenCalledWith(
-			"/api/connections/social/google",
-			expect.objectContaining({ method: "DELETE" }),
-		);
+		expect(fetchMock).toHaveBeenCalledWith("/api/connections/social/google", expect.objectContaining({ method: "DELETE" }));
 	});
 
 	it("throws with API error message on non-ok", async () => {
