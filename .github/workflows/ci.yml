@@ -18,6 +18,18 @@ permissions:
   contents: read
   packages: read
 
+env:
+  # Deterministic fixtures for tests that read env. NOT used at runtime.
+  ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  SESSION_SIGNING_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  OAUTH_CLIENT_ID: "test-client"
+  OAUTH_CLIENT_SECRET: "test-secret"
+  AUTH_HYDRA_URL: "http://localhost:4445"
+  IAM_HYDRA_PUBLIC_URL: "http://localhost:3103"
+  AUTH_KRATOS_ADMIN_URL: "http://localhost:4434"
+  IAM_KRATOS_ADMIN_URL: "http://localhost:3101"
+  NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
 jobs:
   test:
     runs-on: ubuntu-latest
