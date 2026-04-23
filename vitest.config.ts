@@ -52,6 +52,9 @@ export default defineConfig({
 				"src/lib/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
 				"src/hooks/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
 				"src/utils/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				// Phase 3 — lock app/api/**/route.ts at 100/100/100/90 so route handler
+				// coverage can't silently regress.
+				"src/app/api/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
 				// Plan: raise to 100/100/100/90 in Phase 6. Current value is a ratchet floor
 				// for the remainder of src/ (app/features/providers/services/components).
 				lines: 10,

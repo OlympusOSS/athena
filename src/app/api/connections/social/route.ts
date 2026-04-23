@@ -274,9 +274,13 @@ export async function POST(request: Request) {
 					await deleteSetting(key).catch(() => {});
 				}
 			}
+			/* c8 ignore start — the inner loop swallows per-key deleteSetting errors via .catch(),
+			   so the outer try can only fire if the synchronous control flow itself throws,
+			   which is not reachable under the current deleteSetting contract. */
 		} catch {
 			// Cleanup failure is logged but not surfaced — the original error takes precedence
 		}
+		/* c8 ignore stop */
 
 		return NextResponse.json({ error: "Failed to save social connection" }, { status: 500 });
 	}

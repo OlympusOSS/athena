@@ -258,3 +258,156 @@ describe("S11: HTML injection in logout redirect meta tag", () => {
 		expect(urlInMeta).toBe("http://localhost:4001/api/auth/login");
 	});
 });
+
+describe("revocation fetch throws (not just non-ok response)", () => {
+	it("continues logout when revokeKratosSessions fetch rejects", async () => {
+		const cookie = await signSession(validSession);
+		// All three fetches reject
+		const fetchMock = vi.fn().mockRejectedValue(new Error("network error"));
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(cookie);
+		const res = await GET(req);
+		// Logout must complete despite network errors
+		expect(res.status).toBe(200);
+	});
+
+	it("continues logout when text() throws on non-ok response", async () => {
+		const cookie = await signSession(validSession);
+		// Mock ok=false responses where text() itself throws
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: false,
+			status: 500,
+			text: () => Promise.reject(new Error("body read failed")),
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildRequest(cookie);
+		const res = await GET(req);
+		expect(res.status).toBe(200);
+	});
+});
+
+describe("id_token parse failure paths", () => {
+	it("gracefully handles id_token with invalid base64 payload", async () => {
+		const sessionWithBadToken: SessionData = {
+			...validSession,
+			user: { ...validSession.user, kratosIdentityId: "" },
+			idToken: "header.!!!not-base64!!!.sig", // middle part not valid base64url JSON
+		};
+		const cookie = await signSession(sessionWithBadToken);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		const res = await GET(req);
+		// Should complete — logout proceeds even if id_token parsing fails
+		expect(res.status).toBe(200);
+		// No revocation calls because subject is empty
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("gracefully handles id_token with non-3-part structure", async () => {
+		const sessionWithBadToken: SessionData = {
+			...validSession,
+			user: { ...validSession.user, kratosIdentityId: "" },
+			idToken: "only.two", // only 2 parts
+		};
+		const cookie = await signSession(sessionWithBadToken);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		const res = await GET(req);
+		expect(res.status).toBe(200);
+	});
+});
+
+describe("env URL fallback branches", () => {
+	it("uses localhost:4103 when both AUTH_HYDRA_ADMIN_URL and IAM_HYDRA_ADMIN_URL unset", async () => {
+		delete process.env.AUTH_HYDRA_ADMIN_URL;
+		delete process.env.IAM_HYDRA_ADMIN_URL;
+		process.env.AUTH_KRATOS_ADMIN_URL = "http://kratos.test";
+		const cookie = await signSession(validSession);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		await GET(req);
+		const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+		expect(urls.some((u) => u.includes("localhost:4103"))).toBe(true);
+	});
+
+	it("uses IAM_HYDRA_ADMIN_URL fallback when AUTH_HYDRA_ADMIN_URL unset", async () => {
+		delete process.env.AUTH_HYDRA_ADMIN_URL;
+		process.env.IAM_HYDRA_ADMIN_URL = "http://iam-hydra.test";
+		const cookie = await signSession(validSession);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		await GET(req);
+		const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+		expect(urls.some((u) => u.includes("iam-hydra.test"))).toBe(true);
+	});
+
+	it("uses CIAM localhost:3001 fallback when APP_INSTANCE=CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "CIAM";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const html = await res.text();
+		expect(html).toContain("localhost:3001/api/auth/login");
+	});
+
+	it("uses IAM localhost:4001 fallback when APP_INSTANCE not CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "IAM";
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(undefined);
+		const res = await GET(req);
+		const html = await res.text();
+		expect(html).toContain("localhost:4001/api/auth/login");
+	});
+
+	it("uses IAM_KRATOS_ADMIN_URL fallback when AUTH_KRATOS_ADMIN_URL unset", async () => {
+		delete process.env.AUTH_KRATOS_ADMIN_URL;
+		process.env.IAM_KRATOS_ADMIN_URL = "http://iam-kratos.test";
+		const cookie = await signSession(validSession);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		await GET(req);
+		const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+		expect(urls.some((u) => u.includes("iam-kratos.test"))).toBe(true);
+	});
+
+	it("uses localhost:4101 fallback when neither Kratos URL env is set", async () => {
+		delete process.env.AUTH_KRATOS_ADMIN_URL;
+		delete process.env.IAM_KRATOS_ADMIN_URL;
+		const cookie = await signSession(validSession);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		await GET(req);
+		const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+		expect(urls.some((u) => u.includes("localhost:4101"))).toBe(true);
+	});
+});
+
+describe("id_token with empty sub claim", () => {
+	it("subject stays null when claims.sub is empty string", async () => {
+		const sessionEmptySub: SessionData = {
+			...validSession,
+			user: { ...validSession.user, kratosIdentityId: "" },
+			idToken: buildIdToken({ sub: "" }), // empty sub
+		};
+		const cookie = await signSession(sessionEmptySub);
+		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204, text: async () => "" });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildRequest(cookie);
+		const res = await GET(req);
+		expect(res.status).toBe(200);
+		// subject stays null => no revocation calls
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+});

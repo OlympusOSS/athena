@@ -161,6 +161,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 	// The Zod schema rejects out-of-range values with a 400 in step 1.
 	// This block is a belt-and-suspenders check in case the schema changes.
 	const tokenLifetime = body.token_lifetime;
+	/* c8 ignore start — unreachable while Zod enforces the same range in step 1 */
 	if (tokenLifetime !== undefined && (tokenLifetime < 1 || tokenLifetime > 3600)) {
 		return NextResponse.json(
 			{
@@ -172,6 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 			{ status: 422 },
 		);
 	}
+	/* c8 ignore stop */
 
 	// Step 4: Create the OAuth2 client in Hydra
 	// Grant type is always client_credentials for M2M clients (AC9)

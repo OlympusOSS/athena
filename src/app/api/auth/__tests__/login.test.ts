@@ -132,4 +132,63 @@ describe("F1: Login flow generates state cookie", () => {
 		const url = new URL(location);
 		expect(url.searchParams.get("scope")).toContain("openid");
 	});
+
+	it("falls back to OAUTH_CLIENT_ID env when getSettingOrDefault throws", async () => {
+		const { getSettingOrDefault } = await import("@olympusoss/sdk");
+		(getSettingOrDefault as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+		process.env.OAUTH_CLIENT_ID = "env-client-id";
+		const res = await GET();
+		expect(res.status).toBe(307);
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("client_id=env-client-id");
+	});
+
+	it("falls back to empty clientId when both SDK throws and OAUTH_CLIENT_ID unset", async () => {
+		const { getSettingOrDefault } = await import("@olympusoss/sdk");
+		(getSettingOrDefault as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+		delete process.env.OAUTH_CLIENT_ID;
+		const res = await GET();
+		expect(res.status).toBe(307);
+	});
+
+	it("uses NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL fallback when AUTH_HYDRA_URL is unset", async () => {
+		delete process.env.NEXT_PUBLIC_AUTH_HYDRA_URL;
+		process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL = "http://iam-hydra.test";
+		const res = await GET();
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("http://iam-hydra.test/oauth2/auth");
+	});
+
+	it("uses localhost:4102 when both hydra URL env vars are unset", async () => {
+		delete process.env.NEXT_PUBLIC_AUTH_HYDRA_URL;
+		delete process.env.NEXT_PUBLIC_IAM_HYDRA_PUBLIC_URL;
+		const res = await GET();
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("localhost:4102");
+	});
+
+	it("falls back to CIAM port when APP_INSTANCE=CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "CIAM";
+		const res = await GET();
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fapi%2Fauth%2Fcallback");
+	});
+
+	it("falls back to IAM port when APP_INSTANCE not CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "IAM";
+		const res = await GET();
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("redirect_uri=http%3A%2F%2Flocalhost%3A4001%2Fapi%2Fauth%2Fcallback");
+	});
+
+	it("returns empty clientId when clientId resolved as empty string (blank path)", async () => {
+		const { getSettingOrDefault } = await import("@olympusoss/sdk");
+		// Vault returns empty string => fallback lookups kick in
+		(getSettingOrDefault as ReturnType<typeof vi.fn>).mockResolvedValueOnce("");
+		delete process.env.OAUTH_CLIENT_ID;
+		const res = await GET();
+		expect(res.status).toBe(307);
+	});
 });

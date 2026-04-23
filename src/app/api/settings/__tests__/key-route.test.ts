@@ -172,4 +172,13 @@ describe("DELETE /api/settings/:key", () => {
 		const res = await DELETE(req, ctx);
 		expect(res.status).toBe(500);
 	});
+
+	it("GET error path — listSettings throws — returns 500", async () => {
+		mockListSettings.mockRejectedValue(new Error("DB connection refused"));
+		const [req, ctx] = buildGetRequest("foo.bar");
+		const res = await GET(req, ctx);
+		expect(res.status).toBe(500);
+		const body = await res.json();
+		expect(body.error).toBe("Failed to get setting");
+	});
 });

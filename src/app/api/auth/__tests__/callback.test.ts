@@ -126,6 +126,22 @@ describe("F3 / F5: State mismatch / missing state cookie", () => {
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toContain("/api/auth/login");
 	});
+
+	it("redirects when state param is absent but stored cookie exists", async () => {
+		// state undefined => state !== storedState branch
+		const req = buildNextRequest({ code: "x", oauthStateCookie: "stored" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toContain("/api/auth/login");
+	});
+
+	it("redirects when both state and cookie are absent", async () => {
+		// Both undefined: both branches in the template string fire
+		const req = buildNextRequest({ code: "x" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toContain("/api/auth/login");
+	});
 });
 
 describe("PKCE: Missing pkce_verifier cookie", () => {
@@ -478,5 +494,276 @@ describe("E1 / E2: Token exchange failure paths", () => {
 		const res = await GET(req);
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toContain("/api/auth/login");
+	});
+});
+
+describe("OAuth2 error callback", () => {
+	it("redirects to login with error when authorization server returns error param", async () => {
+		const req = buildNextRequest({
+			code: "x",
+			state: "somestate",
+			oauthStateCookie: "somestate",
+		});
+		// Override nextUrl to include error param
+		(req.nextUrl.searchParams as URLSearchParams).set("error", "access_denied");
+		(req.nextUrl.searchParams as URLSearchParams).set("error_description", "User denied");
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		const location = res.headers.get("location") ?? "";
+		expect(location).toContain("/api/auth/login");
+		expect(location).toContain("error=access_denied");
+	});
+
+	it("redirects to login when error param present without description", async () => {
+		const req = buildNextRequest({
+			code: "x",
+			state: "somestate",
+			oauthStateCookie: "somestate",
+		});
+		(req.nextUrl.searchParams as URLSearchParams).set("error", "invalid_request");
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toContain("error=invalid_request");
+	});
+});
+
+describe("Kratos identity fetch branches", () => {
+	it("logs and recovers when Kratos fetch throws — still redirects to dashboard", async () => {
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo({ sub: "user-123", email: "admin@example.com" });
+		// Token, userinfo succeed; Kratos throws
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue(tokens),
+					text: vi.fn().mockResolvedValue(""),
+				})
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockRejectedValueOnce(new Error("kratos network")),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		// Should still succeed with role=viewer fallback
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toContain("/dashboard");
+	});
+});
+
+describe("clientId fallback branches", () => {
+	it("falls back to OAUTH_CLIENT_ID env when getSettingOrDefault throws", async () => {
+		// Re-mock the SDK to throw on getSettingOrDefault
+		const { getSettingOrDefault } = await import("@olympusoss/sdk");
+		(getSettingOrDefault as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+		process.env.OAUTH_CLIENT_ID = "env-client-id";
+
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue(tokens),
+					text: vi.fn().mockResolvedValue(""),
+				})
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue({ traits: {} }),
+				}),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+	});
+
+	it("falls back to empty clientId when getSettingOrDefault throws and OAUTH_CLIENT_ID unset", async () => {
+		const { getSettingOrDefault } = await import("@olympusoss/sdk");
+		(getSettingOrDefault as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+		delete process.env.OAUTH_CLIENT_ID;
+
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValueOnce({
+				ok: false,
+				status: 400,
+				text: vi.fn().mockResolvedValue("invalid_client"),
+			}),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+	});
+});
+
+describe("Kratos endpoint env fallbacks", () => {
+	it("uses IAM_KRATOS_ADMIN_URL fallback when AUTH_KRATOS_ADMIN_URL unset", async () => {
+		delete process.env.AUTH_KRATOS_ADMIN_URL;
+		process.env.IAM_KRATOS_ADMIN_URL = "http://iam-kratos-admin.test";
+
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ traits: {} }) });
+		vi.stubGlobal("fetch", fetchMock);
+
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		await GET(req);
+		// The 3rd fetch is Kratos — verify the URL used the IAM fallback
+		const kratosCall = fetchMock.mock.calls[2][0] as string;
+		expect(kratosCall).toContain("iam-kratos-admin.test");
+	});
+
+	it("uses localhost:4101 fallback when no Kratos URL envs are set", async () => {
+		delete process.env.AUTH_KRATOS_ADMIN_URL;
+		delete process.env.IAM_KRATOS_ADMIN_URL;
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ traits: {} }) });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		await GET(req);
+		const kratosCall = fetchMock.mock.calls[2][0] as string;
+		expect(kratosCall).toContain("localhost:4101");
+	});
+
+	it("uses IAM_HYDRA_PUBLIC_URL fallback when AUTH_HYDRA_URL unset", async () => {
+		delete process.env.AUTH_HYDRA_URL;
+		process.env.IAM_HYDRA_PUBLIC_URL = "http://iam-hydra.test";
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+			.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ traits: {} }) });
+		vi.stubGlobal("fetch", fetchMock);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		await GET(req);
+		const tokenCall = fetchMock.mock.calls[0][0] as string;
+		expect(tokenCall).toContain("iam-hydra.test");
+	});
+});
+
+describe("Kratos identity traits branches", () => {
+	it("handles identity with missing traits (traits = undefined)", async () => {
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({}) }), // no traits field
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		const match = setCookie.match(/athena-session=([^;]+)/);
+		expect(match).not.toBeNull();
+		const session = await verifySession(match![1]);
+		// email falls back to userinfo email when traits.email missing
+		expect(session?.user.email).toBe("admin@example.com");
+		expect(session?.user.role).toBe("viewer");
+	});
+
+	it("handles identity with partial name (only first name)", async () => {
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue({
+						traits: { email: "k@test.com", role: "admin", name: { first: "John" } },
+					}),
+				}),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		const match = setCookie.match(/athena-session=([^;]+)/);
+		const session = await verifySession(match![1]);
+		expect(session?.user.displayName).toBe("John");
+	});
+
+	it("uses email as displayName when name object absent", async () => {
+		const tokens = buildTokens();
+		const userinfo = buildUserinfo();
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockResolvedValueOnce({
+					ok: true,
+					json: vi.fn().mockResolvedValue({
+						traits: { email: "k@test.com", role: "admin" }, // no name
+					}),
+				}),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		const setCookie = res.headers.get("set-cookie") ?? "";
+		const match = setCookie.match(/athena-session=([^;]+)/);
+		const session = await verifySession(match![1]);
+		expect(session?.user.displayName).toBe("k@test.com");
+	});
+});
+
+describe("tokens.expires_in fallback", () => {
+	it("uses 3600 default when expires_in is 0 or missing", async () => {
+		const tokens = buildTokens({ expires_in: 0 });
+		const userinfo = buildUserinfo();
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(tokens), text: vi.fn().mockResolvedValue("") })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(userinfo) })
+				.mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ traits: {} }) }),
+		);
+		const req = buildNextRequest({ code: "valid-code", state: "match-state", oauthStateCookie: "match-state" });
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		// Cookie should still be set
+		expect(res.headers.get("set-cookie")).toContain("athena-session");
+	});
+});
+
+describe("appUrl fallback branches", () => {
+	it("uses localhost:3001 when APP_INSTANCE=CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "CIAM";
+		const req = buildNextRequest({}); // no code => redirect to login
+		const res = await GET(req);
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toContain("localhost:3001/api/auth/login");
+	});
+
+	it("uses localhost:4001 when APP_INSTANCE not CIAM and NEXT_PUBLIC_APP_URL unset", async () => {
+		delete process.env.NEXT_PUBLIC_APP_URL;
+		process.env.APP_INSTANCE = "IAM";
+		const req = buildNextRequest({});
+		const res = await GET(req);
+		expect(res.headers.get("location")).toContain("localhost:4001/api/auth/login");
 	});
 });

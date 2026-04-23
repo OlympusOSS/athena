@@ -431,4 +431,325 @@ describe("GET /api/connections/public", () => {
 		// Identical response to unconfigured (F27) — provider absent from array
 		expect(json.providers).toHaveLength(0);
 	});
+
+	it("returns 500 when SDK listSettings throws (Error instance)", async () => {
+		mockListSettings.mockRejectedValue(new Error("db unreachable"));
+		const req = new Request("http://localhost:3001/api/connections/public");
+		const res = await PublicGET(req);
+		expect(res.status).toBe(500);
+		const json = await res.json();
+		expect(json.error).toBe("Failed to load social connections");
+	});
+
+	it("returns 500 when SDK throws a non-Error value", async () => {
+		mockListSettings.mockRejectedValue("string-error");
+		const req = new Request("http://localhost:3001/api/connections/public");
+		const res = await PublicGET(req);
+		expect(res.status).toBe(500);
+	});
+
+	it("uses default display_name when setting missing", async () => {
+		// Only client_id + enabled, no display_name
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "social.google.enabled", value: "true", encrypted: false, category: "social", updated_at: new Date() },
+			// malformed key that won't match parts.length === 3
+			{ key: "not.right", value: "x", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "foo.bar.baz.toomany", value: "x", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "other.google.field", value: "x", encrypted: false, category: "social", updated_at: new Date() },
+		]);
+		const req = new Request("http://localhost:3001/api/connections/public");
+		const res = await PublicGET(req);
+		expect(res.status).toBe(200);
+		const json = await res.json();
+		expect(json.providers).toHaveLength(1);
+		expect(json.providers[0].display_name).toBe("Google");
+	});
+
+	it("excludes provider with fields but no client_id (V9: partial config treated as unconfigured)", async () => {
+		mockListSettings.mockResolvedValue([
+			// No client_id, but other fields present
+			{ key: "social.google.enabled", value: "true", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "social.google.display_name", value: "Google", encrypted: false, category: "social", updated_at: new Date() },
+		]);
+		const req = new Request("http://localhost:3001/api/connections/public");
+		const res = await PublicGET(req);
+		expect(res.status).toBe(200);
+		const json = await res.json();
+		expect(json.providers).toHaveLength(0);
+	});
+});
+
+describe("POST /api/connections/social — additional coverage", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockGetSetting.mockResolvedValue(null);
+		mockSetSetting.mockResolvedValue(undefined);
+		mockDeleteSetting.mockResolvedValue(undefined);
+		mockTriggerReload.mockResolvedValue({ status: "reloaded" });
+		mockAuditSocialConnection.mockImplementation(() => {});
+	});
+
+	it("returns 400 when body is not a JSON object", async () => {
+		const req = new Request("http://localhost:3001/api/connections/social", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: '"string-body"',
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const json = await res.json();
+		expect(json.error).toBe("Request body must be an object");
+	});
+
+	it("returns 400 when body is invalid JSON", async () => {
+		const req = new Request("http://localhost:3001/api/connections/social", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: "not-json",
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const json = await res.json();
+		expect(json.error).toBe("Invalid JSON body");
+	});
+
+	it("rejects over-length client_secret when secret is being changed on update", async () => {
+		// Update path: setting already exists, and secret is provided but too long
+		mockGetSetting.mockResolvedValue("existing-client-id");
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "a".repeat(4097), // over 4096
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(400);
+		const json = await res.json();
+		expect(json.error).toMatch(/4096/);
+	});
+
+	it("uses 'enabled=true' default when enabled is not a boolean", async () => {
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "secret",
+			enabled: "yes", // not a boolean
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockSetSetting).toHaveBeenCalledWith("social.google.enabled", "true", expect.any(Object));
+	});
+
+	it("parses existing connections_order and appends new provider", async () => {
+		mockGetSetting.mockImplementation(async (key: string) => {
+			if (key === "social.google.client_id") return null; // create path
+			if (key === "social.connections_order") return JSON.stringify(["facebook"]);
+			return null;
+		});
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "s",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockSetSetting).toHaveBeenCalledWith("social.connections_order", JSON.stringify(["facebook", "google"]), { category: "social" });
+	});
+
+	it("handles malformed connections_order JSON gracefully and appends provider", async () => {
+		mockGetSetting.mockImplementation(async (key: string) => {
+			if (key === "social.google.client_id") return null;
+			if (key === "social.connections_order") return "not-json";
+			return null;
+		});
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "s",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(200);
+		expect(mockSetSetting).toHaveBeenCalledWith("social.connections_order", JSON.stringify(["google"]), { category: "social" });
+	});
+
+	it("does not re-add provider already in connections_order", async () => {
+		mockGetSetting.mockImplementation(async (key: string) => {
+			if (key === "social.google.client_id") return null;
+			if (key === "social.connections_order") return JSON.stringify(["google"]);
+			return null;
+		});
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "s",
+			enabled: true,
+		});
+		await POST(req);
+		// setSetting for connections_order should NOT be called because 'google' already present
+		const orderCalls = mockSetSetting.mock.calls.filter((call: unknown[]) => call[0] === "social.connections_order");
+		expect(orderCalls).toHaveLength(0);
+	});
+
+	it("returns 500 when setSetting throws and performs cleanup on create", async () => {
+		mockSetSetting.mockRejectedValue(new Error("db failure"));
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "secret-val",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(500);
+		const json = await res.json();
+		expect(json.error).toBe("Failed to save social connection");
+		// Cleanup should have been attempted (deleteSetting called for all 5 keys)
+		expect(mockDeleteSetting).toHaveBeenCalledTimes(5);
+	});
+
+	it("returns 500 when setSetting throws on update (no cleanup)", async () => {
+		// Update path: connection already exists
+		mockGetSetting.mockImplementation(async (key: string) => {
+			if (key === `social.google.client_id`) return "old-id";
+			return null;
+		});
+		mockSetSetting.mockRejectedValue(new Error("db failure"));
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(500);
+		// Cleanup should NOT be attempted on update
+		expect(mockDeleteSetting).not.toHaveBeenCalled();
+	});
+
+	it("returns 500 when error thrown is non-Error (string)", async () => {
+		mockSetSetting.mockRejectedValue("plain-string-error");
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "secret",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(500);
+	});
+
+	it("logs catch block when cleanup also throws on create failure", async () => {
+		mockSetSetting.mockRejectedValue(new Error("primary failure"));
+		mockDeleteSetting.mockRejectedValue(new Error("cleanup failure"));
+		// delete rejects inside catch — but it's swallowed via .catch(() => {}) call
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			client_secret: "val",
+			enabled: true,
+		});
+		const res = await POST(req);
+		expect(res.status).toBe(500);
+	});
+
+	it("rejects client_secret containing invalid validation (empty after trim) as secret change", async () => {
+		// This uses a secret that is technically truthy as a string but empty after trim
+		// Secret " " trims to "" => fails validation
+		mockGetSetting.mockResolvedValue(null); // create path
+		const req = buildAdminRequest("POST", {
+			provider: "google",
+			client_id: "123.apps.googleusercontent.com",
+			// whitespace-only string: truthy (goes through secretChanged=false path since trim is empty)
+			client_secret: "  ",
+			enabled: true,
+		});
+		const res = await POST(req);
+		// secretChanged=false means on create the validator will fail with "client_secret is required"
+		expect(res.status).toBe(400);
+	});
+});
+
+describe("GET /api/connections/social — additional coverage", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("uses default PROVIDER_ORDER when connections_order JSON is malformed", async () => {
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123.apps.googleusercontent.com", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "social.google.enabled", value: "true", encrypted: false, category: "social", updated_at: new Date() },
+		]);
+		mockGetSetting.mockResolvedValue("not-json-malformed");
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		expect(res.status).toBe(200);
+		const json = await res.json();
+		expect(json.connections).toHaveLength(1);
+	});
+
+	it("uses custom connections_order when valid JSON", async () => {
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123.apps.googleusercontent.com", encrypted: false, category: "social", updated_at: new Date() },
+		]);
+		mockGetSetting.mockResolvedValue(JSON.stringify(["google"]));
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		expect(res.status).toBe(200);
+	});
+
+	it("skips malformed social.* keys (wrong parts count)", async () => {
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123.apps.googleusercontent.com", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "notsocial.google.client_id", value: "x", encrypted: false, category: "social", updated_at: new Date() },
+			{ key: "social.google", value: "x", encrypted: false, category: "social", updated_at: new Date() }, // parts.length !== 3
+		]);
+		mockGetSetting.mockResolvedValue(null);
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		const json = await res.json();
+		// Only the correctly-keyed google provider should appear
+		expect(json.connections).toHaveLength(1);
+	});
+
+	it("returns 500 when listSettings throws (Error instance)", async () => {
+		mockListSettings.mockRejectedValue(new Error("DB offline"));
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		expect(res.status).toBe(500);
+		const json = await res.json();
+		expect(json.error).toBe("Failed to load social connections");
+	});
+
+	it("returns 500 when listSettings throws a non-Error value", async () => {
+		mockListSettings.mockRejectedValue("string-error");
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		expect(res.status).toBe(500);
+	});
+
+	it("includes providers present in byProvider but not in connections_order (fallback order=99)", async () => {
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123.apps.googleusercontent.com", encrypted: false, category: "social", updated_at: new Date() },
+		]);
+		// connections_order contains other providers but not google
+		mockGetSetting.mockResolvedValue(JSON.stringify(["facebook"]));
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		const json = await res.json();
+		expect(json.connections.some((c: { provider: string }) => c.provider === "google")).toBe(true);
+	});
+
+	it("uses default scopes when scopes field missing", async () => {
+		mockListSettings.mockResolvedValue([
+			{ key: "social.google.client_id", value: "123.apps.googleusercontent.com", encrypted: false, category: "social", updated_at: new Date() },
+			// no scopes field
+		]);
+		mockGetSetting.mockResolvedValue(null);
+		const req = buildAdminRequest("GET");
+		const res = await GET(req);
+		const json = await res.json();
+		expect(json.connections[0].scopes).toEqual(["openid", "email", "profile"]);
+	});
 });
