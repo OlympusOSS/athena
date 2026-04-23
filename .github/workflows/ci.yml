@@ -5,10 +5,15 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      - 'test/**'
+      - 'tests/**'
+      - 'scripts/**'
       - 'package.json'
       - 'bun.lock'
       - 'Containerfile'
       - 'next.config.*'
+      - 'playwright.config.*'
+      - 'vitest.config.*'
       - '.github/workflows/**'
   pull_request:
     branches: [main]
