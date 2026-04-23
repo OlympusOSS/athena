@@ -71,13 +71,19 @@ jobs:
           CI: true
       - name: "CSP gate: verify unsafe-eval is absent from production middleware bundle"
         run: |
-          MIDDLEWARE_JS=".next/server/middleware.js"
-          if [ ! -f "$MIDDLEWARE_JS" ]; then
-            echo "FAIL: $MIDDLEWARE_JS not found after build — middleware may not be compiled."
+          # Under `output: standalone` the middleware bundle lives under
+          # .next/standalone/.next/server/middleware.js. Fall back to the
+          # non-standalone path for forward compatibility.
+          if [ -f ".next/standalone/.next/server/middleware.js" ]; then
+            MIDDLEWARE_JS=".next/standalone/.next/server/middleware.js"
+          elif [ -f ".next/server/middleware.js" ]; then
+            MIDDLEWARE_JS=".next/server/middleware.js"
+          else
+            echo "FAIL: middleware.js not found in .next/standalone/.next/server/ or .next/server/"
             exit 1
           fi
           if grep -q "unsafe-eval" "$MIDDLEWARE_JS"; then
-            echo "FAIL: 'unsafe-eval' found in production middleware bundle."
+            echo "FAIL: 'unsafe-eval' found in production middleware bundle ($MIDDLEWARE_JS)."
             echo "The buildCsp() function must NOT emit unsafe-eval when NODE_ENV=production."
             echo "Matches:"
             grep -n "unsafe-eval" "$MIDDLEWARE_JS"
