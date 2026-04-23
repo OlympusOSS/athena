@@ -17,6 +17,10 @@ const originalEnv = { ...process.env };
 
 afterEach(() => {
 	process.env = { ...originalEnv };
+	process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
+	process.env.SESSION_SIGNING_KEY = "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=";
+	process.env.NEXT_PUBLIC_APP_URL = "http://localhost:4001";
+	process.env.TZ = "UTC";
 });
 
 describe("buildSessionCookieOptions — httpOnly", () => {

@@ -15,6 +15,10 @@ const originalEnv = { ...process.env };
 beforeEach(() => {
 	process.env = { ...originalEnv };
 	process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
+	process.env.SESSION_SIGNING_KEY = "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=";
+	process.env.NEXT_PUBLIC_APP_URL = "http://localhost:4001";
+	process.env.TZ = "UTC";
+	process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
 	process.env.IAM_KRATOS_ADMIN_URL = "http://kratos.internal";
 	process.env.PROXY_TIMEOUT_MS = "5000";
 	vi.clearAllMocks();
@@ -22,6 +26,10 @@ beforeEach(() => {
 
 afterEach(() => {
 	process.env = { ...originalEnv };
+	process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
+	process.env.SESSION_SIGNING_KEY = "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=";
+	process.env.NEXT_PUBLIC_APP_URL = "http://localhost:4001";
+	process.env.TZ = "UTC";
 	vi.unstubAllGlobals();
 });
 
