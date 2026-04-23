@@ -21,7 +21,7 @@
 		"prepare": "husky"
 	},
 	"lint-staged": {
-		"*.{ts,tsx,js,jsx,json,jsonc,md,css}": "biome check --write --no-errors-on-unmatched"
+		"*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,md,css}": "biome check --write --no-errors-on-unmatched"
 	},
 	"repository": {
 		"type": "git",
