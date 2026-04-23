@@ -1,12 +1,22 @@
 import "@testing-library/jest-dom/vitest";
+import { beforeEach } from "vitest";
 
-// Force deterministic env BEFORE any test module imports session.ts or
-// startup-validation.ts. `test.env` in vitest.config.ts is applied by vitest
-// itself, but when the test file's top-level `const original = process.env.X`
-// runs at module-load, CI-provided values can be captured instead of the
-// vitest values, breaking afterEach restores and leaking to other test files.
-// Setting them here — in a setupFile that runs before user test modules —
-// guarantees consistent values across local and CI runs.
-process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
-process.env.SESSION_SIGNING_KEY = "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=";
-process.env.NEXT_PUBLIC_APP_URL = "http://localhost:4001";
+// Deterministic env for every test. Coverage runs all test files in one
+// process (disabling isolation) so env mutations in one file (e.g., a test
+// that deletes SESSION_SIGNING_KEY to verify the missing-key branch) leak
+// into downstream files and poison crypto round-trips. beforeEach resets
+// the critical env vars before every test, so test-local mutations can't
+// outlive their own afterEach.
+const BASE_ENV = {
+	ENCRYPTION_KEY: "test-encryption-key-for-vitest-32ch",
+	SESSION_SIGNING_KEY: "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=",
+	NEXT_PUBLIC_APP_URL: "http://localhost:4001",
+} as const;
+
+// Set once synchronously so module-load-time captures see correct values.
+for (const [k, v] of Object.entries(BASE_ENV)) process.env[k] = v;
+
+// Reset before every test so in-test mutations don't leak cross-file.
+beforeEach(() => {
+	for (const [k, v] of Object.entries(BASE_ENV)) process.env[k] = v;
+});
