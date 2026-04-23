@@ -32,8 +32,9 @@ test.describe("Session Cookie Secure Flag - Functional Tests", () => {
 		});
 		const cookies = response.headers()["set-cookie"] || "";
 		// In dev mode (HTTP), Secure flag should be absent
-		// Split cookies and check oauth_state specifically
-		const cookieParts = cookies.split(",").map((c: string) => c.trim());
+		// Split on `, ` only when followed by `<name>=` so we don't break on
+		// commas inside `Expires=Thu, DD MMM YYYY ...` dates.
+		const cookieParts = cookies.split(/,(?=[^;]*=)/).map((c: string) => c.trim());
 		const oauthStateCookie = cookieParts.find((c: string) => c.includes("oauth_state"));
 		if (oauthStateCookie) {
 			// Dev mode should not have Secure (we're on HTTP)
