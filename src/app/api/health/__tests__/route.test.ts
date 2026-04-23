@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for GET /api/health
  *
  * Strategy: Direct handler invocation. No external dependencies.

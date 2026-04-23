@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Security/regression tests for auth enforcement on settings API routes.
  *
  * Covers QA plan security tests: S1, S2, S3, S4.

@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for GET and PUT /api/dashboard/layout
  *
  * Mocks @/lib/session.verifySession and global fetch (IAM Kratos admin).

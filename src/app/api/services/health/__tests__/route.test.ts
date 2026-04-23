@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for GET /api/services/health
  *
  * Exercises the `checkService` helper via four parallel upstream fetches:

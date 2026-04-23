@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for GET /api/auth/login
  *
  * Covers QA plan scenario: F1.

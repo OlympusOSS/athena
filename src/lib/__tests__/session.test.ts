@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for session.ts HMAC signing/verification utilities.
  *
  * Covers QA plan scenarios: F1, F5, F6, F7, F8, F17, F18, F19, E8, E11, E12.

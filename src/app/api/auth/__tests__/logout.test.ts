@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit/integration tests for GET /api/auth/logout
  *
  * Covers QA plan scenarios: F14, F15, F16.

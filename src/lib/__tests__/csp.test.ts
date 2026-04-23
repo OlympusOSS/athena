@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for src/lib/csp.ts — athena#108
  *
  * Covers:

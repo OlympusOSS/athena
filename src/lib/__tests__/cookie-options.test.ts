@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for src/lib/cookie-options.ts
  *
  * Covers:

@@ -1,16 +1,14 @@
 /**
+ * @vitest-environment node
+ *
  * Unit tests for auth.ts (SESSION_COOKIE, parseSession, isAdmin).
+ * Runs under node env so crypto.subtle uses Node's real Web Crypto impl —
+ * jsdom's shim has platform-specific HMAC-verify bugs.
  */
 
 import { describe, expect, it } from "vitest";
 import { isAdmin, parseSession, SESSION_COOKIE } from "../auth";
 import { signSession } from "../session";
-
-// DIAGNOSTIC: print env at module load so we can compare local vs CI output.
-// eslint-disable-next-line no-console
-console.log(
-	`[DIAG auth.test] SESSION_SIGNING_KEY='${process.env.SESSION_SIGNING_KEY}' (len=${process.env.SESSION_SIGNING_KEY?.length}) TZ=${process.env.TZ}`,
-);
 
 describe("auth.ts exports", () => {
 	it("SESSION_COOKIE is the expected constant", () => {
@@ -35,10 +33,6 @@ describe("parseSession", () => {
 	});
 
 	it("returns session data for a valid HMAC-signed cookie", async () => {
-		// eslint-disable-next-line no-console
-		console.log(
-			`[DIAG crypto] subtle=${typeof globalThis.crypto?.subtle} importKey=${typeof globalThis.crypto?.subtle?.importKey} atob=${typeof globalThis.atob}`,
-		);
 		const cookie = await signSession({
 			accessToken: "at",
 			idToken: "it",
@@ -51,11 +45,7 @@ describe("parseSession", () => {
 				displayName: "Admin User",
 			},
 		});
-		// eslint-disable-next-line no-console
-		console.log(`[DIAG cookie] len=${cookie.length} dots=${(cookie.match(/\./g) || []).length} last20=${cookie.slice(-20)}`);
 		const result = await parseSession(cookie);
-		// eslint-disable-next-line no-console
-		console.log(`[DIAG post-parse] result=${result ? "ok" : "null"}`);
 		expect(result).not.toBeNull();
 		expect(result?.user.email).toBe("a@b.com");
 	});
