@@ -32,7 +32,7 @@
 		"@olympusoss/sdk": "^1.2.0",
 		"@ory/hydra-client": "^26.2.0",
 		"@ory/kratos-client": "^26.2.0",
-		"@rjsf/core": "6.4.1",
+		"@rjsf/core": "6.5.1",
 		"@rjsf/utils": "6.4.1",
 		"@rjsf/validator-ajv8": "6.3.1",
 		"@tailwindcss/postcss": "^4.1.18",
