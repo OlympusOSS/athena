@@ -11,6 +11,15 @@ export default defineConfig({
 		globals: true,
 		setupFiles: ["./tests/setup.ts"],
 		globalSetup: "./tests/global-setup.ts",
+		// Isolate each test file in its own worker. Several tests mutate
+		// process.env (SESSION_SIGNING_KEY, ENCRYPTION_KEY) — without isolation,
+		// a failing test's env mutations leak into downstream test files and
+		// break session-crypto round-trips. v8 coverage works with isolation.
+		isolate: true,
+		pool: "forks",
+		poolOptions: {
+			forks: { singleFork: false },
+		},
 		include: ["src/**/*.test.ts", "src/**/*.test.tsx", "tests/**/*.test.ts", "tests/**/*.test.tsx", "test/**/*.test.ts", "test/**/*.test.tsx"],
 		// Exclude Playwright e2e tests
 		exclude: ["tests/**/*.spec.ts", "tests/**/*.spec.tsx", "tests/e2e/**", "node_modules/**"],
