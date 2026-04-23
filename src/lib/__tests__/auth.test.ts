@@ -37,7 +37,9 @@ describe("parseSession", () => {
 
 	it("returns session data for a valid HMAC-signed cookie", async () => {
 		// eslint-disable-next-line no-console
-		console.log(`[DIAG pre-sign] SESSION_SIGNING_KEY=${process.env.SESSION_SIGNING_KEY?.slice(0, 12)}...`);
+		console.log(
+			`[DIAG crypto] subtle=${typeof globalThis.crypto?.subtle} importKey=${typeof globalThis.crypto?.subtle?.importKey} atob=${typeof globalThis.atob}`,
+		);
 		const cookie = await signSession({
 			accessToken: "at",
 			idToken: "it",
@@ -51,10 +53,10 @@ describe("parseSession", () => {
 			},
 		});
 		// eslint-disable-next-line no-console
-		console.log(`[DIAG post-sign] cookie=${cookie.slice(0, 20)}... SESSION_SIGNING_KEY=${process.env.SESSION_SIGNING_KEY?.slice(0, 12)}...`);
+		console.log(`[DIAG cookie] len=${cookie.length} dots=${(cookie.match(/\./g) || []).length} last20=${cookie.slice(-20)}`);
 		const result = await parseSession(cookie);
 		// eslint-disable-next-line no-console
-		console.log(`[DIAG post-parse] result=${result ? "not null" : "null"}`);
+		console.log(`[DIAG post-parse] result=${result ? "ok" : "null"}`);
 		expect(result).not.toBeNull();
 		expect(result?.user.email).toBe("a@b.com");
 	});
