@@ -7,10 +7,9 @@ import { isAdmin, parseSession, SESSION_COOKIE } from "../auth";
 import { signSession } from "../session";
 
 // DIAGNOSTIC: print env at module load so we can compare local vs CI output.
-// Will be removed once the CI env mystery is resolved.
 // eslint-disable-next-line no-console
 console.log(
-	`[DIAG auth.test] SESSION_SIGNING_KEY=${process.env.SESSION_SIGNING_KEY?.slice(0, 8)}... ENCRYPTION_KEY=${process.env.ENCRYPTION_KEY?.slice(0, 8)}... TZ=${process.env.TZ}`,
+	`[DIAG auth.test] SESSION_SIGNING_KEY='${process.env.SESSION_SIGNING_KEY}' (len=${process.env.SESSION_SIGNING_KEY?.length}) TZ=${process.env.TZ}`,
 );
 
 describe("auth.ts exports", () => {
