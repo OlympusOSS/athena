@@ -11,6 +11,8 @@ const BASE_ENV = {
 	ENCRYPTION_KEY: "test-encryption-key-for-vitest-32ch",
 	SESSION_SIGNING_KEY: "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=",
 	NEXT_PUBLIC_APP_URL: "http://localhost:4001",
+	// UTC so date-formatting snapshots match across local/CI regardless of host TZ.
+	TZ: "UTC",
 } as const;
 
 // Set once synchronously so module-load-time captures see correct values.

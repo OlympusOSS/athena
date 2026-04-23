@@ -18,4 +18,8 @@ export default function setup() {
 	process.env.ENCRYPTION_KEY = "test-encryption-key-for-vitest-32ch";
 	process.env.SESSION_SIGNING_KEY = "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws=";
 	process.env.NEXT_PUBLIC_APP_URL = "http://localhost:4001";
+	// Fix timezone to UTC so date-formatting snapshots match across local
+	// (EST/PST/etc) and CI (UTC) runs. Intl.DateTimeFormat reads TZ from
+	// process.env, so setting here covers child workers.
+	process.env.TZ = "UTC";
 }
