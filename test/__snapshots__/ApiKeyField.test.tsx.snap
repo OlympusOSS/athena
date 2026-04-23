@@ -1,0 +1,85 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ApiKeyField > matches snapshot (editing mode) 1`] = `
+<div>
+  <div
+    class="space-y-1.5"
+  >
+    <label
+      class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+    >
+      API Key
+    </label>
+    <div
+      class="relative flex items-center"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-key shrink-0 absolute left-2.5 h-3.5 w-3.5 text-muted-foreground"
+        fill="none"
+        height="16"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"
+        />
+        <path
+          d="m21 2-9.6 9.6"
+        />
+        <circle
+          cx="7.5"
+          cy="15.5"
+          r="5.5"
+        />
+      </svg>
+      <input
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-8 pr-10 text-sm"
+        name="apiKey"
+        placeholder="ory_pat_xxx"
+        type="password"
+        value=""
+      />
+      <button
+        aria-label="toggle api key visibility"
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground absolute right-1 h-7 w-7"
+        data-state="closed"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-eye shrink-0 h-3.5 w-3.5"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+          />
+        </svg>
+      </button>
+    </div>
+    <p
+      class="text-xs text-muted-foreground"
+    >
+      Enter your API key - it will be encrypted
+    </p>
+  </div>
+</div>
+`;

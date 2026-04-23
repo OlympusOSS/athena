@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SchemaViewer > matches snapshot 1`] = `
+<div>
+  <div>
+    <h2>
+      Default Schema
+    </h2>
+    <p>
+      No description available
+    </p>
+    <div>
+      <span>
+        Schema ID: 
+        default
+      </span>
+      <div
+        class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80"
+      >
+        Default Schema
+      </div>
+    </div>
+    <div>
+      <span>
+        Fields (
+        1
+        ):
+      </span>
+      <div>
+        <div
+          class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        >
+          traits
+        </div>
+      </div>
+    </div>
+    <div>
+      <span>
+        Schema Definition:
+      </span>
+      <pre>
+        {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Default Schema",
+  "type": "object",
+  "properties": {
+    "traits": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+      </pre>
+    </div>
+  </div>
+</div>
+`;

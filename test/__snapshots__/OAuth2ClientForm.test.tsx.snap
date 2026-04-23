@@ -1,0 +1,499 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OAuth2ClientForm > matches snapshot 1`] = `
+<div>
+  <form>
+    <div>
+      <div>
+        <h3>
+          Basic Information
+        </h3>
+        <div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="client_name"
+            >
+              Client Name 
+              <span>
+                *
+              </span>
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="client_name"
+              value=""
+            />
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="owner"
+            >
+              Owner
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="owner"
+              value=""
+            />
+            <p>
+              Optional: Organization or user that owns this client
+            </p>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="client_uri"
+            >
+              Client URI
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="client_uri"
+              value=""
+            />
+            <p>
+              URL of the client's homepage
+            </p>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="logo_uri"
+            >
+              Logo URI
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="logo_uri"
+              value=""
+            />
+            <p>
+              URL of the client's logo image
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>
+          OAuth2 Configuration
+        </h3>
+        <div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Grant Types
+            </label>
+            <div>
+              <button
+                type="button"
+              >
+                authorization code
+              </button>
+              <button
+                type="button"
+              >
+                client credentials
+              </button>
+              <button
+                type="button"
+              >
+                refresh token
+              </button>
+              <button
+                type="button"
+              >
+                implicit
+              </button>
+              <button
+                type="button"
+              >
+                password
+              </button>
+              <button
+                type="button"
+              >
+                urn:ietf:params:oauth:grant-type:jwt-bearer
+              </button>
+            </div>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Response Types
+            </label>
+            <div>
+              <button
+                type="button"
+              >
+                code
+              </button>
+              <button
+                type="button"
+              >
+                token
+              </button>
+              <button
+                type="button"
+              >
+                id_token
+              </button>
+              <button
+                type="button"
+              >
+                code token
+              </button>
+              <button
+                type="button"
+              >
+                code id_token
+              </button>
+              <button
+                type="button"
+              >
+                token id_token
+              </button>
+              <button
+                type="button"
+              >
+                code token id_token
+              </button>
+            </div>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="scope"
+            >
+              Scope
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="scope"
+              placeholder="openid profile email"
+              value=""
+            />
+            <p>
+              Space-separated list of scopes
+            </p>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="subject_type"
+            >
+              Subject Type
+            </label>
+            <button
+              aria-autocomplete="none"
+              aria-controls="radix-_r_0_"
+              aria-expanded="false"
+              class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+              data-state="closed"
+              dir="ltr"
+              role="combobox"
+              type="button"
+            >
+              <span
+                style="pointer-events: none;"
+              >
+                public
+              </span>
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m6 9 6 6 6-6"
+                />
+              </svg>
+            </button>
+            <select
+              aria-hidden="true"
+              style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
+              tabindex="-1"
+            >
+              <option
+                selected=""
+                value="public"
+              >
+                public
+              </option>
+              <option
+                value="pairwise"
+              >
+                pairwise
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>
+          Redirect URIs
+        </h3>
+        <div>
+          <input
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            placeholder="https://example.com/callback"
+            value=""
+          />
+          <button
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-plus shrink-0"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 12h14"
+              />
+              <path
+                d="M12 5v14"
+              />
+            </svg>
+            Add
+          </button>
+        </div>
+        <div />
+      </div>
+      <div>
+        <h3>
+          Advanced Configuration
+        </h3>
+        <div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="token_endpoint_auth_method"
+            >
+              Token Endpoint Auth Method
+            </label>
+            <button
+              aria-autocomplete="none"
+              aria-controls="radix-_r_1_"
+              aria-expanded="false"
+              class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+              data-state="closed"
+              dir="ltr"
+              role="combobox"
+              type="button"
+            >
+              <span
+                style="pointer-events: none;"
+              >
+                client secret basic
+              </span>
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m6 9 6 6 6-6"
+                />
+              </svg>
+            </button>
+            <select
+              aria-hidden="true"
+              style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
+              tabindex="-1"
+            >
+              <option
+                selected=""
+                value="client_secret_basic"
+              >
+                client secret basic
+              </option>
+              <option
+                value="client_secret_post"
+              >
+                client secret post
+              </option>
+              <option
+                value="client_secret_jwt"
+              >
+                client secret jwt
+              </option>
+              <option
+                value="private_key_jwt"
+              >
+                private key jwt
+              </option>
+              <option
+                value="none"
+              >
+                none
+              </option>
+            </select>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="userinfo_signed_response_alg"
+            >
+              UserInfo Signed Response Algorithm
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="userinfo_signed_response_alg"
+              placeholder="RS256"
+              value=""
+            />
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="policy_uri"
+            >
+              Policy URI
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="policy_uri"
+              value=""
+            />
+            <p>
+              URL of privacy policy
+            </p>
+          </div>
+          <div>
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="tos_uri"
+            >
+              Terms of Service URI
+            </label>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="tos_uri"
+              value=""
+            />
+            <p>
+              URL of terms of service
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>
+            Contact Information
+          </h3>
+          <div>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              placeholder="admin@example.com"
+              value=""
+            />
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-plus shrink-0"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12h14"
+                />
+                <path
+                  d="M12 5v14"
+                />
+              </svg>
+              Add
+            </button>
+          </div>
+          <div />
+        </div>
+        <div>
+          <h3>
+            Audience
+          </h3>
+          <div>
+            <input
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              placeholder="https://api.example.com"
+              value=""
+            />
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-plus shrink-0"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12h14"
+                />
+                <path
+                  d="M12 5v14"
+                />
+              </svg>
+              Add
+            </button>
+          </div>
+          <div />
+        </div>
+      </div>
+      <div>
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+          type="submit"
+        >
+          Create Client
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+`;

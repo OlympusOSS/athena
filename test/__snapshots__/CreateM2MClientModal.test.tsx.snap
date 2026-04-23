@@ -1,0 +1,525 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CreateM2MClientModal > matches snapshot (open) 1`] = `
+<body
+  data-scroll-locked="1"
+  style="pointer-events: none;"
+>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+  <div
+    aria-hidden="true"
+    data-aria-hidden="true"
+  />
+  <div
+    aria-hidden="true"
+    class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    data-aria-hidden="true"
+    data-state="open"
+    style="pointer-events: auto;"
+  />
+  <div
+    aria-describedby="radix-_r_2_"
+    aria-labelledby="radix-_r_1_"
+    class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg"
+    data-state="open"
+    id="radix-_r_0_"
+    role="dialog"
+    style="pointer-events: auto;"
+    tabindex="-1"
+  >
+    <div
+      class="flex flex-col space-y-1.5 text-center sm:text-left"
+    >
+      <h2
+        class="text-lg font-semibold leading-none tracking-tight"
+        id="radix-_r_1_"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus shrink-0"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Add M2M Client
+      </h2>
+      <p
+        class="text-sm text-muted-foreground"
+        id="radix-_r_2_"
+      >
+        Register a machine-to-machine OAuth2 client for an AI agent or automated service.
+      </p>
+    </div>
+    <form
+      id="create-m2m-form"
+    >
+      <div
+        class="space-y-5"
+      >
+        <div
+          class="space-y-1.5"
+        >
+          <label
+            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            for="m2m-client-name"
+          >
+            Client Name 
+            <span
+              aria-hidden="true"
+            >
+              *
+            </span>
+          </label>
+          <input
+            aria-invalid="false"
+            aria-required="true"
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            id="m2m-client-name"
+            name="client_name"
+            placeholder="Payment Processor Agent"
+          />
+          <p
+            class="text-xs text-muted-foreground"
+          >
+            A descriptive name for this agent or service, e.g., "Provisioning Agent".
+          </p>
+        </div>
+        <div
+          class="space-y-2"
+        >
+          <label
+            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Allowed Scopes 
+            <span
+              aria-hidden="true"
+            >
+              *
+            </span>
+          </label>
+          <p
+            class="text-xs text-muted-foreground"
+          >
+            Select the minimum scopes required for this agent. Each scope grants a specific capability — grant only what is needed.
+          </p>
+          <p
+            class="text-xs text-destructive"
+            role="alert"
+          >
+            At least one scope is required.
+          </p>
+          <div
+            class="space-y-2 rounded-md border border-border p-3"
+          >
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-identities:read"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-identities:read"
+                  >
+                    identities:read
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Read identity records and profile data
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-identities:write"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-identities:write"
+                  >
+                    identities:write
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Create and update identity records
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-sessions:read"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-sessions:read"
+                  >
+                    sessions:read
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Read active session data
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-sessions:invalidate"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-sessions:invalidate"
+                  >
+                    sessions:invalidate
+                  </label>
+                  <div
+                    class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80"
+                  >
+                    High risk
+                  </div>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Force-invalidate any user session (High risk — grants global logout capability)
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-settings:read"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-settings:read"
+                  >
+                    settings:read
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Read platform configuration settings
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-audit:read"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-audit:read"
+                  >
+                    audit:read
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Read audit log entries
+                </p>
+              </div>
+            </div>
+            <div
+              class="flex items-start gap-3"
+            >
+              <button
+                aria-checked="false"
+                class="grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                data-state="unchecked"
+                id="scope-webhooks:write"
+                role="checkbox"
+                type="button"
+                value="on"
+              />
+              <input
+                aria-hidden="true"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
+                tabindex="-1"
+                type="checkbox"
+                value="on"
+              />
+              <div
+                class="flex-1 space-y-0.5"
+              >
+                <div
+                  class="flex items-center gap-2"
+                >
+                  <label
+                    class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer font-mono text-sm"
+                    for="scope-webhooks:write"
+                  >
+                    webhooks:write
+                  </label>
+                </div>
+                <p
+                  class="text-xs text-muted-foreground"
+                >
+                  Create and update webhook configurations
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="space-y-1.5"
+        >
+          <label
+            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            for="m2m-token-lifetime"
+          >
+            Token Lifetime (seconds)
+          </label>
+          <div
+            class="flex items-center gap-3"
+          >
+            <input
+              aria-invalid="false"
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="m2m-token-lifetime"
+              max="3600"
+              min="1"
+              name="token_lifetime"
+              type="number"
+            />
+            <span
+              class="text-xs text-muted-foreground whitespace-nowrap"
+            >
+              = 1 hour (maximum)
+            </span>
+          </div>
+          <p
+            class="text-xs text-muted-foreground"
+          >
+            For AI agent tokens, 300 seconds is recommended. Maximum: 3600 seconds. No refresh tokens are issued — agents must re-authenticate on expiry.
+          </p>
+        </div>
+      </div>
+    </form>
+    <div
+      class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"
+    >
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+        type="button"
+      >
+        Cancel
+      </button>
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+        disabled=""
+        form="create-m2m-form"
+        type="submit"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus shrink-0"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Create Client
+      </button>
+    </div>
+    <button
+      class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-x h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M18 6 6 18"
+        />
+        <path
+          d="m6 6 12 12"
+        />
+      </svg>
+      <span
+        class="sr-only"
+      >
+        Close
+      </span>
+    </button>
+  </div>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+</body>
+`;

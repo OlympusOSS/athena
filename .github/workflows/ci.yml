@@ -49,6 +49,8 @@ jobs:
         run: bun run audit:cookies
       - name: Run unit tests
         run: bun run test
+      - name: Snapshot coverage gate (80%)
+        run: bun run snapshot-coverage
       - name: Run unit tests with coverage (80% threshold gate)
         run: bun run test:coverage
       - run: bun run build

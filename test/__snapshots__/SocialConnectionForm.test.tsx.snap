@@ -1,0 +1,458 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SocialConnectionForm > matches snapshot (create) 1`] = `
+<div>
+  <form
+    class="space-y-6"
+  >
+    <div
+      class="space-y-2"
+    >
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="provider"
+      >
+        Provider
+      </label>
+      <div
+        class="grid grid-cols-2 gap-2 sm:grid-cols-4"
+      >
+        <label
+          class="relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors  border-primary bg-primary/5"
+        >
+          <input
+            class="sr-only"
+            name="provider"
+            type="radio"
+            value="google"
+          />
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-app-window shrink-0 h-6 w-6"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="16"
+              rx="2"
+              width="20"
+              x="2"
+              y="4"
+            />
+            <path
+              d="M10 4v4"
+            />
+            <path
+              d="M2 8h20"
+            />
+            <path
+              d="M6 4v4"
+            />
+          </svg>
+          <span
+            class="font-medium"
+          >
+            Google
+          </span>
+        </label>
+        <label
+          class="relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors cursor-not-allowed opacity-50 border-border hover:border-primary/50"
+        >
+          <input
+            class="sr-only"
+            disabled=""
+            name="provider"
+            type="radio"
+            value="github"
+          />
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-app-window shrink-0 h-6 w-6"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="16"
+              rx="2"
+              width="20"
+              x="2"
+              y="4"
+            />
+            <path
+              d="M10 4v4"
+            />
+            <path
+              d="M2 8h20"
+            />
+            <path
+              d="M6 4v4"
+            />
+          </svg>
+          <span
+            class="font-medium"
+          >
+            GitHub
+          </span>
+          <div
+            class="inline-flex items-center rounded-md border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs"
+          >
+            Coming soon
+          </div>
+        </label>
+        <label
+          class="relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors cursor-not-allowed opacity-50 border-border hover:border-primary/50"
+        >
+          <input
+            class="sr-only"
+            disabled=""
+            name="provider"
+            type="radio"
+            value="microsoft"
+          />
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-app-window shrink-0 h-6 w-6"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="16"
+              rx="2"
+              width="20"
+              x="2"
+              y="4"
+            />
+            <path
+              d="M10 4v4"
+            />
+            <path
+              d="M2 8h20"
+            />
+            <path
+              d="M6 4v4"
+            />
+          </svg>
+          <span
+            class="font-medium"
+          >
+            Microsoft
+          </span>
+          <div
+            class="inline-flex items-center rounded-md border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs"
+          >
+            Coming soon
+          </div>
+        </label>
+        <label
+          class="relative flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors cursor-not-allowed opacity-50 border-border hover:border-primary/50"
+        >
+          <input
+            class="sr-only"
+            disabled=""
+            name="provider"
+            type="radio"
+            value="linkedin"
+          />
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-app-window shrink-0 h-6 w-6"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="16"
+              rx="2"
+              width="20"
+              x="2"
+              y="4"
+            />
+            <path
+              d="M10 4v4"
+            />
+            <path
+              d="M2 8h20"
+            />
+            <path
+              d="M6 4v4"
+            />
+          </svg>
+          <span
+            class="font-medium"
+          >
+            LinkedIn
+          </span>
+          <div
+            class="inline-flex items-center rounded-md border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs"
+          >
+            Coming soon
+          </div>
+        </label>
+      </div>
+    </div>
+    <div
+      class="relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7 bg-background text-foreground"
+      role="alert"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-info shrink-0"
+        fill="none"
+        height="16"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <path
+          d="M12 16v-4"
+        />
+        <path
+          d="M12 8h.01"
+        />
+      </svg>
+      <div
+        class="text-sm [&_p]:leading-relaxed space-y-2"
+      >
+        <p
+          class="text-sm font-medium"
+        >
+          Before saving, register this callback URI in your Google Cloud Console:
+        </p>
+        <div
+          class="flex items-center gap-2 rounded-md bg-muted px-3 py-2"
+        >
+          <code
+            class="text-xs break-all"
+          >
+            http://localhost:3000/self-service/methods/oidc/callback/google
+          </code>
+        </div>
+        <p
+          class="text-xs text-muted-foreground"
+        >
+          Add this URI to the "Authorized redirect URIs" in your Google OAuth2 client configuration. Saving without registering it will cause
+           
+          <code
+            class="text-xs"
+          >
+            redirect_uri_mismatch
+          </code>
+           errors during login.
+        </p>
+      </div>
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="client_id"
+      >
+        Client ID
+      </label>
+      <input
+        aria-invalid="false"
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+        id="client_id"
+        name="client_id"
+        placeholder="123456789-abc.apps.googleusercontent.com"
+      />
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="client_secret"
+      >
+        Client Secret
+      </label>
+      <input
+        aria-invalid="false"
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+        id="client_secret"
+        name="client_secret"
+        placeholder="Enter client secret"
+        type="password"
+      />
+    </div>
+    <div
+      class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
+    >
+      <div
+        class="flex items-center gap-2"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-lock shrink-0 h-4 w-4 text-muted-foreground"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            height="11"
+            rx="2"
+            ry="2"
+            width="18"
+            x="3"
+            y="11"
+          />
+          <path
+            d="M7 11V7a5 5 0 0 1 10 0v4"
+          />
+        </svg>
+        <span
+          class="text-sm font-medium text-muted-foreground"
+        >
+          Google OAuth2 Endpoints (pre-configured, read-only)
+        </span>
+      </div>
+      <div
+        class="space-y-3"
+      >
+        <div
+          class="space-y-1"
+        >
+          <label
+            class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-xs text-muted-foreground"
+          >
+            Authorization Endpoint
+          </label>
+          <input
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-xs"
+            disabled=""
+            readonly=""
+            value="https://accounts.google.com/o/oauth2/v2/auth"
+          />
+        </div>
+        <div
+          class="space-y-1"
+        >
+          <label
+            class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-xs text-muted-foreground"
+          >
+            Token Endpoint
+          </label>
+          <input
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-xs"
+            disabled=""
+            readonly=""
+            value="https://oauth2.googleapis.com/token"
+          />
+        </div>
+        <div
+          class="space-y-1"
+        >
+          <label
+            class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-xs text-muted-foreground"
+          >
+            JWKS URI
+          </label>
+          <input
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-xs"
+            disabled=""
+            readonly=""
+            value="https://www.googleapis.com/oauth2/v3/certs"
+          />
+        </div>
+      </div>
+      <p
+        class="text-xs text-muted-foreground"
+      >
+        These endpoints are pre-configured for Google and cannot be edited to prevent misconfiguration.
+      </p>
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        Scopes
+      </label>
+      <div
+        class="flex flex-wrap gap-2"
+      >
+        <div
+          class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        >
+          openid
+        </div>
+        <div
+          class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        >
+          email
+        </div>
+        <div
+          class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        >
+          profile
+        </div>
+      </div>
+      <p
+        class="text-xs text-muted-foreground"
+      >
+        Standard OAuth2 scopes for Google. These are pre-configured and cannot be changed in V1.
+      </p>
+    </div>
+    <div
+      class="flex justify-end gap-3"
+    >
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+        type="button"
+      >
+        Cancel
+      </button>
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+        type="submit"
+      >
+        Add Connection
+      </button>
+    </div>
+  </form>
+</div>
+`;

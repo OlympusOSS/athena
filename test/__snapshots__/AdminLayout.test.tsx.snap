@@ -1,0 +1,718 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AdminLayout > matches snapshot 1`] = `
+<div>
+  <div
+    class="flex h-screen overflow-hidden bg-background"
+  >
+    <div
+      class="hidden md:block"
+    >
+      <aside
+        class="glass-nav fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 w-60"
+      >
+        <div
+          class="flex h-14 items-center justify-between px-4"
+        >
+          <div
+            class="flex items-center gap-2.5"
+          >
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-blue-700"
+            >
+              <svg
+                aria-label="Olympus"
+                class="h-5 w-5"
+                viewBox="332 290 736 440"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M552 300H848A210 210 0 0 1 1058 510A210 210 0 0 1 848 720H552A210 210 0 0 1 342 510A210 210 0 0 1 552 300ZM582 386H818A124 124 0 0 1 942 510A124 124 0 0 1 818 634H582A124 124 0 0 1 458 510A124 124 0 0 1 582 386Z"
+                  fill="#fff"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div
+              class="flex flex-col leading-tight"
+            >
+              <span
+                class="text-sm font-semibold"
+                style="color: rgb(255, 255, 255);"
+              >
+                Olympus Admin
+              </span>
+            </div>
+          </div>
+          <button
+            class="flex h-7 w-7 items-center justify-center rounded opacity-60 hover:opacity-100 transition-opacity"
+            style="color: hsl(var(--sidebar-fg));"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-panel-left shrink-0 h-4 w-4"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="18"
+                rx="2"
+                width="18"
+                x="3"
+                y="3"
+              />
+              <path
+                d="M9 3v18"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="relative overflow-hidden flex-1 py-2 px-2.5"
+          dir="ltr"
+          style="position: relative; --radix-scroll-area-corner-width: 0px; --radix-scroll-area-corner-height: 0px;"
+        >
+          <style>
+            [data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}
+          </style>
+          <div
+            class="h-full w-full rounded-[inherit]"
+            data-radix-scroll-area-viewport=""
+            style="overflow-x: hidden; overflow-y: scroll;"
+          >
+            <div
+              style="min-width: 100%; display: table;"
+            >
+              <nav
+                class="flex flex-col gap-0.5"
+              >
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/dashboard"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 font-medium"
+                    style="background: hsl(var(--sidebar-active)); color: rgb(255, 255, 255);"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-layout-dashboard h-4 w-4 shrink-0 text-white"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="9"
+                        rx="1"
+                        width="7"
+                        x="3"
+                        y="3"
+                      />
+                      <rect
+                        height="5"
+                        rx="1"
+                        width="7"
+                        x="14"
+                        y="3"
+                      />
+                      <rect
+                        height="9"
+                        rx="1"
+                        width="7"
+                        x="14"
+                        y="12"
+                      />
+                      <rect
+                        height="5"
+                        rx="1"
+                        width="7"
+                        x="3"
+                        y="16"
+                      />
+                    </svg>
+                    <span>
+                      Dashboard
+                    </span>
+                  </div>
+                </a>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/identities"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-users h-4 w-4 shrink-0 text-purple-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                      />
+                      <path
+                        d="M16 3.128a4 4 0 0 1 0 7.744"
+                      />
+                      <path
+                        d="M22 21v-2a4 4 0 0 0-3-3.87"
+                      />
+                      <circle
+                        cx="9"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
+                    <span>
+                      Identities
+                    </span>
+                  </div>
+                </a>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/sessions"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-shield h-4 w-4 shrink-0 text-emerald-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                      />
+                    </svg>
+                    <span>
+                      Sessions
+                    </span>
+                  </div>
+                </a>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/messages"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-mail h-4 w-4 shrink-0 text-amber-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"
+                      />
+                      <rect
+                        height="16"
+                        rx="2"
+                        width="20"
+                        x="2"
+                        y="4"
+                      />
+                    </svg>
+                    <span>
+                      Messages
+                    </span>
+                  </div>
+                </a>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/schemas"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-file-text h-4 w-4 shrink-0 text-cyan-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+                      />
+                      <path
+                        d="M14 2v5a1 1 0 0 0 1 1h5"
+                      />
+                      <path
+                        d="M10 9H8"
+                      />
+                      <path
+                        d="M16 13H8"
+                      />
+                      <path
+                        d="M16 17H8"
+                      />
+                    </svg>
+                    <span>
+                      Schemas
+                    </span>
+                  </div>
+                </a>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/security"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-lock h-4 w-4 shrink-0 text-red-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="11"
+                        rx="2"
+                        ry="2"
+                        width="18"
+                        x="3"
+                        y="11"
+                      />
+                      <path
+                        d="M7 11V7a5 5 0 0 1 10 0v4"
+                      />
+                    </svg>
+                    <span>
+                      Security
+                    </span>
+                  </div>
+                </a>
+                <div>
+                  <div
+                    class="mx-1 my-2"
+                    style="border-bottom: 1px solid hsl(var(--sidebar-border));"
+                  />
+                  <span
+                    class="block px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest"
+                    style="color: hsl(var(--sidebar-fg)); opacity: 0.5;"
+                  >
+                    Authentication
+                  </span>
+                  <a
+                    class="relative block"
+                    data-state="closed"
+                    href="/social-connections"
+                  >
+                    <div
+                      class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                      style="color: hsl(var(--sidebar-fg));"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-app-window h-4 w-4 shrink-0 text-indigo-500"
+                        fill="none"
+                        height="16"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          height="16"
+                          rx="2"
+                          width="20"
+                          x="2"
+                          y="4"
+                        />
+                        <path
+                          d="M10 4v4"
+                        />
+                        <path
+                          d="M2 8h20"
+                        />
+                        <path
+                          d="M6 4v4"
+                        />
+                      </svg>
+                      <span>
+                        Social Connections
+                      </span>
+                    </div>
+                  </a>
+                </div>
+                <div
+                  class="mx-1 my-2"
+                  style="border-bottom: 1px solid hsl(var(--sidebar-border));"
+                />
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/clients"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-app-window h-4 w-4 shrink-0 text-rose-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="16"
+                        rx="2"
+                        width="20"
+                        x="2"
+                        y="4"
+                      />
+                      <path
+                        d="M10 4v4"
+                      />
+                      <path
+                        d="M2 8h20"
+                      />
+                      <path
+                        d="M6 4v4"
+                      />
+                    </svg>
+                    <span>
+                      OAuth2 Clients
+                    </span>
+                  </div>
+                </a>
+                <div
+                  class="mx-1 my-2"
+                  style="border-bottom: 1px solid hsl(var(--sidebar-border));"
+                />
+                <span
+                  class="block px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest"
+                  style="color: hsl(var(--sidebar-fg)); opacity: 0.5;"
+                >
+                  Applications
+                </span>
+                <a
+                  class="relative block"
+                  data-state="closed"
+                  href="/applications/m2m"
+                >
+                  <div
+                    class="flex items-center rounded-md text-sm transition-colors duration-150 gap-3 px-3 py-2 opacity-75 hover:opacity-100"
+                    style="color: hsl(var(--sidebar-fg));"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-server h-4 w-4 shrink-0 text-violet-500"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="8"
+                        rx="2"
+                        ry="2"
+                        width="20"
+                        x="2"
+                        y="2"
+                      />
+                      <rect
+                        height="8"
+                        rx="2"
+                        ry="2"
+                        width="20"
+                        x="2"
+                        y="14"
+                      />
+                      <line
+                        x1="6"
+                        x2="6.01"
+                        y1="6"
+                        y2="6"
+                      />
+                      <line
+                        x1="6"
+                        x2="6.01"
+                        y1="18"
+                        y2="18"
+                      />
+                    </svg>
+                    <span>
+                      Machine-to-Machine
+                    </span>
+                  </div>
+                </a>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <div
+          class="mx-3"
+          style="border-bottom: 1px solid hsl(var(--sidebar-border));"
+        />
+        <div
+          class="p-2.5"
+        >
+          <button
+            class="flex w-full items-center rounded-md text-sm opacity-60 transition-all duration-150 hover:opacity-100 gap-3 px-3 py-2"
+            data-state="closed"
+            style="color: hsl(var(--sidebar-fg));"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-log-out h-4 w-4 shrink-0"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m16 17 5-5-5-5"
+              />
+              <path
+                d="M21 12H9"
+              />
+              <path
+                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+              />
+            </svg>
+            <span>
+              Logout
+            </span>
+          </button>
+        </div>
+      </aside>
+    </div>
+    <div
+      class="flex flex-1 flex-col overflow-hidden transition-all duration-300 md:ml-60"
+    >
+      <header
+        class="glass-chrome sticky top-0 z-20 flex h-14 items-center border-b border-border px-4 sm:px-6"
+      >
+        <div
+          class="flex w-full items-center justify-between gap-4"
+        >
+          <div
+            class="flex items-center gap-3"
+          >
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 md:hidden"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-menu shrink-0"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 5h16"
+                />
+                <path
+                  d="M4 12h16"
+                />
+                <path
+                  d="M4 19h16"
+                />
+              </svg>
+            </button>
+            <span
+              class="text-sm font-medium text-foreground"
+            >
+              Dashboard
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2"
+          >
+            <div
+              class="hidden md:block"
+            >
+              <div
+                class="relative w-64"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-search absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m21 21-4.34-4.34"
+                  />
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="8"
+                  />
+                </svg>
+                <input
+                  class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-9 pr-9"
+                  placeholder="Search identities, sessions..."
+                  value=""
+                />
+              </div>
+            </div>
+            <div
+              class="shrink-0 bg-border w-[1px] mx-1 h-6"
+              data-orientation="vertical"
+              role="none"
+            />
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9"
+              data-state="closed"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-settings shrink-0"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="3"
+                />
+              </svg>
+            </button>
+            <div
+              class="shrink-0 bg-border w-[1px] mx-2 h-6"
+              data-orientation="vertical"
+              role="none"
+            />
+            <button
+              aria-expanded="false"
+              aria-haspopup="menu"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 gap-2"
+              data-state="closed"
+              id="radix-_r_b_"
+              type="button"
+            >
+              <span
+                class="relative flex shrink-0 overflow-hidden rounded-full h-7 w-7"
+              >
+                <span
+                  class="flex h-full w-full items-center justify-center rounded-full bg-muted text-xs"
+                >
+                  A
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main
+        class="flex-1 overflow-y-auto"
+      >
+        <div
+          class="p-4 sm:p-6"
+        >
+          <div>
+            content
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+`;
