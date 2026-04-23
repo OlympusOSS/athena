@@ -111,9 +111,11 @@ test.describe("OAuth State Secure Flag - Edge Cases", () => {
 	test("E2: callback route clears oauth_state", async ({ request }) => {
 		// The callback route should attempt to clear flow-state cookies
 		// We can't fully test the callback without a valid code, but verify
-		// the endpoint exists and handles requests
-		const response = await request.get("/api/auth/callback");
-		// Without proper OAuth2 params, should get an error but not crash
+		// the endpoint exists and handles requests. maxRedirects:0 so we
+		// capture the immediate response without chasing the login→Hydra
+		// redirect (Hydra isn't running in CI).
+		const response = await request.get("/api/auth/callback", { maxRedirects: 0 });
+		// Without proper OAuth2 params, should redirect (3xx) or 4xx but not 5xx
 		expect(response.status()).toBeLessThan(500);
 	});
 
