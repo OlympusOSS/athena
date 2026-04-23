@@ -2,7 +2,7 @@ name: CI — Athena
 
 on:
   push:
-    tags-ignore: ['v*']
+    branches: [main]
     paths:
       - 'src/**'
       - 'package.json'
