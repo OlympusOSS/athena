@@ -25,15 +25,19 @@ permissions:
 
 env:
   # Deterministic fixtures for tests that read env. NOT used at runtime.
-  ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-  SESSION_SIGNING_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  # Values here MUST match vitest.config.ts `test.env` + tests/global-setup.ts —
+  # mismatch causes the test.env override to race with external env and break
+  # session-crypto round-trips (sign with key A, verify with key B).
+  ENCRYPTION_KEY: "test-encryption-key-for-vitest-32ch"
+  SESSION_SIGNING_KEY: "y0vXvDE6hGnlA4J/iLlTwyMXHgDrMp4tD3ON+3lf3ws="
+  TZ: "UTC"
   OAUTH_CLIENT_ID: "test-client"
   OAUTH_CLIENT_SECRET: "test-secret"
   AUTH_HYDRA_URL: "http://localhost:4445"
   IAM_HYDRA_PUBLIC_URL: "http://localhost:3103"
   AUTH_KRATOS_ADMIN_URL: "http://localhost:4434"
   IAM_KRATOS_ADMIN_URL: "http://localhost:3101"
-  NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+  NEXT_PUBLIC_APP_URL: "http://localhost:4001"
 
 jobs:
   test:
