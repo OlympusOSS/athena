@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.BASE_URL || "http://localhost:3001";
+// Use 127.0.0.1 (not `localhost`) so IPv6-preferring runners resolve to our
+// IPv4-only standalone server. Overridable via BASE_URL for local dev.
+const baseURL = process.env.BASE_URL || "http://127.0.0.1:3001";
 
 export default defineConfig({
 	testDir: "./tests/e2e",
@@ -21,10 +23,16 @@ export default defineConfig({
 	],
 	webServer: process.env.CI
 		? {
-				command: "bun run build && bun run start",
-				url: baseURL,
+				// next.config.ts uses `output: "standalone"`, so `next start` no-ops.
+				// CI runs `bun run build` as a prior step — start the standalone
+				// server directly. Poll /api/health (200) not / (redirects).
+				command:
+					"cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && PORT=3001 HOSTNAME=0.0.0.0 node .next/standalone/server.js",
+				url: `${baseURL}/api/health`,
 				reuseExistingServer: false,
-				timeout: 120_000,
+				timeout: 60_000,
+				stdout: "pipe",
+				stderr: "pipe",
 			}
 		: undefined,
 });
