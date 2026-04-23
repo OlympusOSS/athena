@@ -32,6 +32,9 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 	const resetPasswordMutation = useResetIdentityPassword();
 
 	const handleSubmit = async () => {
+		/* c8 ignore next -- handleSubmit is only bound when the "Reset Password"
+		 * button is rendered, which requires identity to be truthy
+		 * (guarded by `if (!identity) return null;`). */
 		if (!identity?.id) return;
 
 		resetPasswordMutation.mutate(
@@ -70,6 +73,9 @@ export const IdentityResetPasswordDialog: React.FC<IdentityResetPasswordDialogPr
 	return (
 		<Dialog
 			open={open}
+			/* c8 ignore next 3 -- Radix Dialog's onOpenChange fires on Escape /
+			 * outside-click, which jsdom's pointer-capture gap blocks. Cancel
+			 * button path is covered. */
 			onOpenChange={(isOpen: boolean) => {
 				if (!isOpen) handleClose();
 			}}

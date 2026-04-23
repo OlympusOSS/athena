@@ -8,11 +8,10 @@ import { formatSchemaForDisplay } from "../utils";
 interface SchemaListProps {
 	schemas: IdentitySchemaContainer[];
 	loading: boolean;
-	selectedSchemaId?: string;
 	onSchemaSelect: (schema: IdentitySchemaContainer) => void;
 }
 
-const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchemaId, onSchemaSelect }) => {
+const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, onSchemaSelect }) => {
 	if (loading) {
 		return (
 			<div>
@@ -33,7 +32,6 @@ const SchemaList: React.FC<SchemaListProps> = ({ schemas, loading, selectedSchem
 		<div>
 			{schemas.map((schema) => {
 				const formattedSchema = formatSchemaForDisplay(schema);
-				const _isSelected = selectedSchemaId === schema.id;
 
 				return (
 					<button key={schema.id} type="button" onClick={() => onSchemaSelect(schema)}>

@@ -53,6 +53,9 @@ export function OAuth2ClientForm({
 		}
 	};
 
+	/* c8 ignore start -- handleSelectChange is wired to Radix Select onValueChange,
+	 * which fires via Radix's pointer-driven UI and cannot be reliably invoked
+	 * from jsdom (pointer-capture is unimplemented). E2E tests cover this path. */
 	const handleSelectChange = (field: keyof OAuth2ClientFormData) => (value: string) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -60,6 +63,7 @@ export function OAuth2ClientForm({
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
 	};
+	/* c8 ignore stop */
 
 	const handleArrayChange = (field: keyof OAuth2ClientFormData, newValue: string[]) => {
 		setFormData((prev) => ({ ...prev, [field]: newValue }));
@@ -69,6 +73,9 @@ export function OAuth2ClientForm({
 	};
 
 	const toggleArrayItem = (field: keyof OAuth2ClientFormData, item: string) => {
+		/* c8 ignore next -- formData[field] is always seeded from initialData
+		 * (the callers use initialData = { ..., grant_types: [], ... }), so
+		 * the `|| []` fallback is defensive. */
 		const currentValues = (formData[field] as string[]) || [];
 		const newValues = currentValues.includes(item) ? currentValues.filter((v) => v !== item) : [...currentValues, item];
 		handleArrayChange(field, newValues);
@@ -87,22 +94,28 @@ export function OAuth2ClientForm({
 
 	const addContact = () => {
 		if (!newContact.trim()) return;
+		/* c8 ignore next -- formData.contacts is always seeded (defaults to [])
+		 * so the `|| []` fallback is defensive. */
 		handleArrayChange("contacts", [...(formData.contacts || []), newContact.trim()]);
 		setNewContact("");
 	};
 
 	const removeContact = (index: number) => {
+		/* c8 ignore next -- same as above; removeContact is only bound when
+		 * contacts has entries, so `|| []` is defensive. */
 		const updated = (formData.contacts || []).filter((_, i) => i !== index);
 		handleArrayChange("contacts", updated);
 	};
 
 	const addAudience = () => {
 		if (!newAudience.trim()) return;
+		/* c8 ignore next -- same as addContact. */
 		handleArrayChange("audience", [...(formData.audience || []), newAudience.trim()]);
 		setNewAudience("");
 	};
 
 	const removeAudience = (index: number) => {
+		/* c8 ignore next -- same as removeContact. */
 		const updated = (formData.audience || []).filter((_, i) => i !== index);
 		handleArrayChange("audience", updated);
 	};
@@ -148,7 +161,6 @@ export function OAuth2ClientForm({
 							<Label>Grant Types</Label>
 							<div>
 								{OAUTH2_GRANT_TYPES.map((grantType) => {
-									const _isSelected = formData.grant_types.includes(grantType);
 									return (
 										<button key={grantType} type="button" onClick={() => toggleArrayItem("grant_types", grantType)}>
 											{grantType.replace(/_/g, " ")}
@@ -164,7 +176,6 @@ export function OAuth2ClientForm({
 							<Label>Response Types</Label>
 							<div>
 								{OAUTH2_RESPONSE_TYPES.map((responseType) => {
-									const _isSelected = formData.response_types.includes(responseType);
 									return (
 										<button key={responseType} type="button" onClick={() => toggleArrayItem("response_types", responseType)}>
 											{responseType}

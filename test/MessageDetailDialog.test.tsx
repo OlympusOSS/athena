@@ -173,4 +173,32 @@ describe("MessageDetailDialog", () => {
 		const { baseElement } = render(<MessageDetailDialog open={true} onClose={() => {}} messageId="m" />);
 		expect(baseElement.textContent).toMatch(/processing/);
 	});
+
+	it("renders dispatch with non-failed status (success branch)", () => {
+		state.data = {
+			data: {
+				id: "msg-ok",
+				type: "email",
+				status: "sent",
+				send_count: 1,
+				created_at: "2024-01-01T00:00:00Z",
+				updated_at: "2024-01-01T00:00:00Z",
+				template_type: "welcome",
+				channel: "default",
+				recipient: "ok@example.com",
+				subject: "Welcome",
+				body: "Body",
+				dispatches: [
+					{
+						id: "d-ok",
+						status: "success",
+						created_at: "2024-01-01T00:00:00Z",
+						updated_at: "2024-01-01T00:00:00Z",
+					},
+				],
+			},
+		};
+		const { getByText } = render(<MessageDetailDialog open={true} onClose={() => {}} messageId="msg-ok" />);
+		expect(getByText(/1 dispatch/)).toBeInTheDocument();
+	});
 });

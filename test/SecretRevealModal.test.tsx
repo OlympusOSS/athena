@@ -92,6 +92,16 @@ describe("SecretRevealModal", () => {
 		expect(baseElement.querySelector(".lucide-check")).toBeTruthy();
 	});
 
+	it("shows check icon when copiedField is client_secret", () => {
+		copyState.copiedField = "client_secret";
+		const { baseElement } = render(
+			<SecretRevealModal open={true} onDone={() => {}} onAbandon={() => {}} clientId="id" clientSecret="sec" displayType="creation" />,
+		);
+		// Check that both copy buttons rendered — one with check (for secret), one with copy (for id)
+		expect(baseElement.querySelector(".lucide-check")).toBeTruthy();
+		expect(baseElement.querySelector(".lucide-copy")).toBeTruthy();
+	});
+
 	it("abandon interstitial fires when onInteractOutside intercepted", () => {
 		// Simulate clicking outside — we just assert the interstitial DOM can be triggered via escape handler
 		const onAbandon = vi.fn();

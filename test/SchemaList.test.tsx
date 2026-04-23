@@ -34,9 +34,7 @@ describe("SchemaList", () => {
 				},
 			},
 		];
-		const { container, getByText } = render(
-			<SchemaList schemas={schemas as never[]} loading={false} selectedSchemaId="default" onSchemaSelect={onSchemaSelect} />,
-		);
+		const { container, getByText } = render(<SchemaList schemas={schemas as never[]} loading={false} onSchemaSelect={onSchemaSelect} />);
 		expect(getByText("Default")).toBeInTheDocument();
 		const buttons = container.querySelectorAll("button");
 		fireEvent.click(buttons[0]);

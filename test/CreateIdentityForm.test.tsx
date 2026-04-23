@@ -81,4 +81,12 @@ describe("CreateIdentityForm", () => {
 		// Since Select state is internal, test the visible UI at least renders
 		expect(container.textContent).toMatch(/Select a schema/);
 	});
+
+	it("renders 'Unknown error' fallback when error has no message", () => {
+		createIdentityState.isError = true;
+		// An Error-like object with no message property — triggers the `|| "Unknown error"` fallback
+		createIdentityState.error = {} as Error;
+		const { getByText } = render(<CreateIdentityForm />);
+		expect(getByText(/Unknown error/)).toBeInTheDocument();
+	});
 });

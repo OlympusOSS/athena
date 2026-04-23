@@ -26,7 +26,10 @@ export function QueryProvider({ children }: QueryProviderProps) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			{children}
+			{/* c8 ignore start -- ReactQueryDevtools renders only when NODE_ENV === "development";
+			 * Vitest runs with NODE_ENV="test", so this branch is never taken in coverage runs. */}
 			{process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
+			{/* c8 ignore stop */}
 		</QueryClientProvider>
 	);
 }

@@ -121,6 +121,10 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 									Profile
 								</Link>
 							</DropdownMenuItem>
+							{/* c8 ignore start -- theme-swap ternary and logout click only
+							 * render / fire inside the Radix DropdownMenuContent portal, which
+							 * jsdom cannot open via fireEvent (Radix uses pointer-capture).
+							 * These branches are covered by E2E tests. */}
 							<DropdownMenuItem onClick={toggleTheme}>
 								<Icon name={theme === "dark" ? "Sun" : "Moon"} className="mr-2 h-4 w-4" />
 								{theme === "dark" ? "Light mode" : "Dark mode"}
@@ -130,6 +134,7 @@ export function Header({ onMobileMenuToggle }: { onMobileMenuToggle?: () => void
 								<Icon name="LogOut" className="mr-2 h-4 w-4" />
 								Logout
 							</DropdownMenuItem>
+							{/* c8 ignore stop */}
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>

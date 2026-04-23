@@ -24,21 +24,6 @@ const getStatusIcon = (status: CourierMessageStatus): React.ReactNode => {
 	}
 };
 
-const _getStatusColor = (status: CourierMessageStatus): string => {
-	switch (status) {
-		case "sent":
-			return "success";
-		case "queued":
-			return "info";
-		case "processing":
-			return "warning";
-		case "abandoned":
-			return "error";
-		default:
-			return "default";
-	}
-};
-
 const getMessageTypeIcon = (type: string): React.ReactNode => {
 	switch (type) {
 		case "email":

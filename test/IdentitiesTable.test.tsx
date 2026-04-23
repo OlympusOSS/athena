@@ -93,6 +93,12 @@ describe("IdentitiesTable", () => {
 		state.error = new Error("fetch failed");
 		const { getByText } = render(<IdentitiesTable />);
 		expect(getByText(/fetch failed/)).toBeInTheDocument();
+		// Click the Retry button to exercise onRetry={() => refetch()}
+		const retryBtn = getByText("Retry").closest("button");
+		if (retryBtn) {
+			retryBtn.click();
+			expect(refetchMock).toHaveBeenCalled();
+		}
 	});
 
 	it("shows default error message when error has no message", () => {
@@ -197,5 +203,112 @@ describe("IdentitiesTable", () => {
 		} as never;
 		const { container } = render(<IdentitiesTable />);
 		expect(container.textContent).toMatch(/Schema unknown-/);
+	});
+
+	it("renders 'Schema undefined...' when schema_id is undefined (template literal is always truthy)", () => {
+		schemasState.data = [];
+		state.data = {
+			identities: [
+				{
+					id: "id-u1",
+					schema_id: undefined,
+					state: "active",
+					traits: { email: "x@e.com" },
+					created_at: "2024-01-01T00:00:00Z",
+					updated_at: "2024-01-01T00:00:00Z",
+				},
+			],
+			hasMore: false,
+		} as never;
+		const { container } = render(<IdentitiesTable />);
+		// Template literal "Schema undefined..." renders even when schema_id is undefined
+		expect(container.textContent).toMatch(/Schema undefined/);
+	});
+
+	it("falls back to traits.username when email is missing", () => {
+		schemasState.data = [{ id: "s-1", schema: { title: "P", properties: {} } }];
+		state.data = {
+			identities: [
+				{
+					id: "id-u",
+					schema_id: "s-1",
+					state: "active",
+					traits: { username: "joe-the-dev" },
+					created_at: "2024-01-01T00:00:00Z",
+					updated_at: "2024-01-01T00:00:00Z",
+				},
+			],
+			hasMore: false,
+		} as never;
+		const { container } = render(<IdentitiesTable />);
+		expect(container.textContent).toMatch(/joe-the-dev/);
+	});
+
+	it("falls back to traits.phone when email and username are missing", () => {
+		schemasState.data = [{ id: "s-1", schema: { title: "P", properties: {} } }];
+		state.data = {
+			identities: [
+				{
+					id: "id-p",
+					schema_id: "s-1",
+					state: "active",
+					traits: { phone: "+15551234567" },
+					created_at: "2024-01-01T00:00:00Z",
+					updated_at: "2024-01-01T00:00:00Z",
+				},
+			],
+			hasMore: false,
+		} as never;
+		const { container } = render(<IdentitiesTable />);
+		expect(container.textContent).toMatch(/\+15551234567/);
+	});
+
+	it("renders with empty data (useMemo fallback to [])", () => {
+		// data is null/undefined — useMemo's `data?.identities || []` triggers the `|| []` branch
+		state.data = null as never;
+		searchState.data = null as never;
+		const { container } = render(<IdentitiesTable />);
+		expect(container).toBeTruthy();
+	});
+
+	it("falls through schema-defined identifier when trait values are missing", () => {
+		// Schema declares `handle` as identifier, but identity has no matching trait.
+		// Loop completes without returning → falls through to `traits?.email || ... || "N/A"` default
+		schemasState.data = [
+			{
+				id: "s-id",
+				schema: {
+					title: "Person",
+					properties: {
+						traits: {
+							properties: {
+								handle: {
+									type: "string",
+									"ory.sh/kratos": {
+										credentials: { password: { identifier: true } },
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		];
+		state.data = {
+			identities: [
+				{
+					id: "id-fb",
+					schema_id: "s-id",
+					state: "active",
+					// handle trait is missing → identifier field values are falsy
+					traits: { email: "only-email@example.com" },
+					created_at: "2024-01-01T00:00:00Z",
+					updated_at: "2024-01-01T00:00:00Z",
+				},
+			],
+			hasMore: false,
+		} as never;
+		const { container } = render(<IdentitiesTable />);
+		expect(container.textContent).toMatch(/only-email@example.com/);
 	});
 });

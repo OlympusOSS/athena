@@ -261,6 +261,23 @@ describe("IdentitiesTable — interactions (mocked DataTable)", () => {
 		await waitFor(() => expect(container.textContent).toMatch(/multi-page search|current page/), { timeout: 1500 });
 	});
 
+	it("debounce timer fires setDebouncedSearchTerm after 300ms", async () => {
+		state.data = { identities, hasMore: false } as never;
+		schemasState.data = [{ id: "schema-1", schema: { title: "Person" } }];
+		vi.useFakeTimers();
+		const { getByTestId, container } = render(<IdentitiesTable />);
+		// Trigger search
+		await act(async () => {
+			fireEvent.change(getByTestId("search"), { target: { value: "foo" } });
+		});
+		// Advance timers to trigger the debounce callback
+		await act(async () => {
+			vi.advanceTimersByTime(350);
+		});
+		vi.useRealTimers();
+		expect(container.textContent).toMatch(/Found|Showing/);
+	});
+
 	it("filters across first_name/last_name/name traits (client-side)", async () => {
 		schemasState.data = [{ id: "s-1", schema: { title: "Person" } }];
 		state.data = {

@@ -138,4 +138,44 @@ describe("IdentityResetPasswordDialog", () => {
 		const { getByText } = render(<IdentityResetPasswordDialog open={true} onClose={() => {}} identity={id as never} />);
 		expect(getByText(/N\/A/)).toBeInTheDocument();
 	});
+
+	it("shows 'Unknown error' when error has no message", () => {
+		state.isError = true;
+		state.error = {} as Error;
+		const { getByText } = render(<IdentityResetPasswordDialog open={true} onClose={() => {}} identity={identity} />);
+		expect(getByText(/Failed to reset password: Unknown error/)).toBeInTheDocument();
+	});
+
+	it("renders amber strength bar for strong password (i < 2) and green for longer", () => {
+		const { getByLabelText, baseElement } = render(<IdentityResetPasswordDialog open={true} onClose={() => {}} identity={identity} />);
+		// Enter a very long password so strength bars at i >= 2 (threshold 20 and 24) are filled green
+		fireEvent.change(getByLabelText("New Password"), { target: { value: "a".repeat(24) } });
+		// Radix Dialog portal content lives under document.body
+		const bars = baseElement.querySelectorAll('div[class*="h-1"][class*="flex-1"][class*="rounded-full"]');
+		expect(bars.length).toBe(4);
+		// The first two bars (i=0,1) should be amber; bars i=2,3 should be green
+		expect(bars[0].className).toMatch(/bg-amber-500/);
+		expect(bars[2].className).toMatch(/bg-green-500/);
+	});
+
+	it("triggers onSuccess and setTimeout after successful mutate", async () => {
+		vi.useFakeTimers();
+		mutate.mockImplementation((_vars, opts) => {
+			opts.onSuccess();
+		});
+		const onClose = vi.fn();
+		const onSuccess = vi.fn();
+		const { getAllByText, getByLabelText } = render(
+			<IdentityResetPasswordDialog open={true} onClose={onClose} identity={identity} onSuccess={onSuccess} />,
+		);
+		fireEvent.change(getByLabelText("New Password"), { target: { value: "securepassword12" } });
+		fireEvent.change(getByLabelText("Confirm Password"), { target: { value: "securepassword12" } });
+		const btns = getAllByText("Reset Password").filter((el) => (el as HTMLElement).tagName === "BUTTON");
+		fireEvent.click(btns[btns.length - 1]);
+		// Advance timers
+		vi.advanceTimersByTime(1600);
+		expect(onSuccess).toHaveBeenCalled();
+		expect(onClose).toHaveBeenCalled();
+		vi.useRealTimers();
+	});
 });

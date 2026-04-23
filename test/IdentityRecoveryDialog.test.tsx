@@ -113,4 +113,25 @@ describe("IdentityRecoveryDialog", () => {
 		const { getByText } = render(<IdentityRecoveryDialog open={true} onClose={() => {}} identity={id as never} />);
 		expect(getByText(/N\/A/)).toBeInTheDocument();
 	});
+
+	it("logs an error when clipboard write fails", async () => {
+		createRecoveryLinkMock.mockResolvedValue({ data: { recovery_link: "https://example.com/rx" } });
+		const writeTextMock = vi.fn().mockRejectedValue(new Error("no-clipboard"));
+		Object.defineProperty(navigator, "clipboard", {
+			value: { writeText: writeTextMock },
+			configurable: true,
+		});
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const { getAllByText, findByDisplayValue, getByTitle } = render(<IdentityRecoveryDialog open={true} onClose={() => {}} identity={identity} />);
+		const genBtns = getAllByText("Generate Recovery Link");
+		await act(async () => {
+			fireEvent.click(genBtns[genBtns.length - 1]);
+		});
+		await findByDisplayValue("https://example.com/rx");
+		await act(async () => {
+			fireEvent.click(getByTitle("Copy to clipboard"));
+		});
+		await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith("Failed to copy to clipboard:", expect.anything()));
+		consoleSpy.mockRestore();
+	});
 });

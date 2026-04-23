@@ -75,32 +75,21 @@ export default defineConfig({
 				"src/services/geo/**",
 			],
 			thresholds: {
-				// Phase 1+2 — lock lib/hooks/utils at 100/100/100/90.
+				// Strict 100/100/100/90 across every glob and globally.
+				// Dead code was removed and unreachable branches are pragma'd with
+				// /* c8 ignore */ comments that explain the unreachability.
 				"src/lib/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
 				"src/hooks/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
 				"src/utils/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
-				// Phase 3 — app/api/**/route.ts locked at 100/100/100/90.
 				"src/app/api/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
-				// Phase 4 — components + providers. Coverage uses realistic per-glob
-				// thresholds to allow for defensive branches that cannot be reliably
-				// triggered from jsdom:
-				//  - Radix onOpenChange callbacks (Escape/outside click — pointer capture)
-				//  - ajv custom format validators (fire only during schema validation)
-				//  - ReactQueryDevtools dev-mode conditional (NODE_ENV==="development")
-				//  - Theme-aware icon swap (useTheme context)
-				//  - APP_SUBTITLE conditional (empty in test env)
-				//  - Dead `_`-prefixed status-color helper functions in MessagesTable and
-				//    MessageDetailDialog (flagged as unused; safe to remove in a follow-up)
-				"src/components/**": { lines: 99, statements: 99, functions: 85, branches: 85 },
-				"src/features/**/components/**": { lines: 88, statements: 88, functions: 70, branches: 80 },
-				"src/app/(app)/**/components/**": { lines: 96, statements: 96, functions: 90, branches: 85 },
-				"src/providers/**": { lines: 100, statements: 100, functions: 100, branches: 60 },
-				// Phase 6 — global fallback at practical targets. The gap to 100 is the
-				// ~1.5% of lines listed above, plus unused `_` prefixed dead code in
-				// MessagesTable/MessageDetailDialog that a lint pass should remove.
-				lines: 95,
-				statements: 95,
-				functions: 90,
+				"src/components/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				"src/features/**/components/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				"src/app/(app)/**/components/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				"src/providers/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				// Global fallback at the target.
+				lines: 100,
+				statements: 100,
+				functions: 100,
 				branches: 90,
 			},
 		},

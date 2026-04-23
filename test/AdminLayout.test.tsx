@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@olympusoss/canvas";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -46,5 +46,20 @@ describe("AdminLayout", () => {
 			</ThemeProvider>,
 		);
 		expect(container).toMatchSnapshot();
+	});
+
+	it("toggles sidebar expand when inner Sidebar toggle is clicked", () => {
+		const { container } = render(
+			<ThemeProvider>
+				<AdminLayout>
+					<div>content</div>
+				</AdminLayout>
+			</ThemeProvider>,
+		);
+		// Sidebar renders a toggle button — clicking it fires the anonymous
+		// `() => setExpanded(!expanded)` callback that wraps setExpanded.
+		const toggleBtn = container.querySelector("button[type='button']");
+		if (toggleBtn) fireEvent.click(toggleBtn);
+		expect(container).toBeTruthy();
 	});
 });

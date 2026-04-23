@@ -166,4 +166,30 @@ describe("IdentityEditModal — interactions (mocked Canvas)", () => {
 		// Cancel button is disabled when pending
 		fireEvent.click(getByText("Cancel"));
 	});
+
+	it("shows 'Unknown error' when update error has no message", async () => {
+		state.isError = true;
+		state.error = {} as Error;
+		schemasState.data = [
+			{
+				id: "default",
+				schema: { properties: { traits: { properties: { email: { type: "string" } } } } },
+			},
+		];
+		const { getByText } = render(<IdentityEditModal open={true} onClose={() => {}} identity={identity} />);
+		expect(getByText(/Unknown error/)).toBeInTheDocument();
+	});
+
+	it("initializes with empty form data when identity has no traits", async () => {
+		schemasState.data = [
+			{
+				id: "default",
+				schema: { properties: { traits: { properties: { email: { type: "string" } } } } },
+			},
+		];
+		// identity without traits — triggers the `|| {}` fallback
+		const identityNoTraits = { ...identity, traits: null } as never;
+		const { baseElement } = render(<IdentityEditModal open={true} onClose={() => {}} identity={identityNoTraits} />);
+		await waitFor(() => expect(baseElement.querySelector("form")).toBeTruthy());
+	});
 });

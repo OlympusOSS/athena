@@ -179,4 +179,63 @@ describe("SessionDetailDialog", () => {
 		const { findByText } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="x" />));
 		await findByText(/remaining/);
 	});
+
+	it("handles session with only minutes remaining (hours=0)", async () => {
+		const in30min = { ...activeSession, expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() };
+		getSessionMock.mockResolvedValue({ data: in30min });
+		const { findByText } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="x" />));
+		await findByText(/m remaining/);
+	});
+
+	it("calls onSessionUpdated after successful extend", async () => {
+		getSessionMock.mockResolvedValue({ data: activeSession });
+		extendSessionMock.mockResolvedValue({ data: {} });
+		const onSessionUpdated = vi.fn();
+		const { findByText } = render(
+			wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="sess-123" onSessionUpdated={onSessionUpdated} />),
+		);
+		const btn = await findByText("Extend Session");
+		await act(async () => {
+			fireEvent.click(btn);
+		});
+		await waitFor(() => expect(onSessionUpdated).toHaveBeenCalled());
+	});
+
+	it("renders N/A fallback when session has no authenticated_at", async () => {
+		const noAuth = { ...activeSession, authenticated_at: undefined };
+		getSessionMock.mockResolvedValue({ data: noAuth });
+		const { findByText, baseElement } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="sess-123" />));
+		await findByText(/sess-123/);
+		expect(baseElement.textContent).toMatch(/N\/A/);
+	});
+
+	it("renders 'Unknown error' when fetch error has no message", async () => {
+		// Reject with a bare object (no message prop) — triggers the `|| "Unknown error"` fallback
+		getSessionMock.mockRejectedValue({});
+		const { baseElement } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="sess-err" />));
+		await waitFor(() => expect(baseElement.textContent).toMatch(/Failed to load session details.*Unknown error/), { timeout: 10000 });
+	}, 15000);
+
+	it("handles session with no expires_at (timeRemaining=null)", async () => {
+		// session.id is the identity shown in the component, not sessionId prop
+		const noExp = { ...activeSession, id: "no-exp-session", expires_at: undefined };
+		getSessionMock.mockResolvedValue({ data: noExp });
+		const { findByText } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="sess-no-exp" />));
+		await findByText(/no-exp-session/);
+	});
+
+	it("renders N/A for issued_at, assurance_level, schema_id when missing", async () => {
+		const partial = {
+			...activeSession,
+			id: "partial-session",
+			issued_at: undefined,
+			authenticator_assurance_level: undefined,
+			identity: { ...activeSession.identity, schema_id: undefined },
+		};
+		getSessionMock.mockResolvedValue({ data: partial });
+		const { findByText, baseElement } = render(wrap(<SessionDetailDialog open={true} onClose={() => {}} sessionId="sess-partial" />));
+		await findByText(/partial-session/);
+		// Multiple N/A instances from issued_at, assurance_level, schema_id
+		expect(baseElement.textContent).toMatch(/N\/A/);
+	});
 });

@@ -193,6 +193,39 @@ describe("CreateIdentityForm — interactions (mocked Canvas)", () => {
 		expect(pushMock).toHaveBeenCalledWith("/identities");
 	});
 
+	it("renders 'Creating...' label and LoaderCircle when mutation isPending", async () => {
+		// Re-mock useCreateIdentity to return isPending: true
+		vi.resetModules();
+		const pendingMutateAsync = vi.fn().mockResolvedValue(undefined);
+		vi.doMock("@/features/identities/hooks/useIdentities", () => ({
+			useCreateIdentity: () => ({
+				mutateAsync: pendingMutateAsync,
+				isPending: true,
+				isError: false,
+				error: null,
+			}),
+		}));
+		// Re-import to pick up new mock
+		const { default: PendingForm } = await import("@/features/identities/components/CreateIdentityForm");
+		schemasState.data = [
+			{
+				id: "schema-1",
+				schema: { title: "P", properties: { traits: { properties: { email: { type: "string" } } } } },
+			},
+		];
+		const { getByTestId, container } = render(<PendingForm />);
+		const select = getByTestId("mock-select-input") as HTMLSelectElement;
+		const opt = document.createElement("option");
+		opt.value = "schema-1";
+		opt.textContent = "P";
+		select.appendChild(opt);
+		fireEvent.change(select, { target: { value: "schema-1" } });
+		// "Creating..." text should render alongside LoaderCircle icon
+		await waitFor(() => expect(container.textContent).toMatch(/Creating\.\.\./));
+		// Restore the mock for subsequent tests
+		vi.doUnmock("@/features/identities/hooks/useIdentities");
+	});
+
 	it("clears formSchema when schemas prop is undefined but schemaId truthy (fallback branch)", async () => {
 		// schemaId set via select but schemas is null/undefined → goes to else branch, clears formSchema
 		schemasState.data = null;

@@ -68,7 +68,6 @@ const IdentitiesTable: React.FC = React.memo(() => {
 
 	const baseIdentities = useMemo(() => data?.identities || [], [data?.identities]);
 	const hasMore = data?.hasMore || false;
-	const _nextPageToken = data?.nextPageToken;
 	const searchResults = searchData?.identities || [];
 	const searchComplete = !searchLoading && isSearching;
 
@@ -77,6 +76,9 @@ const IdentitiesTable: React.FC = React.memo(() => {
 		(identity: Identity) => {
 			const schema = schemas?.find((s) => s.id === identity.schema_id);
 			const schemaObj = schema?.schema as any;
+			/* c8 ignore next -- the `|| "Unknown"` fallback is unreachable: the
+			 * template literal `Schema ${...}...` is always truthy even when
+			 * schema_id is undefined (renders "Schema undefined..."). */
 			return schemaObj?.title || `Schema ${identity.schema_id?.substring(0, 8)}...` || "Unknown";
 		},
 		[schemas],
@@ -132,6 +134,8 @@ const IdentitiesTable: React.FC = React.memo(() => {
 			const firstName = String(traits?.first_name || traits?.firstName || "");
 			const lastName = String(traits?.last_name || traits?.lastName || "");
 			const name = String(traits?.name || "");
+			/* c8 ignore next -- Kratos identities always have a non-empty `id`;
+			 * the `|| ""` fallback is defensive. */
 			const id = String(identity.id || "");
 			const schemaName = getSchemaName(identity);
 			const identifier = getIdentifier(identity);

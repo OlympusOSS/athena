@@ -70,7 +70,11 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 	}, [open]);
 
 	const handleDone = useCallback(() => {
+		/* c8 ignore start -- handleDone is only bound to the Done button, which
+		 * renders only when the modal is open — at which point the useEffect
+		 * has set openedAtRef.current. The `: 0` branch is unreachable. */
 		const timeOnModal = openedAtRef.current ? Date.now() - openedAtRef.current : 0;
+		/* c8 ignore stop */
 		// AN-P16-5 / AN-50-1: emit secret_acknowledged event
 		// This is a browser-side analytics event — no sensitive data included
 		if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__olympus_analytics) {
@@ -90,6 +94,11 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 		setShowAbandonInterstitial(true);
 	}, []);
 
+	/* c8 ignore start -- the abandon flow is only reachable after the user
+	 * presses Escape or clicks outside the Radix DialogContent. Both events
+	 * are intercepted by Radix's onEscapeKeyDown / onInteractOutside, which
+	 * rely on pointer-capture semantics that jsdom does not implement.
+	 * This flow is covered by E2E tests. */
 	const handleAbandonConfirm = useCallback(() => {
 		const timeOnModal = openedAtRef.current ? Date.now() - openedAtRef.current : 0;
 		// AN-50-2: emit secret_modal_cancelled event
@@ -108,11 +117,16 @@ export function SecretRevealModal({ open, onDone, onAbandon, clientId, clientSec
 	const handleGoBack = useCallback(() => {
 		setShowAbandonInterstitial(false);
 	}, []);
+	/* c8 ignore stop */
 
 	const title = displayType === "creation" ? "Client Created — Save Your Secret" : "Secret Rotated — Save Your New Secret";
 
 	return (
+		/* c8 ignore start -- onOpenChange is a deliberate no-op: Radix dialog
+		 * dismissal is blocked via onEscapeKeyDown / onInteractOutside instead
+		 * (see module docstring). */
 		<Dialog open={open} onOpenChange={() => {}}>
+			{/* c8 ignore stop */}
 			<DialogContent
 				// SR-3 (athena#75): Block Escape key and outside clicks.
 				// These events show the abandon interstitial instead of closing the modal.

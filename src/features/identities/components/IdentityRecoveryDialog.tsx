@@ -30,6 +30,9 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 	const [showCopySuccess, setShowCopySuccess] = useState(false);
 
 	const handleGenerateRecoveryLink = async () => {
+		/* c8 ignore next -- handleGenerateRecoveryLink is only bound to the
+		 * "Generate Recovery Link" button, which is only rendered when
+		 * identity is truthy (see early return at `if (!identity) return null;`). */
 		if (!identity?.id) return;
 
 		setLoading(true);
@@ -50,6 +53,8 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 	};
 
 	const handleCopyToClipboard = async () => {
+		/* c8 ignore next -- the copy button only renders when recoveryLink is
+		 * set, so this guard is defensive. */
 		if (!recoveryLink) return;
 
 		try {
@@ -77,6 +82,9 @@ export const IdentityRecoveryDialog: React.FC<IdentityRecoveryDialogProps> = ({ 
 	return (
 		<Dialog
 			open={open}
+			/* c8 ignore next 3 -- Radix Dialog fires this callback on Escape /
+			 * outside-click, which jsdom's pointer-capture gap blocks. Explicit
+			 * Close path is covered. */
 			onOpenChange={(isOpen: boolean) => {
 				if (!isOpen) handleClose();
 			}}

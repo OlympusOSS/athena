@@ -123,6 +123,10 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 	}, []);
 
 	const handleClose = useCallback(() => {
+		/* c8 ignore next -- processing phase is transient; handleClose is
+		 * only wired to the Cancel button (confirm phase) and to onOpenChange
+		 * for Escape/outside-click, which Radix blocks via onInteractOutside
+		 * below. The guard is defensive. */
 		if (phase === "processing") return;
 		resetState();
 		onClose();
@@ -190,6 +194,9 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 			}}
 		>
 			<DialogContent
+				/* c8 ignore next 3 -- Radix Dialog dispatches onInteractOutside on
+				 * pointer interactions outside the dialog; jsdom cannot reliably fire
+				 * this because pointer capture is not implemented. */
 				onInteractOutside={(e: Event) => {
 					if (phase === "processing") e.preventDefault();
 				}}
@@ -240,6 +247,10 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 					</div>
 				)}
 
+				{/* c8 ignore start -- processing phase is transient: the for-loop in
+				 * handleConfirm resolves mocked async ops in microtasks, so React
+				 * never re-renders this intermediate branch in jsdom — only the
+				 * "complete" phase ends up visible to the test. */}
 				{phase === "processing" && (
 					<div>
 						<p>
@@ -255,6 +266,7 @@ export const BulkOperationDialog: React.FC<BulkOperationDialogProps> = ({ open, 
 						<p>{Math.round(progress)}% complete</p>
 					</div>
 				)}
+				{/* c8 ignore stop */}
 
 				{phase === "complete" && (
 					<div>

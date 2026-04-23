@@ -108,12 +108,20 @@ describe("CreateM2MClientModal", () => {
 		expect(getByText(/10 minutes/)).toBeInTheDocument();
 	});
 
-	it("renders lifetime preview for hours", () => {
+	it("renders lifetime preview for hours (plural 's')", () => {
 		const { getByLabelText, getByText } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={async () => {}} />);
 		fireEvent.change(getByLabelText(/Token Lifetime/), { target: { value: "7200" } });
-		// Though it's clamped to 3600 in HTML input, the value can still be read
-		// but max val 7200 exceeds 3600; test path requires a lifetime > 3600
-		expect(getByText(/hour/i)).toBeInTheDocument();
+		// 7200 / 3600 = 2 → "2 hours" (plural "s") branch
+		expect(getByText(/2 hours/)).toBeInTheDocument();
+	});
+
+	it("renders lifetime preview for exactly 1 hour after threshold (singular 'hour')", () => {
+		const { getByLabelText } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={async () => {}} />);
+		// 3601 seconds — enters the `return hour${...}` branch with count===1 → no plural "s"
+		fireEvent.change(getByLabelText(/Token Lifetime/), { target: { value: "3601" } });
+		// Should render "1 hour" (no 's') since Math.floor(3601/3600) = 1
+		// Search globally — preview renders inside Radix Dialog portal
+		expect(document.body.textContent).toMatch(/1 hour(?!s)/);
 	});
 
 	it("emits analytics event on scope selection", () => {
@@ -124,5 +132,63 @@ describe("CreateM2MClientModal", () => {
 		if (firstScopeCheckbox) fireEvent.click(firstScopeCheckbox);
 		expect(analyticsFn).toHaveBeenCalled();
 		delete (window as unknown as Record<string, unknown>).__olympus_analytics;
+	});
+
+	it("resets form when open toggles false (useEffect branch)", () => {
+		const { rerender } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={async () => {}} />);
+		// Toggle modal closed — useEffect fires reset()
+		rerender(<CreateM2MClientModal open={false} onOpenChange={() => {}} onSubmit={async () => {}} />);
+		// Toggle back open
+		rerender(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={async () => {}} />);
+		// Client name should have been reset
+		const input = document.getElementById("m2m-client-name") as HTMLInputElement;
+		expect(input?.value).toBe("");
+	});
+
+	it("submit is a no-op when no scopes are selected", async () => {
+		const onSubmit = vi.fn();
+		const { getByText, getByLabelText } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={onSubmit} />);
+		// Add a client name but no scopes
+		fireEvent.change(getByLabelText(/Client Name/), { target: { value: "a" } });
+		// Create Client button is disabled when no scopes selected — clicking it
+		// does nothing because the form validation rejects via early return
+		await act(async () => {
+			fireEvent.click(getByText("Create Client"));
+		});
+		// onSubmit should NOT have been called
+		expect(onSubmit).not.toHaveBeenCalled();
+	});
+
+	it("renders empty lifetime preview when value is 0", () => {
+		const { getByLabelText, queryByText } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={async () => {}} />);
+		fireEvent.change(getByLabelText(/Token Lifetime/), { target: { value: "0" } });
+		// getLifetimePreview returns "" for 0 — so "= " prefix should not appear
+		// The tokenLifetime watcher renders preview only when tokenLifetime > 0, so we check absence
+		expect(queryByText(/=\s/)).toBeNull();
+	});
+
+	it("shows token_lifetime error when value exceeds max", async () => {
+		const onSubmit = vi.fn();
+		const { getByLabelText, getByText } = render(<CreateM2MClientModal open={true} onOpenChange={() => {}} onSubmit={onSubmit} />);
+		fireEvent.change(getByLabelText(/Client Name/), { target: { value: "x" } });
+		const firstScopeCheckbox = document.getElementById(`scope-${M2M_PERMITTED_SCOPES[0]}`);
+		if (firstScopeCheckbox) fireEvent.click(firstScopeCheckbox);
+		// Enter a value > max (3600) — validation should fail
+		fireEvent.change(getByLabelText(/Token Lifetime/), { target: { value: "99999" } });
+		// The form is rendered in a portal (Radix Dialog); query globally
+		const form = document.querySelector("form#create-m2m-form") as HTMLFormElement;
+		if (form) {
+			await act(async () => {
+				fireEvent.submit(form);
+			});
+			// Wait for error message
+			await waitFor(() => expect(document.body.textContent).toMatch(/Maximum is 3600 seconds/));
+		} else {
+			// Fallback: click Create Client
+			await act(async () => {
+				fireEvent.click(getByText("Create Client"));
+			});
+			await waitFor(() => expect(document.body.textContent).toMatch(/Maximum is 3600 seconds/));
+		}
 	});
 });

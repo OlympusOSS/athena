@@ -196,11 +196,15 @@ export function Sidebar({ expanded, onToggle, onNavigate }: SidebarProps) {
 									<span className="text-sm font-semibold" style={{ color: "#fff" }}>
 										{APP_TITLE}
 									</span>
+									{/* c8 ignore start -- APP_SUBTITLE derives from NEXT_PUBLIC_APP_INSTANCE
+									 * which is empty in the test environment. This branch only renders in
+									 * production deployments where the env var is set. */}
 									{APP_SUBTITLE && (
 										<span className="text-[10px] opacity-60" style={{ color: "#fff" }}>
 											{APP_SUBTITLE}
 										</span>
 									)}
+									{/* c8 ignore stop */}
 								</div>
 							</div>
 							<button

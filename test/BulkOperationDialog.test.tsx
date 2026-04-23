@@ -231,4 +231,84 @@ describe("BulkOperationDialog", () => {
 		// Multiple "id-only-" text chunks appear (display name + code element)
 		expect(getAllByText(/id-only-/).length).toBeGreaterThan(0);
 	});
+
+	it("renders plural demo banner when multiple demo identities are selected", () => {
+		isDemoIdentityMock.mockReturnValue(true);
+		const twoIdentities = [
+			{ id: "d1-xxxxxxxx", schema_id: "default", state: "active", traits: { email: "d1@e.com" } },
+			{ id: "d2-xxxxxxxx", schema_id: "default", state: "active", traits: { email: "d2@e.com" } },
+		] as never[];
+		const ids = ["d1-xxxxxxxx", "d2-xxxxxxxx"];
+		const { getByText } = render(
+			wrap(
+				<BulkOperationDialog
+					open={true}
+					onClose={() => {}}
+					operationType="delete"
+					identityIds={ids}
+					identities={twoIdentities}
+					onSuccess={() => {}}
+				/>,
+			),
+		);
+		// Plural form: "2 demo accounts are protected"
+		expect(getByText(/demo accounts are/)).toBeTruthy();
+	});
+
+	it("shows singular 'identity' in completion when exactly one succeeds", async () => {
+		deleteIdentityMock.mockResolvedValue(undefined);
+		const { getByText } = render(
+			wrap(
+				<BulkOperationDialog open={true} onClose={() => {}} operationType="delete" identityIds={IDS} identities={identities} onSuccess={() => {}} />,
+			),
+		);
+		await act(async () => {
+			fireEvent.click(getByText("Delete"));
+		});
+		// Completion alert shows "1 identity" singular
+		await waitFor(() => expect(getByText(/Successfully processed 1 identity/)).toBeTruthy());
+	});
+
+	it("shows plural 'identities' in completion when multiple succeed", async () => {
+		deleteIdentityMock.mockResolvedValue(undefined);
+		const twoIdentities = [
+			{ id: "d1-xxxxxxxx", schema_id: "default", state: "active", traits: { email: "d1@e.com" } },
+			{ id: "d2-xxxxxxxx", schema_id: "default", state: "active", traits: { email: "d2@e.com" } },
+		] as never[];
+		const twoIds = ["d1-xxxxxxxx", "d2-xxxxxxxx"];
+		const { getByText } = render(
+			wrap(
+				<BulkOperationDialog
+					open={true}
+					onClose={() => {}}
+					operationType="delete"
+					identityIds={twoIds}
+					identities={twoIdentities}
+					onSuccess={() => {}}
+				/>,
+			),
+		);
+		await act(async () => {
+			fireEvent.click(getByText("Delete"));
+		});
+		// Completion alert shows "2 identities" plural
+		await waitFor(() => expect(getByText(/Successfully processed 2 identities/)).toBeTruthy());
+	});
+
+	it("handles error without message property (falls back to 'Unknown error')", async () => {
+		// Throw a plain object (not an Error) to hit the `?.message || "Unknown error"` fallback
+		deleteIdentityMock.mockRejectedValue({});
+		const { getByText } = render(
+			wrap(
+				<BulkOperationDialog open={true} onClose={() => {}} operationType="delete" identityIds={IDS} identities={identities} onSuccess={() => {}} />,
+			),
+		);
+		await act(async () => {
+			fireEvent.click(getByText("Delete"));
+		});
+		await waitFor(() => expect(getByText(/failed/)).toBeTruthy());
+		// Verify "Unknown error" appears when we expand errors
+		fireEvent.click(getByText("Show errors"));
+		await waitFor(() => expect(getByText(/Unknown error/)).toBeTruthy());
+	});
 });

@@ -377,6 +377,167 @@ describe("MfaPolicySection", () => {
 		}
 	});
 
+	it("shows 'Loading stats...' branch when settings load but stats are still pending", async () => {
+		let resolveStats: (v: Response) => void = () => {};
+		const statsPromise = new Promise<Response>((res) => {
+			resolveStats = res;
+		});
+		fetchMock.mockImplementation((url: string) => {
+			if (url.includes("/api/settings?category=mfa")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							settings: [{ key: "mfa.required", value: "false" }],
+						}),
+						{ status: 200 },
+					),
+				);
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return statsPromise;
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { findByText } = render(<MfaPolicySection />);
+		// Settings loaded, stats still pending → Loading stats... branch
+		await findByText(/Loading stats\.\.\./);
+		// Clean up - resolve the stats promise
+		await act(async () => {
+			resolveStats(new Response(JSON.stringify({ available: true, enrolled: 0, total: 0 }), { status: 200 }));
+		});
+	});
+
+	it("handles missing settings field (defaults to []) and parsedMethods fallback", async () => {
+		fetchMock.mockImplementation((url: string) => {
+			if (url.includes("/api/settings?category=mfa")) {
+				// No settings field at all
+				return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return Promise.resolve(new Response(JSON.stringify({ available: false }), { status: 200 }));
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { findAllByRole } = render(<MfaPolicySection />);
+		// If setup is correct, at least switches should render (defaults applied)
+		await findAllByRole("switch");
+	});
+
+	it("handles negative grace period input (clamps to 0)", async () => {
+		fetchMock.mockImplementation((url: string) => {
+			if (url.includes("/api/settings?category=mfa")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							settings: [
+								{ key: "mfa.required", value: "true" },
+								// Negative grace period -> clamped to 0
+								{ key: "mfa.grace_period_days", value: "-10" },
+							],
+						}),
+						{ status: 200 },
+					),
+				);
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return Promise.resolve(new Response(JSON.stringify({ available: false }), { status: 200 }));
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { container } = render(<MfaPolicySection />);
+		await waitFor(() => expect(container.querySelector("#mfa-grace-period")).toBeTruthy());
+	});
+
+	it("handles unknown methods (filtered out → falls back to ['totp'])", async () => {
+		fetchMock.mockImplementation((url: string) => {
+			if (url.includes("/api/settings?category=mfa")) {
+				return Promise.resolve(
+					new Response(
+						JSON.stringify({
+							settings: [
+								{ key: "mfa.required", value: "false" },
+								// Only "unknown-method" - filter strips it → parsedMethods=[] → fallback ['totp']
+								{ key: "mfa.methods", value: "unknown-method" },
+							],
+						}),
+						{ status: 200 },
+					),
+				);
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return Promise.resolve(new Response(JSON.stringify({ available: false }), { status: 200 }));
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { findAllByRole } = render(<MfaPolicySection />);
+		await findAllByRole("switch");
+	});
+
+	it("handles batch save failure with no error body (fallback to server response message)", async () => {
+		fetchMock.mockImplementation((url: string, opts?: RequestInit) => {
+			if (url.includes("/api/settings?category=mfa") && !opts?.method) {
+				return Promise.resolve(new Response(JSON.stringify({ settings: [{ key: "mfa.required", value: "false" }] }), { status: 200 }));
+			}
+			if (url.includes("/api/settings/batch") && opts?.method === "POST") {
+				// Response has no `error` field → fallback to "Server responded with N"
+				return Promise.resolve(new Response(JSON.stringify({}), { status: 500 }));
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return Promise.resolve(new Response(JSON.stringify({ available: true, enrolled: 0, total: 0 }), { status: 200 }));
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { findAllByRole, findByText, container } = render(<MfaPolicySection />);
+		const switches = await findAllByRole("switch");
+		// Toggle allowSelfEnroll → dirty
+		await act(async () => {
+			fireEvent.click(switches[1]);
+		});
+		await waitFor(() => {
+			const btns = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.includes("Save MFA Policy")) as HTMLButtonElement[];
+			if (btns.length === 0 || btns[0].disabled) throw new Error("disabled");
+		});
+		const saveBtns = Array.from(container.querySelectorAll("button")).filter((b) =>
+			b.textContent?.includes("Save MFA Policy"),
+		) as HTMLButtonElement[];
+		await act(async () => {
+			fireEvent.click(saveBtns[0]);
+		});
+		await findByText(/Server responded with 500/);
+	});
+
+	it("non-Error thrown during save surfaces default message", async () => {
+		fetchMock.mockImplementation((url: string, opts?: RequestInit) => {
+			if (url.includes("/api/settings?category=mfa") && !opts?.method) {
+				return Promise.resolve(new Response(JSON.stringify({ settings: [{ key: "mfa.required", value: "false" }] }), { status: 200 }));
+			}
+			if (url.includes("/api/settings/batch") && opts?.method === "POST") {
+				// Throw a string (not Error) — hits the `err instanceof Error ? ... : "Failed to save MFA policy"` fallback
+				return Promise.reject("string-rejection");
+			}
+			if (url.includes("/api/mfa/stats")) {
+				return Promise.resolve(new Response(JSON.stringify({ available: true, enrolled: 0, total: 0 }), { status: 200 }));
+			}
+			return Promise.resolve(new Response("{}", { status: 200 }));
+		});
+		const { findAllByRole, findByText, container } = render(<MfaPolicySection />);
+		const switches = await findAllByRole("switch");
+		await act(async () => {
+			fireEvent.click(switches[1]);
+		});
+		await waitFor(() => {
+			const btns = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.includes("Save MFA Policy")) as HTMLButtonElement[];
+			if (btns.length === 0 || btns[0].disabled) throw new Error("disabled");
+		});
+		const saveBtns = Array.from(container.querySelectorAll("button")).filter((b) =>
+			b.textContent?.includes("Save MFA Policy"),
+		) as HTMLButtonElement[];
+		await act(async () => {
+			fireEvent.click(saveBtns[0]);
+		});
+		await findByText(/Failed to save MFA policy/);
+	});
+
 	it("dispatches beforeunload when dirty", async () => {
 		fetchMock.mockImplementation((url: string) => {
 			if (url.includes("/api/settings?category=mfa")) {
