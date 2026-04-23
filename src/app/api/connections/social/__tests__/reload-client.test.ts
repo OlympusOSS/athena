@@ -128,4 +128,14 @@ describe("triggerReload", () => {
 		// Must not throw — all errors produce a typed status
 		expect(result.status).toBe("unreachable");
 	});
+
+	it("returns 'unreachable' for non-Error rejections (e.g., string or object)", async () => {
+		// Exercises the `error instanceof Error ? error.message : String(error)` false branch.
+		const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		mockReloadKratosConfig.mockRejectedValueOnce("bare-string-error");
+		const result = await triggerReload(false);
+		expect(result.status).toBe("unreachable");
+		expect(errSpy).toHaveBeenCalledWith("[reload-client] Unexpected error during reload trigger:", { message: "bare-string-error" });
+		errSpy.mockRestore();
+	});
 });

@@ -55,6 +55,40 @@ describe("HttpClient success paths", () => {
 		expect(init.body).toBe("already-a-string");
 	});
 
+	it("PUT with pre-stringified body skips JSON.stringify", async () => {
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient();
+		await client.put("http://example.com/x", "raw-string");
+		expect(fetchMock.mock.calls[0][1].body).toBe("raw-string");
+	});
+
+	it("PATCH serializes object body + accepts pre-stringified body", async () => {
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient();
+		await client.patch("http://example.com/x", { a: 1 });
+		await client.patch("http://example.com/x", "patch-raw");
+		expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify({ a: 1 }));
+		expect(fetchMock.mock.calls[1][1].body).toBe("patch-raw");
+	});
+
+	it("POST/PUT/PATCH merge per-call headers with default Content-Type", async () => {
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient();
+		await client.post("http://example.com", { a: 1 }, { headers: { "X-Extra": "E" } });
+		await client.put("http://example.com", { a: 1 }, { headers: { "X-Extra": "E" } });
+		await client.patch("http://example.com", { a: 1 }, { headers: { "X-Extra": "E" } });
+		for (const call of fetchMock.mock.calls) {
+			expect(call[1].headers["Content-Type"]).toBe("application/json");
+			expect(call[1].headers["X-Extra"]).toBe("E");
+		}
+	});
+
 	it("PUT, PATCH, DELETE each use the correct method", async () => {
 		const ok = new Response("ok", { status: 200 });
 		const fetchMock = vi.fn().mockResolvedValue(ok);
@@ -146,6 +180,44 @@ describe("HttpClient error paths", () => {
 		await client.fetch("http://example.com", { signal: ac.signal });
 		expect(fetchMock.mock.calls[0][1].signal).toBe(ac.signal);
 	});
+
+	it("default retryCondition retries non-categorized Errors (fallback branch)", async () => {
+		// A plain Error whose message doesn't match network-keyword patterns is re-thrown
+		// as-is. With maxRetries > 0, retryCondition's fallback `return attempt < 3` runs.
+		const err = new Error("completely-unknown-failure");
+		const fetchMock = vi.fn().mockRejectedValue(err);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient({ maxRetries: 2, baseDelay: 1, maxDelay: 1 });
+		await expect(client.get("http://example.com")).rejects.toThrow("completely-unknown-failure");
+		// Initial + 2 retries (fallback returns true for attempt 1 and 2)
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+	});
+
+	it("default retryCondition retries on NetworkError (branch)", async () => {
+		// Default retryCondition's `error instanceof NetworkError` branch: the first rejection
+		// has a network-keyword message → wrapped as NetworkError → retryCondition returns true.
+		const netErr = new Error("fetch failed: ECONNRESET");
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockRejectedValueOnce(netErr).mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient({ maxRetries: 3, baseDelay: 1, maxDelay: 1 });
+		const res = await client.get("http://example.com");
+		expect(res.ok).toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
+
+	it("default retryCondition retries on TimeoutError (branch)", async () => {
+		// Default retryCondition's `error instanceof TimeoutError` branch: AbortError → TimeoutError → retry.
+		const abort = new Error("aborted");
+		abort.name = "AbortError";
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockRejectedValueOnce(abort).mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const client = new HttpClient({ maxRetries: 3, baseDelay: 1, maxDelay: 1 });
+		const res = await client.get("http://example.com");
+		expect(res.ok).toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
 });
 
 describe("HttpError / NetworkError / TimeoutError constructors", () => {
@@ -209,6 +281,39 @@ describe("Default httpClient + kratosHttpClient instances", () => {
 		vi.stubGlobal("fetch", fetchMock);
 		const res = await kratosHttpClient.get("http://example.com");
 		expect(res.ok).toBe(true);
+	});
+
+	it("kratosHttpClient retryCondition fallback returns true for non-categorized errors", async () => {
+		// A plain Error that doesn't match any network/timeout/HttpError branch exercises
+		// the final `return attempt <= 3` fallback in kratosHttpClient.retryCondition.
+		const err = new Error("unexpected-shape-error");
+		const fetchMock = vi.fn().mockRejectedValue(err);
+		vi.stubGlobal("fetch", fetchMock);
+		await expect(kratosHttpClient.get("http://example.com")).rejects.toThrow("unexpected-shape-error");
+		// Initial + 3 retries per kratosHttpClient.maxRetries=3
+		expect(fetchMock).toHaveBeenCalledTimes(4);
+	});
+
+	it("kratosHttpClient retries on TimeoutError", async () => {
+		// AbortError is mapped to TimeoutError by HttpClient → retryCondition returns true.
+		const abort = new Error("aborted");
+		abort.name = "AbortError";
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockRejectedValueOnce(abort).mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const res = await kratosHttpClient.get("http://example.com");
+		expect(res.ok).toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
+
+	it("kratosHttpClient retries on HttpError 5xx", async () => {
+		const ise = new Response("ise", { status: 500, statusText: "Internal Server Error" });
+		const ok = new Response("ok", { status: 200 });
+		const fetchMock = vi.fn().mockResolvedValueOnce(ise).mockResolvedValue(ok);
+		vi.stubGlobal("fetch", fetchMock);
+		const res = await kratosHttpClient.get("http://example.com");
+		expect(res.ok).toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 	});
 });
 

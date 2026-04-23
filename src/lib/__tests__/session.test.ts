@@ -95,6 +95,18 @@ describe("verifySession — rejection cases", () => {
 		expect(result).toBeNull();
 	});
 
+	it("returns null when payload before the dot is empty (e.g., '.sig')", async () => {
+		// dotIndex=0 → payload="" → !payload triggers early return.
+		const result = await verifySession(".somesig");
+		expect(result).toBeNull();
+	});
+
+	it("returns null when signature after the dot is empty (e.g., 'payload.')", async () => {
+		// dotIndex=last → sig="" → !sig triggers early return.
+		const result = await verifySession("somepayload.");
+		expect(result).toBeNull();
+	});
+
 	it("S3: returns null for a tampered payload (HMAC invalid)", async () => {
 		const cookie = await signSession(validSession);
 		const dotIndex = cookie.lastIndexOf(".");

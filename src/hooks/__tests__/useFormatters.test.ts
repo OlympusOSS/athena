@@ -39,6 +39,12 @@ describe("useFormatters", () => {
 			const { result } = renderHook(() => useFormatters("en-US"));
 			expect(result.current.formatDate("2025-06-15T00:00:00Z", { year: "numeric" })).toBe("2025");
 		});
+
+		it("returns 'Invalid date' when Intl.DateTimeFormat throws (catch branch)", () => {
+			const { result } = renderHook(() => useFormatters("en-US"));
+			// year: "bogus" is not a valid DateTimeFormatOptions value → Intl throws → catch returns "Invalid date"
+			expect(result.current.formatDate(new Date(), { year: "bogus" } as unknown as Intl.DateTimeFormatOptions)).toBe("Invalid date");
+		});
 	});
 
 	describe("formatDateTime", () => {
@@ -55,6 +61,16 @@ describe("useFormatters", () => {
 		it("accepts a Date object", () => {
 			const { result } = renderHook(() => useFormatters());
 			expect(result.current.formatDateTime(new Date()).length).toBeGreaterThan(0);
+		});
+
+		it("returns 'Invalid date' when dateObj.getTime throws (catch branch)", () => {
+			const { result } = renderHook(() => useFormatters());
+			const badDate = {
+				getTime: () => {
+					throw new Error("bad getTime");
+				},
+			} as unknown as Date;
+			expect(result.current.formatDateTime(badDate)).toBe("Invalid date");
 		});
 	});
 
@@ -110,6 +126,16 @@ describe("useFormatters", () => {
 			const { result } = renderHook(() => useFormatters());
 			expect(result.current.formatRelativeTime(new Date(fixedNow - 2 * 31536000 * 1000))).toBe("2y ago");
 		});
+
+		it("returns 'Invalid date' when dateObj.getTime throws (catch branch)", () => {
+			const { result } = renderHook(() => useFormatters());
+			const badDate = {
+				getTime: () => {
+					throw new Error("bad getTime");
+				},
+			} as unknown as Date;
+			expect(result.current.formatRelativeTime(badDate)).toBe("Invalid date");
+		});
 	});
 
 	describe("formatNumber", () => {
@@ -121,6 +147,12 @@ describe("useFormatters", () => {
 		it("respects custom options (minimumFractionDigits)", () => {
 			const { result } = renderHook(() => useFormatters("en-US"));
 			expect(result.current.formatNumber(1.5, { minimumFractionDigits: 2 })).toBe("1.50");
+		});
+
+		it("falls back to String(num) when options are invalid (catch branch)", () => {
+			const { result } = renderHook(() => useFormatters("en-US"));
+			// minimumFractionDigits: -5 is out of range → Intl throws → catch returns String(num)
+			expect(result.current.formatNumber(42, { minimumFractionDigits: -5 })).toBe("42");
 		});
 	});
 
@@ -151,6 +183,12 @@ describe("useFormatters", () => {
 		it("respects decimals", () => {
 			const { result } = renderHook(() => useFormatters());
 			expect(result.current.formatPercentage(12.345, 2)).toBe("12.35%");
+		});
+
+		it("falls back to the raw value when toFixed throws (catch branch)", () => {
+			const { result } = renderHook(() => useFormatters());
+			// decimals must be 0..100 for Number.prototype.toFixed — 200 is out of range → throws → catch
+			expect(result.current.formatPercentage(5, 200)).toBe("5%");
 		});
 	});
 

@@ -158,6 +158,9 @@ export class HttpClient {
 			}
 		}
 
+		// Unreachable: the for-loop always either returns or throws; this line exists only
+		// to satisfy TypeScript's control-flow analysis for the `lastError!` non-null assertion.
+		/* c8 ignore next */
 		throw lastError!;
 	}
 

@@ -38,6 +38,15 @@ describe("formatDate", () => {
 		const result = formatDate("2025-06-15T12:00:00Z", { year: "numeric" });
 		expect(result).toContain("2025");
 	});
+
+	it("returns empty string and warns when toLocaleString throws (catch branch)", () => {
+		// Pass options with an out-of-range DateTimeFormatOptions value → toLocaleString throws.
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const result = formatDate("2025-06-15T12:00:00Z", { year: "bogus" } as unknown as Intl.DateTimeFormatOptions);
+		expect(result).toBe("");
+		expect(warnSpy).toHaveBeenCalledWith("Error formatting date:", expect.any(Error));
+		warnSpy.mockRestore();
+	});
 });
 
 describe("formatDateOnly", () => {
@@ -133,5 +142,21 @@ describe("formatRelativeTime", () => {
 	it("accepts a Date object directly", () => {
 		const date = new Date(now - 2 * 60 * 1000);
 		expect(formatRelativeTime(date)).toBe("2 minutes ago");
+	});
+
+	it("falls back to formatDate when dateObj.getTime throws (catch branch)", () => {
+		// Pass an object that looks like a Date but whose getTime throws → hits the outer catch.
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const badDate = {
+			getTime: () => {
+				throw new Error("bad getTime");
+			},
+		};
+		// formatRelativeTime's catch calls formatDate(date). formatDate will hit its own catch
+		// because the same object's getTime also throws → returns "".
+		const result = formatRelativeTime(badDate as unknown as Date);
+		expect(result).toBe("");
+		expect(warnSpy).toHaveBeenCalledWith("Error formatting relative time:", expect.any(Error));
+		warnSpy.mockRestore();
 	});
 });

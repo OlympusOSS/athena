@@ -64,6 +64,10 @@ class Logger {
 			};
 
 			formattedMessage = `%c${timestamp ? `${timestamp} ` : ""}${prefix}${levelName}: ${message}`;
+			// `colors[level] || ""` — the `|| ""` fallback is unreachable because `colors` has
+			// an entry for every LogLevel enum value. Only a bogus numeric `level` cast would
+			// trigger it, which the function's typed signature prevents.
+			/* c8 ignore next */
 			return [formattedMessage, colors[level] || "", ...args];
 		} else {
 			// Node.js or plain console

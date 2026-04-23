@@ -47,7 +47,13 @@ export default defineConfig({
 				"src/instrumentation.ts",
 			],
 			thresholds: {
-				// Plan: raise to 100/100/100/90 in Phase 6. Current value is a ratchet floor.
+				// Phase 1+2 — lock lib/hooks/utils at 100/100/100/90. Per-glob thresholds apply
+				// to files under the glob; the file-level fallback below applies to everything else.
+				"src/lib/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				"src/hooks/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				"src/utils/**": { lines: 100, statements: 100, functions: 100, branches: 90 },
+				// Plan: raise to 100/100/100/90 in Phase 6. Current value is a ratchet floor
+				// for the remainder of src/ (app/features/providers/services/components).
 				lines: 10,
 				statements: 10,
 				functions: 10,

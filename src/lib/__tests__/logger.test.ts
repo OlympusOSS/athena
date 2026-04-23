@@ -168,4 +168,17 @@ describe("default logger + specialized loggers", () => {
 		replaceConsole.error("x");
 		replaceConsole.debug("x");
 	});
+
+	it("default log level is WARN in production NODE_ENV", () => {
+		const prev = process.env.NODE_ENV;
+		// @ts-expect-error — NODE_ENV is readonly by type, but assigning is supported at runtime
+		process.env.NODE_ENV = "production";
+		try {
+			const l = new Logger();
+			expect(l.getLevel()).toBe(LogLevel.WARN);
+		} finally {
+			// @ts-expect-error — restore original value
+			process.env.NODE_ENV = prev;
+		}
+	});
 });

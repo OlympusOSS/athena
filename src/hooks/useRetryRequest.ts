@@ -65,6 +65,10 @@ export function useKratosRequest<T>(requestFn: () => Promise<T>, options: UseRet
 	const enhancedOptions: UseRetryRequestOptions = {
 		maxRetries: 3,
 		baseDelay: 1000,
+		// Unreachable under the current implementation: useRetryRequest.execute never invokes
+		// the onRetry callback — it only fires onError. This wrapper is preserved to keep the
+		// public API stable in case execute() is extended to support automatic retries later.
+		/* c8 ignore next 4 */
 		onRetry: (error, attempt) => {
 			// Silent retries, only call user-provided onRetry
 			options.onRetry?.(error, attempt);
@@ -83,6 +87,10 @@ export function useKratosRequest<T>(requestFn: () => Promise<T>, options: UseRet
 			} else {
 				console.error("[Kratos Request] Unknown Error:", error);
 			}
+			// The `options.onError?.(...)` truthy branch is unreachable via this wrapper: if
+			// the caller provides onError, the `...options` spread below overrides the wrapper
+			// entirely, so this code path only runs when options.onError is undefined.
+			/* c8 ignore next */
 			options.onError?.(error);
 		},
 		...options,

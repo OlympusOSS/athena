@@ -30,6 +30,16 @@ describe("parseLinkHeader", () => {
 	it("returns null when no rel=next/prev present", () => {
 		expect(parseLinkHeader('<https://kratos/identities>; rel="first"')).toEqual({ next: null, prev: null });
 	});
+
+	it("returns {null,null} and warns when match() throws (catch branch)", () => {
+		// A truthy non-string value passes `!linkHeader` but .match() throws.
+		// Simulates runtime contracts being violated by callers under type cast.
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const bad = {} as unknown as string;
+		expect(parseLinkHeader(bad)).toEqual({ next: null, prev: null });
+		expect(warnSpy).toHaveBeenCalledWith("Error parsing Link header:", expect.any(Error));
+		warnSpy.mockRestore();
+	});
 });
 
 describe("processPaginatedResponse", () => {
