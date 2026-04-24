@@ -58,9 +58,9 @@ jobs:
         run: bun run audit:cookies
       - name: Run unit tests
         run: bun run test
-      - name: Snapshot coverage gate (80%)
+      - name: Snapshot coverage gate (100%)
         run: bun run snapshot-coverage
-      - name: Run unit tests with coverage (80% threshold gate)
+      - name: Run unit tests with coverage (100/100/100/90 threshold gate)
         run: bun run test:coverage
       - run: bun run build
       - name: Install Playwright browsers
